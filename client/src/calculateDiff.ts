@@ -101,7 +101,6 @@ export function compareBlueprints(
         sbNode.filter || sbNode.isFallback
           ? {
               type: "ADDED",
-              // 2. Pass 'options' to enrichFilter
               newValue: enrichFilter(sbNode.filter, sandboxIdMap, options),
               isFallback: sbNode.isFallback,
             }
@@ -138,7 +137,6 @@ export function compareBlueprints(
       ) {
         filterChange = {
           type: "MODIFIED",
-          // 3. Pass 'options' to enrichFilter (both calls)
           oldValue: enrichFilter(prodMatch.filter, prodIdMap, options),
           newValue: enrichFilter(sbNode.filter, sandboxIdMap, options),
           isFallback: sbNode.isFallback,
@@ -250,9 +248,11 @@ function flattenScenario(
       incomingFrom: previousNodeName,
       mapper: mod.mapper || {},
       parameters: mod.parameters || {},
+      // NEW: Pass the raw routes array so we can check 'disabled' status later
+      routes: mod.routes || [],
       filter: mod.filter || null,
       connectionLabel: connectionLabel,
-      isFallback: false, // Default
+      isFallback: false,
     };
 
     nodes.push(node);
@@ -260,8 +260,6 @@ function flattenScenario(
     previousNodeName = uiName;
 
     if (mod.routes && Array.isArray(mod.routes)) {
-      // Check if this module is a router and designates a fallback route
-      // The 'else' parameter contains the INDEX of the fallback route in the routes array
       const fallbackIndex = mod.parameters?.else;
 
       mod.routes.forEach((route: any, rIndex: number) => {
@@ -271,9 +269,6 @@ function flattenScenario(
 
         const routeNodes = flattenScenario(route.flow, routePath, uiName);
 
-        // LOGIC INSERTION:
-        // If this route index matches the Router's 'else' parameter,
-        // the FIRST node in this route is the start of the fallback path.
         if (
           typeof fallbackIndex !== "undefined" &&
           Number(fallbackIndex) === rIndex
@@ -328,7 +323,6 @@ function enrichFilter(filter: any, idMap: any, options: DiffOptions) {
   if (!filter) return null;
   let jsonString = JSON.stringify(filter);
 
-  // ONLY replace if showRawMappings is FALSE (or undefined)
   if (!options.showRawMappings) {
     jsonString = jsonString.replace(/\{\{(\d+)\./g, (match, id) => {
       const name = idMap[id] || `[Broken Reference-${id}]`;
@@ -350,12 +344,30 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
     delete parameters.__IMTCONN__;
   }
 
-  let configString = JSON.stringify({
+  // NEW: Normalize Route Statuses (Enabled/Disabled) into a comparable object
+  const routeStates: Record<string, string> = {};
+  if (node.routes && Array.isArray(node.routes) && node.routes.length > 0) {
+    node.routes.forEach((route: any, index: number) => {
+      // In Make.com JSON, if 'disabled' key is missing, it is Enabled.
+      // If 'disabled' is true, it is Disabled.
+      routeStates[`Route ${index + 1}`] = route.disabled
+        ? "Disabled"
+        : "Enabled";
+    });
+  }
+
+  const configObject: any = {
     mapper: node.mapper,
     parameters: parameters,
-  });
+  };
 
-  // ONLY replace if showRawMappings is FALSE (or undefined)
+  // Only add routes if we found some
+  if (Object.keys(routeStates).length > 0) {
+    configObject["routes"] = routeStates;
+  }
+
+  let configString = JSON.stringify(configObject);
+
   if (!options.showRawMappings) {
     configString = configString.replace(/\{\{(\d+)\./g, (match, id) => {
       const name = idMap[id] || `[Unknown-${id}]`;
