@@ -10,22 +10,24 @@ const BROKEN_REF_REGEX =
   /\[(?:Unknown|Missing Reference|Broken Reference)-(\d+)\]/g;
 
 function App() {
+  // --- THEME STATE ---
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
+  // --- DATA STATE ---
   const [prodJson, setProdJson] = useState<string>("");
   const [sandboxJson, setSandboxJson] = useState<string>("");
   const [isReverse, setIsReverse] = useState<boolean>(false);
 
-  // Settings
+  // --- SETTINGS ---
   const [ignoreScenarioName, setIgnoreScenarioName] = useState<boolean>(true);
   const [ignoreConnections, setIgnoreConnections] = useState<boolean>(false);
   const [ignoreModuleNames, setIgnoreModuleNames] = useState<boolean>(false);
   const [showRawMappings, setShowRawMappings] = useState<boolean>(false);
 
-  // Module Collapse State
+  // --- COLLAPSE STATE ---
   const [collapsedIds, setCollapsedIds] = useState<Set<string | number>>(
     new Set(),
   );
-
-  // Path/Route Collapse State
   const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
 
   // --- ERROR FILTER STATE ---
@@ -35,6 +37,9 @@ function App() {
   const [highlightedModuleId, setHighlightedModuleId] = useState<
     string | number | null
   >(null);
+
+  // --- CALCULATE STYLES BASED ON THEME ---
+  const styles = useMemo(() => makeStyles(isDarkMode), [isDarkMode]);
 
   const toggleCollapse = (id: string | number) => {
     const newSet = new Set(collapsedIds);
@@ -57,7 +62,6 @@ function App() {
   };
 
   const handleToggleAll = () => {
-    // Expand/Collapse modules
     if (collapsedIds.size > 0) {
       setCollapsedIds(new Set());
     } else {
@@ -68,7 +72,6 @@ function App() {
       });
       setCollapsedIds(allIds);
     }
-    // Also reset paths on "Expand All"
     if (collapsedPaths.size > 0) {
       setCollapsedPaths(new Set());
     }
@@ -76,7 +79,7 @@ function App() {
 
   const isAllExpanded = collapsedIds.size === 0 && collapsedPaths.size === 0;
 
-  // --- HELPERS: BROKEN REFS ---
+  // --- HELPERS ---
   const getBrokenRefs = (value: any): string[] => {
     if (!value) return [];
     const str =
@@ -248,12 +251,9 @@ function App() {
     return a.localeCompare(b);
   });
 
-  // --- NEW: RECURSIVE COUNT HELPER ---
-  // Calculates total items in a path AND all its sub-paths
   const getRecursiveModuleCount = (rootPath: string) => {
     let count = 0;
     Object.keys(processedGroups).forEach((key) => {
-      // It matches if it IS the path, or if it starts with "Path ➞ "
       if (key === rootPath || key.startsWith(`${rootPath} ➞ `)) {
         count += processedGroups[key].length;
       }
@@ -282,9 +282,9 @@ function App() {
         display: "inline-flex",
         alignItems: "center",
         gap: "4px",
-        background: "#ffebee",
-        color: "#c62828",
-        border: "1px solid #ffcdd2",
+        background: isDarkMode ? "#4a1b1b" : "#ffebee",
+        color: isDarkMode ? "#ff8a80" : "#c62828",
+        border: isDarkMode ? "1px solid #c62828" : "1px solid #ffcdd2",
         borderRadius: "4px",
         padding: "2px 6px",
         fontSize: "10px",
@@ -302,7 +302,12 @@ function App() {
 
   const getLevelStyles = (path: string) => {
     if (path === "Scenario Settings" || path === "Main Flow") {
-      return { depth: 0, color: "#ccc", indent: 0, label: path };
+      return {
+        depth: 0,
+        color: isDarkMode ? "#777" : "#ccc",
+        indent: 0,
+        label: path,
+      };
     }
     const segments = path.split(" ➞ ");
     const depth = segments.length;
@@ -378,9 +383,9 @@ function App() {
             key={`broken-${i}`}
             title={`Missing Module ID: ${brokenId}`}
             style={{
-              color: "#d32f2f",
+              color: isDarkMode ? "#ef9a9a" : "#d32f2f",
               fontWeight: "bold",
-              background: "#ffebee",
+              background: isDarkMode ? "#3e2723" : "#ffebee",
               borderBottom: "1px dashed #d32f2f",
               padding: "0 2px",
               borderRadius: "2px",
@@ -419,14 +424,34 @@ function App() {
         display: "inline-flex",
         alignItems: "center",
         cursor: "pointer",
-        backgroundColor: isRaw ? "#f3e5f5" : "#e1f5fe",
-        color: isRaw ? "#7b1fa2" : "#0277bd",
+        backgroundColor: isRaw
+          ? isDarkMode
+            ? "#3c1a4d"
+            : "#f3e5f5"
+          : isDarkMode
+            ? "#0d3c52"
+            : "#e1f5fe",
+        color: isRaw
+          ? isDarkMode
+            ? "#ce93d8"
+            : "#7b1fa2"
+          : isDarkMode
+            ? "#81d4fa"
+            : "#0277bd",
         borderRadius: "4px",
         padding: "0 4px",
         margin: "0 2px",
         fontSize: "10px",
         fontWeight: "bold",
-        border: `1px solid ${isRaw ? "#e1bee7" : "#b3e5fc"}`,
+        border: `1px solid ${
+          isRaw
+            ? isDarkMode
+              ? "#6a1b9a"
+              : "#e1bee7"
+            : isDarkMode
+              ? "#0277bd"
+              : "#b3e5fc"
+        }`,
         transition: "all 0.2s",
         fontFamily: "monospace",
       }}
@@ -472,7 +497,9 @@ function App() {
               )}
               <div
                 style={{
-                  background: "rgba(255,255,255,0.5)",
+                  background: isDarkMode
+                    ? "rgba(255,255,255,0.05)"
+                    : "rgba(255,255,255,0.5)",
                   padding: "4px",
                   borderRadius: "4px",
                 }}
@@ -490,14 +517,24 @@ function App() {
                       }}
                     >
                       {j > 0 && (
-                        <span style={{ fontSize: "9px", color: "#999" }}>
+                        <span
+                          style={{
+                            fontSize: "9px",
+                            color: isDarkMode ? "#888" : "#999",
+                          }}
+                        >
                           AND
                         </span>
                       )}
                       <span style={{ color: "#2196f3" }}>
                         <SmartValue value={cond.a} />
                       </span>
-                      <span style={{ fontWeight: "bold", color: "#555" }}>
+                      <span
+                        style={{
+                          fontWeight: "bold",
+                          color: isDarkMode ? "#bbb" : "#555",
+                        }}
+                      >
                         {formatOperator(cond.o)}
                       </span>
                       <span style={{ color: "#4caf50" }}>
@@ -513,8 +550,8 @@ function App() {
     };
 
     return (
-      <div style={filterSectionStyle}>
-        <div style={filterHeaderStyle}>
+      <div style={styles.filterSection}>
+        <div style={styles.filterHeader}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "14px" }}>⚡</span>
             <strong>FILTER: {label}</strong>
@@ -537,7 +574,9 @@ function App() {
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             {brokenRefs.length > 0 &&
               brokenRefs.map((id) => <BrokenBadge key={id} id={id} />)}
-            <div style={{ fontSize: "10px", color: "#555" }}>
+            <div
+              style={{ fontSize: "10px", color: isDarkMode ? "#aaa" : "#555" }}
+            >
               <span style={{ fontWeight: "bold" }}>Bundle flows from:</span>{" "}
               {incomingFrom}
             </div>
@@ -547,12 +586,16 @@ function App() {
         {isModified ? (
           <div style={{ display: "flex", gap: "10px" }}>
             <div style={{ flex: 1, opacity: 0.6 }}>
-              <div style={miniLabelStyle}>PREVIOUS LOGIC</div>
+              <div style={styles.miniLabel}>PREVIOUS LOGIC</div>
               {renderConditions(filterChange.oldValue?.conditions)}
             </div>
-            <div style={{ borderLeft: "1px solid #ccc" }}></div>
+            <div
+              style={{
+                borderLeft: isDarkMode ? "1px solid #444" : "1px solid #ccc",
+              }}
+            ></div>
             <div style={{ flex: 1 }}>
-              <div style={miniLabelStyle}>NEW LOGIC</div>
+              <div style={styles.miniLabel}>NEW LOGIC</div>
               {renderConditions(filterChange.newValue?.conditions)}
             </div>
           </div>
@@ -574,26 +617,39 @@ function App() {
     const isCollapsed = collapsedIds.has(change.moduleId);
     const hasError = errorStats.errorModuleIds.has(change.moduleId);
 
+    // Dynamic error/highlight styles
+    const borderColor = hasError
+      ? "#e57373"
+      : isHighlighted
+        ? "#2196f3"
+        : isDarkMode
+          ? "#444"
+          : "#e0e0e0";
+
+    const headerBg = hasError
+      ? isDarkMode
+        ? "#3e2723"
+        : "#ffebee"
+      : isHighlighted
+        ? isDarkMode
+          ? "#102a43"
+          : "#e3f2fd"
+        : styles.cardHeader.background;
+
     return (
       <div
         id={`module-card-${change.moduleId}`}
         style={{
-          ...cardStyle,
+          ...styles.card,
           marginBottom: isNested ? "0" : "12px",
-          border: isNested
-            ? "none"
-            : hasError
-              ? "1px solid #e57373"
-              : isHighlighted
-                ? "2px solid #2196f3"
-                : cardStyle.border,
+          border: isNested ? "none" : `1px solid ${borderColor}`,
           boxShadow: isNested
             ? "none"
             : hasError
               ? "0 0 8px rgba(229, 115, 115, 0.4)"
               : isHighlighted
                 ? "0 0 15px rgba(33, 150, 243, 0.4)"
-                : cardStyle.boxShadow,
+                : styles.card.boxShadow,
           transform: isHighlighted ? "scale(1.01)" : "scale(1)",
           transition: "all 0.5s ease",
           height: "auto",
@@ -602,14 +658,14 @@ function App() {
         <div
           onClick={() => toggleCollapse(change.moduleId)}
           style={{
-            ...cardHeaderStyle,
+            ...styles.cardHeader,
+            background: headerBg,
             cursor: "pointer",
-            background: hasError
-              ? "#ffebee"
-              : isHighlighted
-                ? "#e3f2fd"
-                : cardHeaderStyle.background,
-            borderBottom: isCollapsed ? "none" : "1px solid #f0f0f0",
+            borderBottom: isCollapsed
+              ? "none"
+              : isDarkMode
+                ? "1px solid #333"
+                : "1px solid #f0f0f0",
           }}
         >
           <div style={{ flex: 1 }}>
@@ -633,8 +689,10 @@ function App() {
                     ? "🔴"
                     : "✏️"}
               </span>
-              <strong>{change.module}</strong>
-              <span style={badgeStyle}>{change.moduleType}</span>
+              <strong style={{ color: isDarkMode ? "#e0e0e0" : "#333" }}>
+                {change.module}
+              </strong>
+              <span style={styles.badge}>{change.moduleType}</span>
               {hasError && (
                 <span
                   style={{
@@ -650,7 +708,7 @@ function App() {
                 </span>
               )}
             </div>
-            <div style={metaRowStyle}>
+            <div style={styles.metaRow}>
               <span title="Module ID">🆔 {change.moduleId}</span>
               {change.moduleName && (
                 <span title="Raw Metadata Name">🏷️ {change.moduleName}</span>
@@ -659,12 +717,16 @@ function App() {
           </div>
           <div
             style={{
-              ...statusLabelStyle,
+              ...styles.statusLabel,
               color:
                 change.type === "ADDED"
-                  ? "green"
+                  ? isDarkMode
+                    ? "#66bb6a"
+                    : "green"
                   : change.type === "REMOVED"
-                    ? "red"
+                    ? isDarkMode
+                      ? "#ef5350"
+                      : "red"
                     : "orange",
             }}
           >
@@ -675,26 +737,26 @@ function App() {
           <>
             {change.filterChange &&
               renderFilterSection(change.filterChange, change.incomingFrom)}
-            <div style={cardBodyStyle}>
+            <div style={styles.cardBody}>
               {change.details && (
-                <div style={detailsStyle}>{change.details}</div>
+                <div style={styles.details}>{change.details}</div>
               )}
               {change.changes &&
                 change.changes.map((diff: any, i: number) => {
                   const brokenInNew = getBrokenRefs(diff.newValue);
                   return (
-                    <div key={i} style={diffRowStyle}>
-                      <div style={fieldLabelStyle}>
+                    <div key={i} style={styles.diffRow}>
+                      <div style={styles.fieldLabel}>
                         {formatFieldKey(diff.field)}
                       </div>
-                      <div style={comparisonContainerStyle}>
-                        <div style={oldValueStyle}>
-                          <div style={miniLabelStyle}>{wasLabel}</div>
+                      <div style={styles.comparisonContainer}>
+                        <div style={styles.oldValue}>
+                          <div style={styles.miniLabel}>{wasLabel}</div>
                           <SmartValue value={diff.oldValue} />
                         </div>
-                        <div style={arrowStyle}>➔</div>
-                        <div style={newValueStyle}>
-                          <div style={miniLabelStyle}>{becomesLabel}</div>
+                        <div style={styles.arrow}>➔</div>
+                        <div style={styles.newValue}>
+                          <div style={styles.miniLabel}>{becomesLabel}</div>
                           <div
                             style={{
                               display: "flex",
@@ -733,14 +795,20 @@ function App() {
   };
 
   return (
-    <div style={containerStyle}>
-      <header style={headerStyle}>
+    <div style={styles.container}>
+      <header style={styles.header}>
         <div>
-          <h1 style={{ margin: 0, fontSize: "20px" }}>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "20px",
+              color: isDarkMode ? "#f0f0f0" : "#333",
+            }}
+          >
             Make.com Topology Diff
           </h1>
-          <div style={settingsBarStyle}>
-            <label style={checkboxLabelStyle}>
+          <div style={styles.settingsBar}>
+            <label style={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={ignoreScenarioName}
@@ -748,7 +816,7 @@ function App() {
               />{" "}
               Ignore Scenario Name
             </label>
-            <label style={checkboxLabelStyle}>
+            <label style={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={ignoreConnections}
@@ -756,7 +824,7 @@ function App() {
               />{" "}
               Ignore Connection IDs
             </label>
-            <label style={checkboxLabelStyle}>
+            <label style={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={ignoreModuleNames}
@@ -764,7 +832,7 @@ function App() {
               />{" "}
               Ignore Module Renames
             </label>
-            <label style={checkboxLabelStyle}>
+            <label style={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={showRawMappings}
@@ -776,7 +844,7 @@ function App() {
               style={{
                 width: "1px",
                 height: "14px",
-                background: "#ddd",
+                background: isDarkMode ? "#555" : "#ddd",
                 margin: "0 5px",
               }}
             ></div>
@@ -797,35 +865,58 @@ function App() {
             </button>
           </div>
         </div>
-        <button
-          onClick={() => setIsReverse(!isReverse)}
-          style={{
-            ...btnStyle,
-            width: "auto",
-            background: isReverse ? "#ff9800" : "#fff",
-            color: isReverse ? "white" : "#555",
-            border: "1px solid #ddd",
-          }}
-        >
-          {isReverse ? "⚠️ Mode: Rollback Analysis" : "🔄 Swap View Direction"}
-        </button>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            style={{
+              ...styles.btn,
+              background: isDarkMode ? "#333" : "#f0f0f0",
+              color: isDarkMode ? "#ffd700" : "#555",
+              border: isDarkMode ? "1px solid #555" : "1px solid #ccc",
+              fontSize: "16px",
+              padding: "4px 8px",
+            }}
+          >
+            {isDarkMode ? "☀️" : "🌙"}
+          </button>
+
+          <button
+            onClick={() => setIsReverse(!isReverse)}
+            style={{
+              ...styles.btn,
+              width: "auto",
+              background: isReverse ? "#ff9800" : isDarkMode ? "#333" : "#fff",
+              color: isReverse ? "white" : isDarkMode ? "#ddd" : "#555",
+              border: isReverse
+                ? "none"
+                : isDarkMode
+                  ? "1px solid #555"
+                  : "1px solid #ddd",
+            }}
+          >
+            {isReverse
+              ? "⚠️ Mode: Rollback Analysis"
+              : "🔄 Swap View Direction"}
+          </button>
+        </div>
       </header>
 
       <div
         style={{ display: "flex", gap: "15px", flex: 1, overflow: "hidden" }}
       >
-        <div style={columnStyle}>
-          <h3 style={colHeaderStyle}>
+        <div style={styles.column}>
+          <h3 style={styles.colHeader}>
             1. {isReverse ? "Sandbox (Old)" : "Production (Existing)"}
           </h3>
           <button
             onClick={() => fetchBlueprint(isReverse ? "sandbox" : "prod")}
-            style={actionBtnStyle}
+            style={styles.actionBtn}
           >
             Load {isReverse ? "Sandbox" : "Production"}
           </button>
           <textarea
-            style={textAreaStyle}
+            style={styles.textArea}
             value={isReverse ? sandboxJson : prodJson}
             onChange={(e) =>
               isReverse
@@ -838,22 +929,22 @@ function App() {
 
         <div
           style={{
-            ...columnStyle,
+            ...styles.column,
             flex: 1.5,
-            background: "#f8f9fa",
-            borderColor: "#cfd8dc",
+            background: isDarkMode ? "#1e1e1e" : "#f8f9fa",
+            borderColor: isDarkMode ? "#444" : "#cfd8dc",
           }}
         >
-          <h3 style={colHeaderStyle}>2. Change Set</h3>
+          <h3 style={styles.colHeader}>2. Change Set</h3>
           {diffReport && (
-            <div style={statsBarStyle}>
-              <span style={{ color: "#d32f2f" }}>
+            <div style={styles.statsBar}>
+              <span style={{ color: isDarkMode ? "#e57373" : "#d32f2f" }}>
                 ➖ {diffReport.summary.removed} Removed
               </span>
-              <span style={{ color: "#2e7d32" }}>
+              <span style={{ color: isDarkMode ? "#81c784" : "#2e7d32" }}>
                 ➕ {diffReport.summary.added} Added
               </span>
-              <span style={{ color: "#f57c00" }}>
+              <span style={{ color: isDarkMode ? "#ffb74d" : "#f57c00" }}>
                 ✏️ {diffReport.summary.modified} Modified
               </span>
 
@@ -861,7 +952,7 @@ function App() {
                 style={{
                   width: "1px",
                   height: "16px",
-                  background: "#ccc",
+                  background: isDarkMode ? "#555" : "#ccc",
                   margin: "0 10px",
                 }}
               />
@@ -876,8 +967,12 @@ function App() {
                     cursor: "pointer",
                     padding: "2px 8px",
                     borderRadius: "4px",
-                    background: showErrorsOnly ? "#c62828" : "#ffebee",
-                    color: showErrorsOnly ? "white" : "#c62828",
+                    background: showErrorsOnly
+                      ? "#c62828"
+                      : isDarkMode
+                        ? "#3e2723"
+                        : "#ffebee",
+                    color: showErrorsOnly ? "white" : "#ef9a9a",
                     border: "1px solid #ef9a9a",
                     transition: "all 0.2s",
                   }}
@@ -899,21 +994,20 @@ function App() {
               )}
             </div>
           )}
-          <div style={scrollContainer}>
+          <div style={styles.scrollContainer}>
             {!diffReport ? (
-              <div style={emptyStateStyle}>
+              <div style={styles.emptyState}>
                 Add both blueprints to generate report.
               </div>
             ) : diffReport.changes.length === 0 ? (
-              <div style={successStateStyle}>✅ No Logic Changes Detected</div>
+              <div style={styles.successState}>
+                ✅ No Logic Changes Detected
+              </div>
             ) : (
               sortedGroupKeys.map((path) => {
                 const { depth, color, indent, label } = getLevelStyles(path);
                 const isPathCollapsed = collapsedPaths.has(path);
 
-                // --- HIERARCHICAL COLLAPSE CHECK ---
-                // If any ANCESTOR of this path is collapsed, do not render this entire block
-                // e.g. if "Main Flow" is collapsed, "Main Flow ➞ Route 1" should return null
                 const closestCollapsedAncestor = sortedGroupKeys.find(
                   (potentialAncestor) =>
                     collapsedPaths.has(potentialAncestor) &&
@@ -924,7 +1018,6 @@ function App() {
                   return null;
                 }
 
-                // FILTERING LOGIC
                 const groupItems = processedGroups[path];
                 const filteredItems = showErrorsOnly
                   ? groupItems.filter((item: any) => {
@@ -938,8 +1031,6 @@ function App() {
 
                 if (filteredItems.length === 0) return null;
 
-                // RECURSIVE COUNT
-                // If collapsed, count everything in this path AND its sub-paths
                 const hiddenCount = isPathCollapsed
                   ? getRecursiveModuleCount(path)
                   : 0;
@@ -954,11 +1045,10 @@ function App() {
                       paddingLeft: depth > 0 ? "15px" : "0",
                     }}
                   >
-                    {/* CLICKABLE PATH HEADER */}
                     <div
                       onClick={() => togglePathCollapse(path)}
                       style={{
-                        ...pathHeaderStyle,
+                        ...styles.pathHeader,
                         color: depth > 0 ? color : "#999",
                         cursor: "pointer",
                         display: "flex",
@@ -991,17 +1081,18 @@ function App() {
                       </span>
                     </div>
 
-                    {/* PATH CONTENT OR PLACEHOLDER */}
                     {isPathCollapsed ? (
                       <div
                         style={{
                           padding: "8px",
-                          background: "#f5f5f5",
+                          background: isDarkMode ? "#333" : "#f5f5f5",
                           borderRadius: "4px",
                           color: "#777",
                           fontSize: "12px",
                           fontStyle: "italic",
-                          border: "1px dashed #ddd",
+                          border: isDarkMode
+                            ? "1px dashed #555"
+                            : "1px dashed #ddd",
                         }}
                       >
                         ℹ️ {hiddenCount}{" "}
@@ -1012,8 +1103,8 @@ function App() {
                       filteredItems.map((item: any, idx: number) => {
                         if (item.type === "REPLACEMENT") {
                           return (
-                            <div key={idx} style={replacementWrapperStyle}>
-                              <div style={replacementHeaderStyle}>
+                            <div key={idx} style={styles.replacementWrapper}>
+                              <div style={styles.replacementHeader}>
                                 <strong>🔄 Module Replaced</strong>
                                 <span
                                   style={{ fontSize: "11px", opacity: 0.8 }}
@@ -1024,7 +1115,7 @@ function App() {
                               <div style={{ opacity: 0.7 }}>
                                 {renderCard(item.oldChange, true)}
                               </div>
-                              <div style={replacementArrowStyle}>
+                              <div style={styles.replacementArrow}>
                                 ⬇️ Replaced By ⬇️
                               </div>
                               <div>{renderCard(item.newChange, true)}</div>
@@ -1041,18 +1132,18 @@ function App() {
           </div>
         </div>
 
-        <div style={columnStyle}>
-          <h3 style={colHeaderStyle}>
+        <div style={styles.column}>
+          <h3 style={styles.colHeader}>
             3. {isReverse ? "Production (Rollback)" : "Sandbox (Proposed)"}
           </h3>
           <button
             onClick={() => fetchBlueprint(isReverse ? "prod" : "sandbox")}
-            style={actionBtnStyle}
+            style={styles.actionBtn}
           >
             Load {isReverse ? "Production" : "Sandbox"}
           </button>
           <textarea
-            style={textAreaStyle}
+            style={styles.textArea}
             value={isReverse ? prodJson : sandboxJson}
             onChange={(e) =>
               isReverse
@@ -1067,269 +1158,275 @@ function App() {
   );
 }
 
-// --- STYLES (unchanged) ---
-const filterSectionStyle: React.CSSProperties = {
-  background: "#e3f2fd",
-  borderBottom: "1px solid #bbdefb",
-  padding: "10px",
-  fontSize: "12px",
-};
-const filterHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "8px",
-  color: "#1565c0",
-};
-const settingsBarStyle: React.CSSProperties = {
-  display: "flex",
-  gap: "15px",
-  marginTop: "5px",
-  fontSize: "12px",
-  color: "#666",
-};
-const checkboxLabelStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "5px",
-  cursor: "pointer",
-  userSelect: "none",
-};
-const containerStyle: React.CSSProperties = {
-  height: "100vh",
-  display: "flex",
-  flexDirection: "column",
-  padding: "15px",
-  boxSizing: "border-box",
-  fontFamily:
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-  color: "#333",
-  background: "#fcfcfc",
-};
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "15px",
-  borderBottom: "1px solid #eee",
-  paddingBottom: "15px",
-};
-const columnStyle: React.CSSProperties = {
-  flex: 1,
-  display: "flex",
-  flexDirection: "column",
-  border: "1px solid #e0e0e0",
-  borderRadius: "8px",
-  backgroundColor: "white",
-  overflow: "hidden",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
-};
-const colHeaderStyle: React.CSSProperties = {
-  fontSize: "14px",
-  fontWeight: 700,
-  padding: "12px 12px 4px 12px",
-  margin: 0,
-  background: "#fff",
-  color: "#222",
-};
-const textAreaStyle: React.CSSProperties = {
-  flex: 1,
-  resize: "none",
-  border: "none",
-  padding: "10px",
-  fontSize: "11px",
-  fontFamily: "Monaco, monospace",
-  outline: "none",
-  background: "#fff",
-  color: "#444",
-};
-const scrollContainer: React.CSSProperties = {
-  flex: 1,
-  overflowY: "auto",
-  padding: "15px",
-};
-const statsBarStyle: React.CSSProperties = {
-  display: "flex",
-  gap: "20px",
-  padding: "10px 15px",
-  background: "#fff",
-  borderBottom: "1px solid #e0e0e0",
-  fontSize: "12px",
-  fontWeight: "bold",
-  justifyContent: "center",
-  alignItems: "center",
-};
-const pathHeaderStyle: React.CSSProperties = {
-  fontSize: "11px",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  color: "#999",
-  fontWeight: "bold",
-  marginBottom: "10px",
-  borderBottom: "1px solid #eee",
-  paddingBottom: "5px",
-};
-const cardStyle: React.CSSProperties = {
-  background: "white",
-  borderRadius: "6px",
-  border: "1px solid #e0e0e0",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-  marginBottom: "12px",
-  overflow: "hidden",
-  position: "relative",
-};
-const cardHeaderStyle: React.CSSProperties = {
-  padding: "8px 12px",
-  background: "#fcfcfc",
-  borderBottom: "1px solid #f0f0f0",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  fontSize: "13px",
-  transition: "background 0.3s ease",
-};
-const cardBodyStyle: React.CSSProperties = { padding: "0" };
-const badgeStyle: React.CSSProperties = {
-  fontSize: "10px",
-  background: "#f0f0f0",
-  color: "#666",
-  padding: "2px 6px",
-  borderRadius: "10px",
-  fontFamily: "monospace",
-  border: "1px solid #e0e0e0",
-};
-const metaRowStyle: React.CSSProperties = {
-  marginTop: "4px",
-  fontSize: "10px",
-  color: "#888",
-  display: "flex",
-  gap: "10px",
-  paddingLeft: "28px",
-};
-const statusLabelStyle: React.CSSProperties = {
-  fontSize: "10px",
-  fontWeight: "bold",
-  textAlign: "right",
-  marginLeft: "10px",
-};
-const detailsStyle: React.CSSProperties = {
-  padding: "10px",
-  color: "#666",
-  fontSize: "12px",
-  fontStyle: "italic",
-};
-const diffRowStyle: React.CSSProperties = {
-  borderBottom: "1px solid #f5f5f5",
-  fontSize: "12px",
-};
-const fieldLabelStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  background: "#fafafa",
-  color: "#666",
-  fontWeight: 600,
-  fontSize: "11px",
-  borderBottom: "1px solid #f0f0f0",
-  fontFamily: "Monaco, monospace",
-};
-const comparisonContainerStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "stretch",
-};
-const oldValueStyle: React.CSSProperties = {
-  flex: 1,
-  padding: "8px 12px",
-  background: "#fff0f0",
-  color: "#c62828",
-  fontFamily: "Monaco, monospace",
-  fontSize: "11px",
-  position: "relative",
-  borderRight: "1px solid #fce4ec",
-  whiteSpace: "pre-wrap",
-  wordBreak: "break-word",
-};
-const newValueStyle: React.CSSProperties = {
-  flex: 1,
-  padding: "8px 12px",
-  background: "#f1f8e9",
-  color: "#2e7d32",
-  fontFamily: "Monaco, monospace",
-  fontSize: "11px",
-  position: "relative",
-  whiteSpace: "pre-wrap",
-  wordBreak: "break-word",
-};
-const arrowStyle: React.CSSProperties = {
-  padding: "0 8px",
-  background: "#fff",
-  color: "#bbb",
-  display: "flex",
-  alignItems: "center",
-  fontSize: "14px",
-  fontWeight: "bold",
-};
-const miniLabelStyle: React.CSSProperties = {
-  fontSize: "8px",
-  opacity: 0.6,
-  textTransform: "uppercase",
-  marginBottom: "4px",
-  fontWeight: "bold",
-};
-const emptyStateStyle: React.CSSProperties = {
-  textAlign: "center",
-  color: "#bbb",
-  marginTop: "50px",
-  fontSize: "14px",
-};
-const successStateStyle: React.CSSProperties = {
-  textAlign: "center",
-  color: "#2e7d32",
-  fontWeight: "bold",
-  marginTop: "40px",
-  padding: "30px",
-  background: "#e8f5e9",
-  borderRadius: "8px",
-  border: "1px dashed #a5d6a7",
-};
-const btnStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  borderRadius: "4px",
-  cursor: "pointer",
-  fontSize: "12px",
-  fontWeight: 600,
-  border: "none",
-};
-const actionBtnStyle: React.CSSProperties = {
-  ...btnStyle,
-  margin: "10px",
-  background: "#f5f5f5",
-  border: "1px solid #ddd",
-  color: "#333",
-  width: "calc(100% - 20px)",
-};
-const replacementWrapperStyle: React.CSSProperties = {
-  border: "2px dashed #90caf9",
-  borderRadius: "8px",
-  padding: "10px",
-  background: "#e3f2fd",
-  marginBottom: "20px",
-  position: "relative",
-};
-const replacementHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "10px",
-  color: "#1976d2",
-  fontSize: "12px",
-};
-const replacementArrowStyle: React.CSSProperties = {
-  textAlign: "center",
-  fontSize: "10px",
-  fontWeight: "bold",
-  color: "#1976d2",
-  padding: "5px 0",
-  textTransform: "uppercase",
-  letterSpacing: "1px",
-};
+// --- DYNAMIC STYLES ---
+const makeStyles = (isDark: boolean): Record<string, React.CSSProperties> => ({
+  container: {
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    padding: "15px",
+    boxSizing: "border-box",
+    fontFamily:
+      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    color: isDark ? "#e0e0e0" : "#333",
+    background: isDark ? "#121212" : "#fcfcfc",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "15px",
+    borderBottom: `1px solid ${isDark ? "#333" : "#eee"}`,
+    paddingBottom: "15px",
+  },
+  settingsBar: {
+    display: "flex",
+    gap: "15px",
+    marginTop: "5px",
+    fontSize: "12px",
+    color: isDark ? "#aaa" : "#666",
+  },
+  checkboxLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    cursor: "pointer",
+    userSelect: "none",
+  },
+  column: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    border: `1px solid ${isDark ? "#444" : "#e0e0e0"}`,
+    borderRadius: "8px",
+    backgroundColor: isDark ? "#1e1e1e" : "white",
+    overflow: "hidden",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+  },
+  colHeader: {
+    fontSize: "14px",
+    fontWeight: 700,
+    padding: "12px 12px 4px 12px",
+    margin: 0,
+    background: isDark ? "#252526" : "#fff",
+    color: isDark ? "#e0e0e0" : "#222",
+  },
+  textArea: {
+    flex: 1,
+    resize: "none",
+    border: "none",
+    padding: "10px",
+    fontSize: "11px",
+    fontFamily: "Monaco, monospace",
+    outline: "none",
+    background: isDark ? "#1e1e1e" : "#fff",
+    color: isDark ? "#dcdcdc" : "#444",
+  },
+  scrollContainer: {
+    flex: 1,
+    overflowY: "auto",
+    padding: "15px",
+  },
+  statsBar: {
+    display: "flex",
+    gap: "20px",
+    padding: "10px 15px",
+    background: isDark ? "#252526" : "#fff",
+    borderBottom: `1px solid ${isDark ? "#444" : "#e0e0e0"}`,
+    fontSize: "12px",
+    fontWeight: "bold",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyState: {
+    textAlign: "center",
+    color: "#bbb",
+    marginTop: "50px",
+    fontSize: "14px",
+  },
+  successState: {
+    textAlign: "center",
+    color: isDark ? "#81c784" : "#2e7d32",
+    fontWeight: "bold",
+    marginTop: "40px",
+    padding: "30px",
+    background: isDark ? "#1b3320" : "#e8f5e9",
+    borderRadius: "8px",
+    border: `1px dashed ${isDark ? "#2e7d32" : "#a5d6a7"}`,
+  },
+  pathHeader: {
+    fontSize: "11px",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    color: "#999",
+    fontWeight: "bold",
+    marginBottom: "10px",
+    borderBottom: `1px solid ${isDark ? "#444" : "#eee"}`,
+    paddingBottom: "5px",
+  },
+  card: {
+    background: isDark ? "#2d2d2d" : "white",
+    borderRadius: "6px",
+    border: `1px solid ${isDark ? "#444" : "#e0e0e0"}`,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    marginBottom: "12px",
+    overflow: "hidden",
+    position: "relative",
+  },
+  cardHeader: {
+    padding: "8px 12px",
+    background: isDark ? "#333" : "#fcfcfc",
+    borderBottom: `1px solid ${isDark ? "#444" : "#f0f0f0"}`,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    fontSize: "13px",
+    transition: "background 0.3s ease",
+  },
+  badge: {
+    fontSize: "10px",
+    background: isDark ? "#444" : "#f0f0f0",
+    color: isDark ? "#aaa" : "#666",
+    padding: "2px 6px",
+    borderRadius: "10px",
+    fontFamily: "monospace",
+    border: `1px solid ${isDark ? "#555" : "#e0e0e0"}`,
+  },
+  metaRow: {
+    marginTop: "4px",
+    fontSize: "10px",
+    color: "#888",
+    display: "flex",
+    gap: "10px",
+    paddingLeft: "28px",
+  },
+  statusLabel: {
+    fontSize: "10px",
+    fontWeight: "bold",
+    textAlign: "right",
+    marginLeft: "10px",
+  },
+  cardBody: { padding: "0" },
+  details: {
+    padding: "10px",
+    color: isDark ? "#aaa" : "#666",
+    fontSize: "12px",
+    fontStyle: "italic",
+  },
+  diffRow: {
+    borderBottom: `1px solid ${isDark ? "#444" : "#f5f5f5"}`,
+    fontSize: "12px",
+  },
+  fieldLabel: {
+    padding: "6px 12px",
+    background: isDark ? "#383838" : "#fafafa",
+    color: isDark ? "#ccc" : "#666",
+    fontWeight: 600,
+    fontSize: "11px",
+    borderBottom: `1px solid ${isDark ? "#444" : "#f0f0f0"}`,
+    fontFamily: "Monaco, monospace",
+  },
+  comparisonContainer: {
+    display: "flex",
+    alignItems: "stretch",
+  },
+  oldValue: {
+    flex: 1,
+    padding: "8px 12px",
+    background: isDark ? "#2a1515" : "#fff0f0", // Dark red vs Light red
+    color: isDark ? "#ff8a80" : "#c62828",
+    fontFamily: "Monaco, monospace",
+    fontSize: "11px",
+    position: "relative",
+    borderRight: `1px solid ${isDark ? "#444" : "#fce4ec"}`,
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+  },
+  newValue: {
+    flex: 1,
+    padding: "8px 12px",
+    background: isDark ? "#162916" : "#f1f8e9", // Dark green vs Light green
+    color: isDark ? "#a5d6a7" : "#2e7d32",
+    fontFamily: "Monaco, monospace",
+    fontSize: "11px",
+    position: "relative",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+  },
+  arrow: {
+    padding: "0 8px",
+    background: isDark ? "#2d2d2d" : "#fff",
+    color: "#bbb",
+    display: "flex",
+    alignItems: "center",
+    fontSize: "14px",
+    fontWeight: "bold",
+  },
+  miniLabel: {
+    fontSize: "8px",
+    opacity: 0.6,
+    textTransform: "uppercase",
+    marginBottom: "4px",
+    fontWeight: "bold",
+  },
+  filterSection: {
+    background: isDark ? "#0d2b45" : "#e3f2fd",
+    borderBottom: `1px solid ${isDark ? "#1565c0" : "#bbdefb"}`,
+    padding: "10px",
+    fontSize: "12px",
+  },
+  filterHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "8px",
+    color: isDark ? "#64b5f6" : "#1565c0",
+  },
+  replacementWrapper: {
+    border: `2px dashed ${isDark ? "#42a5f5" : "#90caf9"}`,
+    borderRadius: "8px",
+    padding: "10px",
+    background: isDark ? "#102027" : "#e3f2fd",
+    marginBottom: "20px",
+    position: "relative",
+  },
+  replacementHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "10px",
+    color: isDark ? "#64b5f6" : "#1976d2",
+    fontSize: "12px",
+  },
+  replacementArrow: {
+    textAlign: "center",
+    fontSize: "10px",
+    fontWeight: "bold",
+    color: isDark ? "#64b5f6" : "#1976d2",
+    padding: "5px 0",
+    textTransform: "uppercase",
+    letterSpacing: "1px",
+  },
+  btn: {
+    padding: "6px 12px",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: 600,
+    border: "none",
+  },
+  actionBtn: {
+    padding: "6px 12px",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: 600,
+    margin: "10px",
+    background: isDark ? "#333" : "#f5f5f5",
+    border: `1px solid ${isDark ? "#555" : "#ddd"}`,
+    color: isDark ? "#ddd" : "#333",
+    width: "calc(100% - 20px)",
+  },
+});
 
 export default App;
