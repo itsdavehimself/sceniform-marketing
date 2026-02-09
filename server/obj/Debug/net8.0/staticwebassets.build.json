@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "XPCQ892C2qcAV2GUmXhkL23sD0CQv2W1IHhotpWHXRY=",
+  "Source": "DiffDetector.Api",
+  "BasePath": "_content/DiffDetector.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
