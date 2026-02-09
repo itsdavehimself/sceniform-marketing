@@ -1,4 +1,3 @@
-// App.tsx
 import React, { useState, useMemo, useEffect } from "react";
 import { compareBlueprints } from "./calculateDiff";
 
@@ -616,6 +615,7 @@ function App() {
     const isHighlighted = highlightedModuleId == change.moduleId;
     const isCollapsed = collapsedIds.has(change.moduleId);
     const hasError = errorStats.errorModuleIds.has(change.moduleId);
+    const isDisabledRoute = change.isDisabled === true;
 
     // Dynamic error/highlight styles
     const borderColor = hasError
@@ -653,6 +653,7 @@ function App() {
           transform: isHighlighted ? "scale(1.01)" : "scale(1)",
           transition: "all 0.5s ease",
           height: "auto",
+          opacity: isDisabledRoute ? 0.75 : 1, // Slight transparency for disabled modules
         }}
       >
         <div
@@ -693,6 +694,28 @@ function App() {
                 {change.module}
               </strong>
               <span style={styles.badge}>{change.moduleType}</span>
+              {/* NEW: Disabled Route Badge */}
+              {isDisabledRoute && (
+                <span
+                  style={{
+                    fontSize: "10px",
+                    background: isDarkMode ? "#424242" : "#e0e0e0",
+                    color: isDarkMode ? "#bdbdbd" : "#757575",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                    fontWeight: "bold",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    border: isDarkMode
+                      ? "1px solid #616161"
+                      : "1px solid #bdbdbd",
+                  }}
+                  title="This module is located inside a disabled router path and will not execute."
+                >
+                  🚫 IN DISABLED ROUTE
+                </span>
+              )}
               {hasError && (
                 <span
                   style={{
@@ -1019,6 +1042,12 @@ function App() {
                 }
 
                 const groupItems = processedGroups[path];
+
+                // NEW: Check if this entire route path is disabled
+                // If the modules inside this path are disabled, the route is disabled.
+                const isGroupDisabled =
+                  groupItems.length > 0 && groupItems[0].isDisabled;
+
                 const filteredItems = showErrorsOnly
                   ? groupItems.filter((item: any) => {
                       const id =
@@ -1079,6 +1108,25 @@ function App() {
                         )}
                         {depth > 0 ? label : `📂 ${label}`}
                       </span>
+
+                      {/* NEW: Disabled Route Badge in Header */}
+                      {isGroupDisabled && (
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            backgroundColor: isDarkMode ? "#424242" : "#757575",
+                            color: "white",
+                            padding: "1px 5px",
+                            borderRadius: "4px",
+                            marginLeft: "8px",
+                            fontWeight: "bold",
+                            textTransform: "uppercase",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                          }}
+                        >
+                          🚫 DISABLED ROUTE
+                        </span>
+                      )}
                     </div>
 
                     {isPathCollapsed ? (

@@ -81,6 +81,7 @@ export function compareBlueprints(
   // ==========================================
   // 2. FLOW & NODE COMPARISON
   // ==========================================
+  // Pass false for initial ancestorDisabled
   const sandboxNodes = flattenScenario(sandboxJson.flow);
   const prodNodes = flattenScenario(prodJson.flow);
   const sandboxIdMap = createIdMap(sandboxNodes);
@@ -96,7 +97,6 @@ export function compareBlueprints(
       const sbConfig = normalizeConfig(sbNode, sandboxIdMap, options);
       const allNewFields = getDeepDiff({}, sbConfig);
 
-      // Check if this new module has a filter OR is a fallback route
       const filterChange =
         sbNode.filter || sbNode.isFallback
           ? {
@@ -118,6 +118,7 @@ export function compareBlueprints(
         details: "This module is new in the Sandbox.",
         changes: allNewFields,
         filterChange: filterChange,
+        isDisabled: sbNode.isDisabled, // <--- NEW: Pass disabled status
       });
       report.summary.added++;
     } else {
@@ -166,6 +167,7 @@ export function compareBlueprints(
           incomingFrom: sbNode.incomingFrom,
           changes: differences,
           filterChange: filterChange,
+          isDisabled: sbNode.isDisabled, // <--- NEW: Pass disabled status
         });
         report.summary.modified++;
       }
@@ -185,6 +187,7 @@ export function compareBlueprints(
         index: pNode.index,
         incomingFrom: pNode.incomingFrom,
         details: "This module exists in Production but was removed in Sandbox.",
+        isDisabled: pNode.isDisabled, // <--- NEW: Pass disabled status
       });
       report.summary.removed++;
     }
@@ -202,6 +205,7 @@ function flattenScenario(
   path = "Main Flow",
   parentName: string | null = null,
   indexOffset = 0,
+  ancestorDisabled = false, // <--- NEW ARGUMENT
 ) {
   let nodes: any[] = [];
 
@@ -248,11 +252,11 @@ function flattenScenario(
       incomingFrom: previousNodeName,
       mapper: mod.mapper || {},
       parameters: mod.parameters || {},
-      // NEW: Pass the raw routes array so we can check 'disabled' status later
       routes: mod.routes || [],
       filter: mod.filter || null,
       connectionLabel: connectionLabel,
       isFallback: false,
+      isDisabled: ancestorDisabled, // <--- NEW: Store disabled status
     };
 
     nodes.push(node);
@@ -267,7 +271,19 @@ function flattenScenario(
         const routePath =
           path === "Main Flow" ? segment : `${path} ➞ ${segment}`;
 
-        const routeNodes = flattenScenario(route.flow, routePath, uiName);
+        // CHECK IF THIS ROUTE IS DISABLED
+        // If the parent (ancestor) was already disabled, this child is also disabled.
+        // If this specific route is disabled in JSON, it is disabled.
+        const isRouteDisabled = route.disabled === true;
+        const effectivelyDisabled = ancestorDisabled || isRouteDisabled;
+
+        const routeNodes = flattenScenario(
+          route.flow,
+          routePath,
+          uiName,
+          0,
+          effectivelyDisabled, // <--- Pass down the status
+        );
 
         if (
           typeof fallbackIndex !== "undefined" &&
@@ -344,12 +360,9 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
     delete parameters.__IMTCONN__;
   }
 
-  // NEW: Normalize Route Statuses (Enabled/Disabled) into a comparable object
   const routeStates: Record<string, string> = {};
   if (node.routes && Array.isArray(node.routes) && node.routes.length > 0) {
     node.routes.forEach((route: any, index: number) => {
-      // In Make.com JSON, if 'disabled' key is missing, it is Enabled.
-      // If 'disabled' is true, it is Disabled.
       routeStates[`Route ${index + 1}`] = route.disabled
         ? "Disabled"
         : "Enabled";
@@ -361,7 +374,6 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
     parameters: parameters,
   };
 
-  // Only add routes if we found some
   if (Object.keys(routeStates).length > 0) {
     configObject["routes"] = routeStates;
   }
