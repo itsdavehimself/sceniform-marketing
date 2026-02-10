@@ -1029,7 +1029,13 @@ function App() {
             ) : (
               sortedGroupKeys.map((path) => {
                 const { depth, color, indent, label } = getLevelStyles(path);
-                const isPathCollapsed = collapsedPaths.has(path);
+
+                // --- IDENTIFY ROOT PATHS (Main Flow & Settings) ---
+                const isRootPath =
+                  path === "Scenario Settings" || path === "Main Flow";
+
+                // If it is a root path, it CANNOT be collapsed.
+                const isPathCollapsed = !isRootPath && collapsedPaths.has(path);
 
                 const closestCollapsedAncestor = sortedGroupKeys.find(
                   (potentialAncestor) =>
@@ -1044,7 +1050,6 @@ function App() {
                 const groupItems = processedGroups[path];
 
                 // NEW: Check if this entire route path is disabled
-                // If the modules inside this path are disabled, the route is disabled.
                 const isGroupDisabled =
                   groupItems.length > 0 && groupItems[0].isDisabled;
 
@@ -1075,29 +1080,35 @@ function App() {
                     }}
                   >
                     <div
-                      onClick={() => togglePathCollapse(path)}
+                      onClick={() => !isRootPath && togglePathCollapse(path)}
                       style={{
                         ...styles.pathHeader,
                         color: depth > 0 ? color : "#999",
-                        cursor: "pointer",
+                        cursor: isRootPath ? "default" : "pointer", // Disabled cursor for roots
                         display: "flex",
                         alignItems: "center",
                         gap: "6px",
                       }}
-                      title="Click to toggle modules in this path"
+                      title={
+                        isRootPath
+                          ? undefined
+                          : "Click to toggle modules in this path"
+                      }
                     >
-                      <span
-                        style={{
-                          fontSize: "10px",
-                          display: "inline-block",
-                          transform: isPathCollapsed
-                            ? "rotate(-90deg)"
-                            : "rotate(0deg)",
-                          transition: "transform 0.2s",
-                        }}
-                      >
-                        ▼
-                      </span>
+                      {!isRootPath && (
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            display: "inline-block",
+                            transform: isPathCollapsed
+                              ? "rotate(-90deg)"
+                              : "rotate(0deg)",
+                            transition: "transform 0.2s",
+                          }}
+                        >
+                          ▼
+                        </span>
+                      )}
                       <span>
                         {depth > 0 && (
                           <span
