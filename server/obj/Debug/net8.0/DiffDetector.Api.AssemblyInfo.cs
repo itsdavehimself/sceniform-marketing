@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DiffDetector.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+363ac348a2e7dc7c8c8b3cfe01927600de839c28")]
 [assembly: System.Reflection.AssemblyProductAttribute("DiffDetector.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DiffDetector.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

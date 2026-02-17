@@ -1,5 +1,6 @@
 using DiffDetector.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace DiffDetector.Api.Controllers;
 
@@ -37,5 +38,28 @@ public class ScenariosController : ControllerBase
 
         var json = await System.IO.File.ReadAllTextAsync(filePath);
         return Ok(new { blueprint = json });
+    }
+
+   [HttpGet("{id}/blueprint")]
+    public async Task<IActionResult> GetBlueprint(int id)
+    {
+        try
+        {
+            var rawJson = await _makeService.GetBlueprintAsync(id);
+            
+            using var document = JsonDocument.Parse(rawJson);
+            
+            if (document.RootElement.TryGetProperty("response", out var responseElement) &&
+                responseElement.TryGetProperty("blueprint", out var blueprintElement))
+            {
+                return Content(blueprintElement.GetRawText(), "application/json");
+            }
+
+            return Content(rawJson, "application/json");
+        }
+        catch (HttpRequestException ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
     }
 }

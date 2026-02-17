@@ -105,3 +105,4 @@ C:\Users\david\Documents\repos\diff-detector\server\obj\Debug\net8.0\DiffDetecto
 C:\Users\david\Documents\repos\diff-detector\server\obj\Debug\net8.0\ref\DiffDetector.Api.dll
 C:\Users\david\Documents\repos\diff-detector\server\bin\Debug\net8.0\Mocks\Search People PRODUCTION.blueprint.json
 C:\Users\david\Documents\repos\diff-detector\server\bin\Debug\net8.0\Mocks\Search People SANDBOX.blueprint.json
+C:\Users\david\Documents\repos\diff-detector\server\obj\Debug\net8.0\DiffDetector.Api.sourcelink.json

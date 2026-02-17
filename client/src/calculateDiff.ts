@@ -81,7 +81,6 @@ export function compareBlueprints(
   // ==========================================
   // 2. FLOW & NODE COMPARISON
   // ==========================================
-  // Pass false for initial ancestorDisabled
   const sandboxNodes = flattenScenario(sandboxJson.flow);
   const prodNodes = flattenScenario(prodJson.flow);
   const sandboxIdMap = createIdMap(sandboxNodes);
@@ -118,7 +117,7 @@ export function compareBlueprints(
         details: "This module is new in the Sandbox.",
         changes: allNewFields,
         filterChange: filterChange,
-        isDisabled: sbNode.isDisabled, // <--- NEW: Pass disabled status
+        isDisabled: sbNode.isDisabled,
       });
       report.summary.added++;
     } else {
@@ -167,7 +166,7 @@ export function compareBlueprints(
           incomingFrom: sbNode.incomingFrom,
           changes: differences,
           filterChange: filterChange,
-          isDisabled: sbNode.isDisabled, // <--- NEW: Pass disabled status
+          isDisabled: sbNode.isDisabled,
         });
         report.summary.modified++;
       }
@@ -187,7 +186,7 @@ export function compareBlueprints(
         index: pNode.index,
         incomingFrom: pNode.incomingFrom,
         details: "This module exists in Production but was removed in Sandbox.",
-        isDisabled: pNode.isDisabled, // <--- NEW: Pass disabled status
+        isDisabled: pNode.isDisabled,
       });
       report.summary.removed++;
     }
@@ -205,7 +204,7 @@ function flattenScenario(
   path = "Main Flow",
   parentName: string | null = null,
   indexOffset = 0,
-  ancestorDisabled = false, // <--- NEW ARGUMENT
+  ancestorDisabled = false,
 ) {
   let nodes: any[] = [];
 
@@ -253,16 +252,19 @@ function flattenScenario(
       mapper: mod.mapper || {},
       parameters: mod.parameters || {},
       routes: mod.routes || [],
+      // Pass availability of error handler to the node object so we can detect if one was added/removed
+      hasErrorHandler: !!(mod.onerror && mod.onerror.length > 0),
       filter: mod.filter || null,
       connectionLabel: connectionLabel,
       isFallback: false,
-      isDisabled: ancestorDisabled, // <--- NEW: Store disabled status
+      isDisabled: ancestorDisabled,
     };
 
     nodes.push(node);
 
     previousNodeName = uiName;
 
+    // 1. RECURSE INTO ROUTER ROUTES
     if (mod.routes && Array.isArray(mod.routes)) {
       const fallbackIndex = mod.parameters?.else;
 
@@ -271,9 +273,6 @@ function flattenScenario(
         const routePath =
           path === "Main Flow" ? segment : `${path} ➞ ${segment}`;
 
-        // CHECK IF THIS ROUTE IS DISABLED
-        // If the parent (ancestor) was already disabled, this child is also disabled.
-        // If this specific route is disabled in JSON, it is disabled.
         const isRouteDisabled = route.disabled === true;
         const effectivelyDisabled = ancestorDisabled || isRouteDisabled;
 
@@ -282,7 +281,7 @@ function flattenScenario(
           routePath,
           uiName,
           0,
-          effectivelyDisabled, // <--- Pass down the status
+          effectivelyDisabled,
         );
 
         if (
@@ -297,6 +296,24 @@ function flattenScenario(
         nodes = nodes.concat(routeNodes);
       });
     }
+
+    // 2. RECURSE INTO ERROR HANDLERS (New Logic)
+    if (mod.onerror && Array.isArray(mod.onerror) && mod.onerror.length > 0) {
+      // Create a specific label for error flows
+      const segment = `${uiName} ⚠️ Error Handler`;
+      const errorPath = path === "Main Flow" ? segment : `${path} ➞ ${segment}`;
+
+      // Error handlers inherit the disabled status of their parent
+      const errorNodes = flattenScenario(
+        mod.onerror,
+        errorPath,
+        uiName, // Incoming from the module that failed
+        0,
+        ancestorDisabled,
+      );
+
+      nodes = nodes.concat(errorNodes);
+    }
   });
 
   return nodes;
@@ -307,6 +324,8 @@ function findMatch(
   searchList: any[],
   alreadyMatchedIds: Set<any>,
 ) {
+  // PASS 1: Strict ID & Module Type Match (High Confidence)
+  // If the Make.com ID hasn't changed, this is our guaranteed match.
   let match = searchList.find(
     (n) =>
       !alreadyMatchedIds.has(n.uniqueKey) &&
@@ -315,15 +334,74 @@ function findMatch(
   );
   if (match) return match;
 
-  match = searchList.find(
+  // PASS 2: Topological & Contextual Heuristic
+  // Filter available candidates to the same module type and same path
+  const candidates = searchList.filter(
     (n) =>
       !alreadyMatchedIds.has(n.uniqueKey) &&
       n.module === targetNode.module &&
-      n.path === targetNode.path &&
-      n.index === targetNode.index,
+      n.path === targetNode.path,
   );
 
-  return match;
+  if (candidates.length === 0) return undefined;
+
+  let bestMatch: any = null;
+  let highestScore = -1;
+
+  candidates.forEach((candidate) => {
+    let score = 0;
+
+    // A. Topological Anchor (Most Important)
+    // If it comes from the same parent, it's highly likely the same logical step
+    if (candidate.incomingFrom === targetNode.incomingFrom) {
+      score += 4;
+    }
+
+    // B. Semantic Anchors
+    // Did the user name it the same thing?
+    if (
+      candidate.metadataName &&
+      candidate.metadataName === targetNode.metadataName
+    ) {
+      score += 3;
+    }
+    if (candidate.uiName === targetNode.uiName) {
+      score += 1;
+    }
+
+    // C. Positional Anchors (Index Shifting)
+    // If someone inserted 1 module, the index shifted by 1.
+    const indexDiff = Math.abs(candidate.index - targetNode.index);
+    if (indexDiff === 0) {
+      score += 2; // Exact index
+    } else if (indexDiff <= 3) {
+      score += 1; // Minor shift (node inserted or removed nearby)
+    }
+
+    // D. Configuration Similarity (Optional Tie-Breaker)
+    // If it's the exact same module type, checking if they have identical mappers helps
+    // disambiguate blocks of identical modules (like 5 "Set Variable" modules in a row)
+    const targetMapperLength = JSON.stringify(targetNode.mapper || {}).length;
+    const candidateMapperLength = JSON.stringify(candidate.mapper || {}).length;
+    if (Math.abs(targetMapperLength - candidateMapperLength) < 10) {
+      score += 1;
+    }
+
+    if (score > highestScore) {
+      highestScore = score;
+      bestMatch = candidate;
+    }
+  });
+
+  // We require a minimum confidence score to avoid mapping a completely unrelated
+  // module just because it shares the same type.
+  const MINIMUM_CONFIDENCE_SCORE = 3;
+
+  if (highestScore >= MINIMUM_CONFIDENCE_SCORE) {
+    return bestMatch;
+  }
+
+  return undefined;
 }
 
 function createIdMap(nodes: any[]) {
@@ -339,12 +417,15 @@ function enrichFilter(filter: any, idMap: any, options: DiffOptions) {
   if (!filter) return null;
   let jsonString = JSON.stringify(filter);
 
-  if (!options.showRawMappings) {
-    jsonString = jsonString.replace(/\{\{(\d+)\./g, (match, id) => {
-      const name = idMap[id] || `[Broken Reference-${id}]`;
-      return `{{${name}.`;
-    });
-  }
+  // Always run the regex replacement to catch broken references
+  jsonString = jsonString.replace(/\{\{(\d+)\./g, (match, id) => {
+    if (!idMap[id]) {
+      // It's broken: always show the error tag
+      return `{{[Broken Reference-${id}].`;
+    }
+    // It's valid: respect the raw mappings toggle
+    return options.showRawMappings ? match : `{{${idMap[id]}.`;
+  });
 
   return JSON.parse(jsonString);
 }
@@ -378,14 +459,21 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
     configObject["routes"] = routeStates;
   }
 
+  // Detect presence of Error Handler as a config property of the parent
+  if (node.hasErrorHandler) {
+    configObject["errorHandler"] = "Active";
+  }
+
   let configString = JSON.stringify(configObject);
 
-  if (!options.showRawMappings) {
-    configString = configString.replace(/\{\{(\d+)\./g, (match, id) => {
-      const name = idMap[id] || `[Unknown-${id}]`;
-      return `{{${name}.`;
-    });
-  }
+  configString = configString.replace(/\{\{(\d+)\./g, (match, id) => {
+    if (!idMap[id]) {
+      // It's broken: always show the error tag
+      return `{{[Unknown-${id}].`;
+    }
+    // It's valid: respect the raw mappings toggle
+    return options.showRawMappings ? match : `{{${idMap[id]}.`;
+  });
 
   return JSON.parse(configString);
 }

@@ -37,6 +37,60 @@ function App() {
     string | number | null
   >(null);
 
+  // --- SCENARIO API STATE ---
+  const [scenarios, setScenarios] = useState<any[]>([]);
+  const [selectedProdId, setSelectedProdId] = useState<string>("");
+  const [selectedSandboxId, setSelectedSandboxId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Fetch all scenarios on component mount
+  useEffect(() => {
+    const fetchScenarios = async () => {
+      try {
+        const res = await fetch("http://localhost:1337/api/scenarios");
+        let data = await res.json();
+
+        // Handle Make API response structure (often nested inside 'scenarios' or an array)
+        const list =
+          data.scenarios || data.items || (Array.isArray(data) ? data : []);
+        setScenarios(list);
+      } catch (err) {
+        console.error("Failed to load scenarios list", err);
+      }
+    };
+    fetchScenarios();
+  }, []);
+
+  // Updated fetch function for real blueprints
+  const fetchRealBlueprint = async (env: "prod" | "sandbox") => {
+    const scenarioId = env === "prod" ? selectedProdId : selectedSandboxId;
+    if (!scenarioId) return alert("Please select a scenario first.");
+
+    setShowErrorsOnly(false);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch(
+        `http://localhost:1337/api/scenarios/${scenarioId}/blueprint`,
+      );
+      const data = await res.json();
+
+      const parsed =
+        typeof data.blueprint === "string"
+          ? JSON.parse(data.blueprint)
+          : data.blueprint || data;
+      const formatted = JSON.stringify(parsed, null, 2);
+
+      if (env === "prod") setProdJson(formatted);
+      else setSandboxJson(formatted);
+    } catch (err) {
+      console.error("Error fetching blueprint:", err);
+      alert("Could not fetch the blueprint. Check console for details.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // --- CALCULATE STYLES BASED ON THEME ---
   const styles = useMemo(() => makeStyles(isDarkMode), [isDarkMode]);
 
@@ -306,10 +360,15 @@ function App() {
         color: isDarkMode ? "#777" : "#ccc",
         indent: 0,
         label: path,
+        isErrorFlow: false,
       };
     }
+
     const segments = path.split(" ➞ ");
     const depth = segments.length;
+    const isErrorFlow = path.includes("⚠️ Error Handler");
+
+    // Standard Route Colors
     const colors = [
       "#2196f3",
       "#9c27b0",
@@ -318,9 +377,17 @@ function App() {
       "#e91e63",
       "#795548",
     ];
-    const color = colors[(depth - 1) % colors.length];
+
+    // Use a specific "Error" color if this is an error handler flow
+    const color = isErrorFlow
+      ? isDarkMode
+        ? "#e57373"
+        : "#d32f2f"
+      : colors[(depth - 1) % colors.length];
+
     const label = segments[segments.length - 1];
-    return { depth, color, indent: depth * 20, label };
+
+    return { depth, color, indent: depth * 20, label, isErrorFlow };
   };
 
   const SmartValue = ({ value }: { value: any }) => {
@@ -642,18 +709,23 @@ function App() {
         style={{
           ...styles.card,
           marginBottom: isNested ? "0" : "12px",
-          border: isNested ? "none" : `1px solid ${borderColor}`,
-          boxShadow: isNested
-            ? "none"
-            : hasError
-              ? "0 0 8px rgba(229, 115, 115, 0.4)"
-              : isHighlighted
-                ? "0 0 15px rgba(33, 150, 243, 0.4)"
+          // FIX: Allow border to show if highlighted or errored, even when nested
+          border:
+            isNested && !isHighlighted && !hasError
+              ? "none"
+              : `1px solid ${borderColor}`,
+          // FIX: Prioritize highlight/error shadows over the nested 'none' state
+          boxShadow: hasError
+            ? "0 0 8px rgba(229, 115, 115, 0.4)"
+            : isHighlighted
+              ? "0 0 15px rgba(33, 150, 243, 0.4)"
+              : isNested
+                ? "none"
                 : styles.card.boxShadow,
           transform: isHighlighted ? "scale(1.01)" : "scale(1)",
           transition: "all 0.5s ease",
           height: "auto",
-          opacity: isDisabledRoute ? 0.75 : 1, // Slight transparency for disabled modules
+          opacity: isDisabledRoute ? 0.75 : 1,
         }}
       >
         <div
@@ -932,12 +1004,45 @@ function App() {
           <h3 style={styles.colHeader}>
             1. {isReverse ? "Sandbox (Old)" : "Production (Existing)"}
           </h3>
-          <button
-            onClick={() => fetchBlueprint(isReverse ? "sandbox" : "prod")}
-            style={styles.actionBtn}
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              margin: "10px",
+              padding: "0 10px",
+            }}
           >
-            Load {isReverse ? "Sandbox" : "Production"}
-          </button>
+            <select
+              style={{
+                flex: 1,
+                padding: "6px",
+                borderRadius: "4px",
+                borderColor: isDarkMode ? "#555" : "#ddd",
+              }}
+              value={isReverse ? selectedSandboxId : selectedProdId}
+              onChange={(e) =>
+                isReverse
+                  ? setSelectedSandboxId(e.target.value)
+                  : setSelectedProdId(e.target.value)
+              }
+            >
+              <option value="">
+                -- Select {isReverse ? "Sandbox" : "Production"} Scenario --
+              </option>
+              {scenarios.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => fetchRealBlueprint(isReverse ? "sandbox" : "prod")}
+              style={{ ...styles.actionBtn, margin: 0, width: "auto" }}
+              disabled={isLoading}
+            >
+              {isLoading ? "⏳" : "Load"}
+            </button>
+          </div>
           <textarea
             style={styles.textArea}
             value={isReverse ? sandboxJson : prodJson}
@@ -1028,7 +1133,9 @@ function App() {
               </div>
             ) : (
               sortedGroupKeys.map((path) => {
-                const { depth, color, indent, label } = getLevelStyles(path);
+                // Use updated getLevelStyles that checks for Error Handlers
+                const { depth, color, indent, label, isErrorFlow } =
+                  getLevelStyles(path);
 
                 // --- IDENTIFY ROOT PATHS (Main Flow & Settings) ---
                 const isRootPath =
@@ -1049,7 +1156,7 @@ function App() {
 
                 const groupItems = processedGroups[path];
 
-                // NEW: Check if this entire route path is disabled
+                // Check if this entire route path is disabled
                 const isGroupDisabled =
                   groupItems.length > 0 && groupItems[0].isDisabled;
 
@@ -1069,16 +1176,44 @@ function App() {
                   ? getRecursiveModuleCount(path)
                   : 0;
 
+                // CLEAN UP LABEL for Error Handlers (remove the tag for display)
+                const displayLabel = label.replace("⚠️ Error Handler", "");
+
                 return (
                   <div
                     key={path}
                     style={{
                       marginBottom: "20px",
                       marginLeft: `${indent}px`,
-                      borderLeft: depth > 0 ? `4px solid ${color}` : "none",
-                      paddingLeft: depth > 0 ? "15px" : "0",
+                      // 1. Position Relative for absolute busline
+                      position: "relative",
+                      // 2. Padding Left to clear the busline (20px + space)
+                      paddingLeft: depth > 0 ? "24px" : "0",
                     }}
                   >
+                    {/* --- CUSTOM BUSLINE RENDER --- */}
+                    {depth > 0 && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: "0",
+                          top: "0",
+                          bottom: "0",
+                          width: "5px",
+                          borderRadius: "6px", // ROUNDED CAPS
+                          // Background color logic: Solid for normal, tinted/transparent for error
+                          backgroundColor: isErrorFlow
+                            ? isDarkMode
+                              ? `${color}33` // ~20% opacity
+                              : `${color}22` // ~13% opacity
+                            : color,
+                          // Border logic: Hollow (border-only) for error, none for normal
+                          border: isErrorFlow ? `1px solid ${color}` : "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    )}
+
                     <div
                       onClick={() => !isRootPath && togglePathCollapse(path)}
                       style={{
@@ -1117,8 +1252,30 @@ function App() {
                             ↳
                           </span>
                         )}
-                        {depth > 0 ? label : `📂 ${label}`}
+                        {depth > 0 ? displayLabel : `📂 ${label}`}
                       </span>
+
+                      {/* NEW: Error Handler Badge */}
+                      {isErrorFlow && (
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            backgroundColor: isDarkMode ? "#c62828" : "#ffcdd2",
+                            color: isDarkMode ? "white" : "#c62828",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            marginLeft: "8px",
+                            fontWeight: "bold",
+                            textTransform: "uppercase",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          ⚡ ERROR FLOW
+                        </span>
+                      )}
 
                       {/* NEW: Disabled Route Badge in Header */}
                       {isGroupDisabled && (
@@ -1195,12 +1352,45 @@ function App() {
           <h3 style={styles.colHeader}>
             3. {isReverse ? "Production (Rollback)" : "Sandbox (Proposed)"}
           </h3>
-          <button
-            onClick={() => fetchBlueprint(isReverse ? "prod" : "sandbox")}
-            style={styles.actionBtn}
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              margin: "10px",
+              padding: "0 10px",
+            }}
           >
-            Load {isReverse ? "Production" : "Sandbox"}
-          </button>
+            <select
+              style={{
+                flex: 1,
+                padding: "6px",
+                borderRadius: "4px",
+                borderColor: isDarkMode ? "#555" : "#ddd",
+              }}
+              value={isReverse ? selectedProdId : selectedSandboxId}
+              onChange={(e) =>
+                isReverse
+                  ? setSelectedProdId(e.target.value)
+                  : setSelectedSandboxId(e.target.value)
+              }
+            >
+              <option value="">
+                -- Select {isReverse ? "Production" : "Sandbox"} Scenario --
+              </option>
+              {scenarios.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => fetchRealBlueprint(isReverse ? "prod" : "sandbox")}
+              style={{ ...styles.actionBtn, margin: 0, width: "auto" }}
+              disabled={isLoading}
+            >
+              {isLoading ? "⏳" : "Load"}
+            </button>
+          </div>
           <textarea
             style={styles.textArea}
             value={isReverse ? prodJson : sandboxJson}
