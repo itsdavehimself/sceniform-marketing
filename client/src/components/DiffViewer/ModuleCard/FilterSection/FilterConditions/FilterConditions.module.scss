@@ -1,0 +1,64 @@
+.noConditions {
+  font-size: 11px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.orGroupContainer {
+  margin-bottom: 4px;
+}
+
+.orDivider {
+  font-size: 9px;
+  font-weight: bold;
+  text-align: center;
+  margin: 2px 0;
+}
+
+.conditionsWrapper {
+  background: rgba(255, 255, 255, 0.5);
+  padding: 4px;
+  border-radius: 4px;
+
+  :global(.dark) & {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.conditionRow {
+  font-size: 11px;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.andDivider {
+  font-size: 9px;
+  color: #999;
+
+  :global(.dark) & {
+    color: #888;
+  }
+}
+
+.operandA {
+  color: #2196f3;
+}
+
+.operator {
+  font-weight: bold;
+  color: #555;
+
+  :global(.dark) & {
+    color: #bbb;
+  }
+}
+
+.operandB {
+  color: #4caf50;
+}

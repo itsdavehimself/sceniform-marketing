@@ -1,0 +1,53 @@
+/* --- Card Container --- */
+.card {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.5s ease;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 12px;
+
+  :global(.dark) & {
+    background: #2d2d2d;
+    border-color: #444;
+  }
+
+  &.isNested {
+    margin-bottom: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  &.isHighlighted {
+    border-color: #2196f3;
+    box-shadow: 0 0 15px rgba(33, 150, 243, 0.4);
+    transform: scale(1.01);
+  }
+
+  &.hasError {
+    border-color: #e57373;
+    box-shadow: 0 0 8px rgba(229, 115, 115, 0.4);
+  }
+
+  &.isDisabled {
+    opacity: 0.75;
+  }
+}
+
+/* --- Card Body --- */
+.cardBody {
+  padding: 0;
+}
+
+.details {
+  padding: 10px;
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
+
+  :global(.dark) & {
+    color: #aaa;
+  }
+}

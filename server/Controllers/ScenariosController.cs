@@ -62,4 +62,38 @@ public class ScenariosController : ControllerBase
             return StatusCode(500, new { message = ex.Message });
         }
     }
+
+    [HttpPatch("{id}/update")]
+    public async Task<IActionResult> UpdateScenario(int id, [FromBody] JsonElement blueprint)
+    {
+        try
+        {
+            if (blueprint.ValueKind == JsonValueKind.Undefined)
+            {
+                return BadRequest("Blueprint data is missing.");
+            }
+
+            var result = await _makeService.PatchScenarioAsync(id, blueprint);
+            if (!string.IsNullOrEmpty(result)) return Ok(new { message = "Blueprint updated successfully."});
+            return BadRequest("Failed to update blueprint.");
+        }
+        catch (HttpRequestException ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("connections")]
+    public async Task<IActionResult> GetConnections()
+    {
+        try
+        {
+            var rawJson = await _makeService.GetConnectionsAsync();
+            return Content(rawJson, "application/json");
+        }
+        catch (HttpRequestException ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
 }

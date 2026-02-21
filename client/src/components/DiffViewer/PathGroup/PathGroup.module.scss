@@ -1,0 +1,19 @@
+.pathWrapper {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.collapsedMessage {
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  color: #777;
+  font-size: 12px;
+  font-style: italic;
+  border: 1px dashed #ddd;
+
+  :global(.dark) & {
+    background: #333;
+    border-color: #555;
+  }
+}

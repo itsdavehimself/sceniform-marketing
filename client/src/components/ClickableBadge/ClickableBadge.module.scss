@@ -1,0 +1,35 @@
+.clickableBadge {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0 4px;
+  margin: 0 2px;
+  font-size: 10px;
+  font-weight: bold;
+  transition: all 0.2s;
+  font-family: monospace;
+  border: 1px solid;
+
+  background-color: #e1f5fe;
+  color: #0277bd;
+  border-color: #b3e5fc;
+
+  &.is-dark-mode {
+    background-color: #0d3c52;
+    color: #81d4fa;
+    border-color: #0277bd;
+  }
+
+  &.is-raw {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+    border-color: #e1bee7;
+
+    &.is-dark-mode {
+      background-color: #3c1a4d;
+      color: #ce93d8;
+      border-color: #6a1b9a;
+    }
+  }
+}
