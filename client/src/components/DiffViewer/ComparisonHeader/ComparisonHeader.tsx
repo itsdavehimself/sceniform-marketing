@@ -1,7 +1,8 @@
 import React from "react";
-import styles from "./Header.module.scss";
+import styles from "./ComparisonHeader.module.scss";
+import ActionButton from "../../ActionButton/ActionButton";
 
-interface HeaderProps {
+interface ComparisonHeaderProps {
   updateScenario: (scenarioId: string, blueprint: string) => void;
   currentProdId: string;
   currentSandboxId: string;
@@ -12,18 +13,12 @@ interface HeaderProps {
   isReverse: boolean;
   setIsReverse: (val: boolean) => void;
   ignoreScenarioName: boolean;
-  setIgnoreScenarioName: (val: boolean) => void;
   ignoreConnections: boolean;
-  setIgnoreConnections: (val: boolean) => void;
   ignoreModuleNames: boolean;
-  setIgnoreModuleNames: (val: boolean) => void;
-  showRawMappings: boolean;
-  setShowRawMappings: (val: boolean) => void;
-  isAllExpanded: boolean;
-  handleToggleAll: () => void;
+  diffReport: any;
 }
 
-const Header: React.FC<HeaderProps> = ({
+const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
   updateScenario,
   currentProdId,
   currentSandboxId,
@@ -34,15 +29,9 @@ const Header: React.FC<HeaderProps> = ({
   isReverse,
   setIsReverse,
   ignoreScenarioName,
-  setIgnoreScenarioName,
   ignoreConnections,
-  setIgnoreConnections,
   ignoreModuleNames,
-  setIgnoreModuleNames,
-  showRawMappings,
-  setShowRawMappings,
-  isAllExpanded,
-  handleToggleAll,
+  diffReport,
 }) => {
   const handleDeploy = () => {
     // 1. Define who is who based on the direction
@@ -228,75 +217,23 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className={styles.header}>
       <div>
-        <h1 className={styles.title}>Make.com Topology Diff</h1>
-        <div className={styles.settingsBar}>
-          <label className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={ignoreScenarioName}
-              onChange={(e) => setIgnoreScenarioName(e.target.checked)}
-            />{" "}
-            Ignore Scenario Name
-          </label>
-          <label className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={ignoreConnections}
-              onChange={(e) => setIgnoreConnections(e.target.checked)}
-            />{" "}
-            Ignore Connection IDs
-          </label>
-          <label className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={ignoreModuleNames}
-              onChange={(e) => setIgnoreModuleNames(e.target.checked)}
-            />{" "}
-            Ignore Module Renames
-          </label>
-          <label className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={showRawMappings}
-              onChange={(e) => setShowRawMappings(e.target.checked)}
-            />{" "}
-            Show Raw Mappings
-          </label>
-
-          <div className={styles.divider}></div>
-
-          <button onClick={handleToggleAll} className={styles.toggleAllBtn}>
-            {isAllExpanded ? "🔽 Collapse All" : "🔼 Expand All"}
-          </button>
-        </div>
+        <h1 className={styles.title}>Deployment Console</h1>
       </div>
 
       <div className={styles.actions}>
-        <button
-          onClick={handleDeploy}
-          className={`${styles.btn} ${styles.modeBtn}`}
-        >
-          {isReverse ? "Rollback to Sandbox" : "Push to Prod"}
-        </button>
-        <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          className={`${styles.btn} ${styles.themeBtn}`}
-        >
-          {isDarkMode ? "☀️" : "🌙"}
-        </button>
-
-        <button
+        <ActionButton
+          title={isReverse ? "Base: Sandbox" : "Base: Production"}
           onClick={() => setIsReverse(!isReverse)}
-          className={`${styles.btn} ${styles.modeBtn} ${
-            isReverse ? styles.reverseActive : ""
-          }`}
-        >
-          {isReverse ? "⚠️ Mode: Rollback Analysis" : "🔄 Swap View Direction"}
-        </button>
+          variant="secondary"
+        />
+        <ActionButton
+          title={isReverse ? "Rollback to Sandbox" : "Push to Production"}
+          onClick={handleDeploy}
+          variant={!diffReport ? "disabled" : "primary"}
+        />
       </div>
     </header>
   );
 };
 
-export default Header;
+export default ComparisonHeader;

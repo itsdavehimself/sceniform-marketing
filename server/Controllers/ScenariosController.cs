@@ -96,4 +96,18 @@ public class ScenariosController : ControllerBase
             return StatusCode(500, new { message = ex.Message });
         }
     }
+
+    [HttpGet("folders")]
+    public async Task<IActionResult> GetFolders()
+    {
+        try
+        {
+            var rawJson = await _makeService.GetFoldersAsync();
+            return Content(rawJson, "application/json");
+        }
+        catch (HttpRequestException ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
 }

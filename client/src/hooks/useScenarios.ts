@@ -30,6 +30,21 @@ export const useScenarios = ({
     fetchScenarios();
   }, []);
 
+  useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        const res = await fetch("http://localhost:1337/api/scenarios/folders");
+        const data = await res.json();
+        const list =
+          data.scenarios || data.items || (Array.isArray(data) ? data : []);
+        console.log(data);
+      } catch (err) {
+        console.error("Failed to load folders list", err);
+      }
+    };
+    fetchFolders();
+  }, []);
+
   // Fetch a specific blueprint and update the appropriate JSON state
   const fetchBlueprint = async (
     env: "prod" | "sandbox",

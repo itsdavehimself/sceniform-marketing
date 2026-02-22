@@ -1,0 +1,16 @@
+h3 {
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.settingsSidebar {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+}
+
+.settingToggles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

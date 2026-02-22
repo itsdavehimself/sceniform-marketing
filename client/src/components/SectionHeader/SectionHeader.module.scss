@@ -1,0 +1,20 @@
+h2 {
+  margin: 0;
+  padding: 0;
+  font-size: 1.25rem;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px $ds-gray-300 solid;
+  margin: 0 -1rem;
+  padding: 0 1rem 0.5rem;
+}
+
+.sectionNav {
+  display: flex;
+  gap: 0.5rem;
+}

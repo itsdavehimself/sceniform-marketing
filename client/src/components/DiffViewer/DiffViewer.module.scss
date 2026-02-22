@@ -1,15 +1,40 @@
 .column {
   display: flex;
   flex-direction: column;
-  border: 1px solid #cfd8dc;
-  border-radius: 8px;
-  background-color: #f8f9fa;
+
+  background-color: transparent;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 
   :global(.dark) & {
-    border-color: #444;
     background-color: #1e1e1e;
+  }
+}
+
+.comparisonControls {
+  display: flex;
+  justify-content: end;
+  margin: 0.5rem 0 0;
+  gap: 0.5rem;
+}
+
+.controlButton {
+  border: 1px $ds-gray-300 solid;
+  border-radius: 4px;
+  background-color: $ds-gray-100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  height: 2rem;
+  width: 2rem;
+  cursor: pointer;
+  color: $ds-gray-600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: $ds-foreground;
+    background-color: $ds-gray-200;
   }
 }
 
@@ -18,7 +43,7 @@
   font-weight: 700;
   padding: 12px 12px 4px 12px;
   margin: 0;
-  background: #fff;
+  background: transparent;
   color: #222;
 
   :global(.dark) & {
@@ -27,27 +52,9 @@
   }
 }
 
-.statsBar {
-  display: flex;
-  gap: 20px;
-  padding: 10px 15px;
-  background: #fff;
-  border-bottom: 1px solid #e0e0e0;
-  font-size: 12px;
-  font-weight: bold;
-  justify-content: center;
-  align-items: center;
-
-  :global(.dark) & {
-    background: #252526;
-    border-color: #444;
-  }
-}
-
 .scrollContainer {
   flex: 1;
   overflow-y: auto;
-  padding: 15px;
 }
 
 .emptyState {
@@ -61,7 +68,6 @@
   text-align: center;
   color: #2e7d32;
   font-weight: bold;
-  margin-top: 40px;
   padding: 30px;
   background: #e8f5e9;
   border-radius: 8px;

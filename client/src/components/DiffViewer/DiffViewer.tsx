@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./DiffViewer.module.scss";
-import DiffHeader from "./DiffHeader/DiffHeader";
 import PathGroup from "./PathGroup/PathGroup";
+import { FoldVertical, UnfoldVertical, FileBraces } from "lucide-react";
 
 interface DiffViewerProps {
   isDarkMode: boolean;
@@ -9,7 +9,6 @@ interface DiffViewerProps {
   diffReport: any;
   errorStats: any;
   showErrorsOnly: boolean;
-  setShowErrorsOnly: (val: boolean) => void;
   sortedGroupKeys: string[];
   processedGroups: any;
   collapsedPaths: Set<string>;
@@ -18,6 +17,8 @@ interface DiffViewerProps {
   toggleCollapse: (id: string | number) => void;
   highlightedModuleId: string | number | null;
   handleScrollToModule: (id: string | number) => void;
+  isAllExpanded: boolean;
+  handleToggleAll: () => void;
 }
 
 const DiffViewer: React.FC<DiffViewerProps> = ({
@@ -26,7 +27,6 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
   diffReport,
   errorStats,
   showErrorsOnly,
-  setShowErrorsOnly,
   sortedGroupKeys,
   processedGroups,
   collapsedPaths,
@@ -35,19 +35,34 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
   toggleCollapse,
   highlightedModuleId,
   handleScrollToModule,
+  isAllExpanded,
+  handleToggleAll,
 }) => {
   const wasLabel = isReverse ? "SANDBOX (OLD)" : "PROD (OLD)";
   const becomesLabel = isReverse ? "PROD (NEW)" : "SANDBOX (NEW)";
 
   return (
     <div className={styles.column} style={{ flex: 1.5 }}>
-      <DiffHeader
-        diffReport={diffReport}
-        errorStats={errorStats}
-        showErrorsOnly={showErrorsOnly}
-        setShowErrorsOnly={setShowErrorsOnly}
-      />
-
+      <div className={styles.comparisonControls}>
+        {diffReport && (
+          <>
+            <button className={styles.controlButton} title="View Blueprints">
+              <FileBraces size={20} />
+            </button>
+            <button
+              onClick={handleToggleAll}
+              className={styles.controlButton}
+              title={isAllExpanded ? "Collapse All" : "Expand All"}
+            >
+              {isAllExpanded ? (
+                <FoldVertical size={20} />
+              ) : (
+                <UnfoldVertical size={20} />
+              )}
+            </button>
+          </>
+        )}
+      </div>
       <div className={styles.scrollContainer}>
         {!diffReport ? (
           <div className={styles.emptyState}>

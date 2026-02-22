@@ -1,0 +1,19 @@
+.sectionHeaderButton {
+  background-color: transparent;
+  border: none;
+  padding: 0.5rem 0.6rem;
+  border-radius: 4px;
+  color: $ds-gray-600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    cursor: pointer;
+    background-color: $ds-gray-200;
+    color: $ds-foreground;
+  }
+}
+
+.active {
+  background-color: $ds-gray-200;
+  color: $ds-foreground;
+}

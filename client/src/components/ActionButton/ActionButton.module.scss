@@ -1,0 +1,34 @@
+.actionButton {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  border: none;
+  transition: all 0.2s ease;
+  color: $ds-gray-600;
+
+  &.primary {
+    background-color: $ds-foreground;
+    color: $ds-background;
+  }
+
+  &.primary:hover {
+    background-color: $ds-gray-800;
+  }
+
+  &.secondary {
+    background-color: $ds-gray-100;
+    border: 1px $ds-gray-300 solid;
+  }
+
+  &.secondary:hover {
+    background-color: $ds-gray-200;
+    color: $ds-foreground;
+  }
+
+  &.disabled {
+    background-color: $ds-gray-600;
+    color: $ds-gray-300;
+    cursor: default;
+  }
+}

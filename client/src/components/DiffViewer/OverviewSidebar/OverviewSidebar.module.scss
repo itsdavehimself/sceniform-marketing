@@ -1,0 +1,58 @@
+h3 {
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.overviewSidebar {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+}
+
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statRemoved {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: $ds-red-500;
+  :global(.dark) & {
+    color: #e57373;
+  }
+}
+
+.statAdded {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #2e7d32;
+  :global(.dark) & {
+    color: #81c784;
+  }
+}
+
+.statModified {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #f57c00;
+  :global(.dark) & {
+    color: #ffb74d;
+  }
+}
+
+.noErrors {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}

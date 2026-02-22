@@ -38,6 +38,22 @@ public class MakeService
         return await response.Content.ReadAsStringAsync();
     }
 
+    public async Task<string> GetFoldersAsync()
+    {
+        var teamId = _config["MakeApi:TeamId"];
+
+        var response = await _httpClient.GetAsync($"scenarios-folders?teamId={teamId}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[DEBUG] Make API Error: {response.StatusCode} - {error}");
+            throw new HttpRequestException($"Make API failed: {response.StatusCode}");
+        }
+
+        return await response.Content.ReadAsStringAsync();
+    }
+
     public async Task<string> GetBlueprintAsync(int scenarioId)
     {
         var response = await _httpClient.GetAsync($"scenarios/{scenarioId}/blueprint");

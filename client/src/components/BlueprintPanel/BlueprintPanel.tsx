@@ -46,12 +46,6 @@ const BlueprintPanel: React.FC<BlueprintPanelProps> = ({
           {isLoading ? "⏳" : "Load"}
         </button>
       </div>
-      <textarea
-        className={styles.textArea}
-        value={jsonValue}
-        onChange={(e) => onJsonChange(e.target.value)}
-        placeholder="Load a Blueprint"
-      />
     </div>
   );
 };
