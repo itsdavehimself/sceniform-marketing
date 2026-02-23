@@ -8,6 +8,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <div className={styles.sideBar}>
+      <section className={styles.logo}>Makeshift</section>
       <section className={styles.linkGroup}>
         <SidebarButton
           title="Dashboard"

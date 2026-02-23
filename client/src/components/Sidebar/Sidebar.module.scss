@@ -1,18 +1,23 @@
 .sideBar {
   width: 12rem;
-  height: calc(100vh - 73px);
+  height: 100vh;
   position: sticky;
-  top: 73px;
   flex-shrink: 0;
+  font-family: $ds-font-main;
+  color: $ds-foreground;
 
   background-color: $ds-gray-100;
 
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 1.5rem 1rem;
-
+  padding: 1rem;
   overflow-y: auto;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
 }
 
 .linkGroup {
