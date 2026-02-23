@@ -1,58 +1,94 @@
-h3 {
-  margin: 0 0 1rem;
-  padding: 0;
-}
-
 .overviewSidebar {
   display: flex;
   flex-direction: column;
-  font-size: 0.8rem;
+  gap: 1rem;
 }
 
-.overview {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+h3 {
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $ds-foreground;
 }
 
 .statsContainer {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 
-.statRemoved {
-  display: flex;
+.badge {
+  display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  user-select: none;
+  font-weight: $fw-semibold;
+}
+
+.removed {
+  background-color: $ds-red-100;
   color: $ds-red-500;
+  border: 1px solid $ds-red-300;
+
   :global(.dark) & {
-    color: #e57373;
+    background-color: rgba(238, 0, 0, 0.15);
+    color: #ff6b6b;
   }
 }
 
-.statAdded {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: #2e7d32;
+.added {
+  background-color: $ds-green-100;
+  color: $ds-green-500;
+  border: 1px solid $ds-green-300;
+
   :global(.dark) & {
-    color: #81c784;
+    background-color: rgba(23, 201, 100, 0.15);
+    color: #4ade80;
   }
 }
 
-.statModified {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: #f57c00;
+.modified {
+  background-color: $ds-amber-100;
+  color: $ds-amber-500;
+  border: 1px solid $ds-amber-300;
+
   :global(.dark) & {
-    color: #ffb74d;
+    background-color: rgba(245, 166, 35, 0.15);
+    color: #fbbf24;
   }
 }
 
-.noErrors {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.neutral {
+  background-color: $ds-gray-100;
+  color: $ds-gray-600;
+  border: 1px solid $ds-gray-300;
+
+  :global(.dark) & {
+    background-color: $ds-gray-800;
+    color: $ds-gray-300;
+  }
+}
+
+.errorToggle {
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  background-color: $ds-red-100;
+  color: $ds-red-500;
+
+  &:hover {
+    border-color: $ds-red-500;
+  }
+
+  &.active {
+    background-color: $ds-red-500;
+    color: $ds-background;
+  }
 }

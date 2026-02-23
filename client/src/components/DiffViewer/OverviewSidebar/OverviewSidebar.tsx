@@ -1,6 +1,11 @@
-import React from "react";
 import styles from "./OverviewSidebar.module.scss";
-import { Plus, Minus, ArrowLeftRight, Check } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  ArrowLeftRight,
+  Check,
+  AlertTriangle,
+} from "lucide-react";
 
 interface OverviewSidebarProps {
   diffReport: any;
@@ -18,35 +23,40 @@ const OverviewSidebar: React.FC<OverviewSidebarProps> = ({
   return (
     <div className={styles.overviewSidebar}>
       <h3>Overview</h3>
+
       <div className={styles.statsContainer}>
-        <div className={styles.statRemoved}>
-          <Minus size={14} />
-          <div>{diffReport?.summary?.removed ?? 0} Removed</div>
+        <div className={`${styles.badge} ${styles.removed}`}>
+          <Minus size={14} strokeWidth={2.5} />
+          <span>{diffReport?.summary?.removed ?? 0} Removed</span>
         </div>
-        <div className={styles.statAdded}>
-          <Plus size={14} /> <div>{diffReport?.summary?.added ?? 0} Added</div>
+
+        <div className={`${styles.badge} ${styles.added}`}>
+          <Plus size={14} strokeWidth={2.5} />
+          <span>{diffReport?.summary?.added ?? 0} Added</span>
         </div>
-        <div className={styles.statModified}>
-          <ArrowLeftRight size={14} />{" "}
-          <div>{diffReport?.summary?.modified ?? 0} Modified</div>
+
+        <div className={`${styles.badge} ${styles.modified}`}>
+          <ArrowLeftRight size={14} strokeWidth={2.5} />
+          <span>{diffReport?.summary?.modified ?? 0} Modified</span>
         </div>
 
         {errorStats?.refCount > 0 ? (
           <div
             onClick={() => setShowErrorsOnly(!showErrorsOnly)}
-            className={`${styles.errorToggle} ${showErrorsOnly ? styles.active : styles.inactive}`}
+            className={`${styles.badge} ${styles.errorToggle} ${
+              showErrorsOnly ? styles.active : ""
+            }`}
           >
-            <span className={styles.errorToggleText}>
-              ⚠️ {errorStats.moduleCount} Modules / {errorStats.refCount} Broken
+            <AlertTriangle size={14} strokeWidth={2.5} />
+            <span>
+              {errorStats.moduleCount} Modules / {errorStats.refCount} Broken
               Refs
-            </span>
-            <span className={styles.errorToggleLink}>
-              {showErrorsOnly ? "Show All" : "Filter Errors"}
             </span>
           </div>
         ) : (
-          <div className={styles.noErrors}>
-            <Check size={14} /> <div>0 Reference Errors</div>
+          <div className={`${styles.badge} ${styles.neutral}`}>
+            <Check size={14} strokeWidth={2.5} />
+            <span>0 Reference Errors</span>
           </div>
         )}
       </div>

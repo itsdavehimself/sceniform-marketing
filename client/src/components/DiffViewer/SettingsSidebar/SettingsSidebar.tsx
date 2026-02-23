@@ -28,34 +28,41 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
+            className={styles.checkboxInput}
             checked={ignoreScenarioName}
             onChange={(e) => setIgnoreScenarioName(e.target.checked)}
-          />{" "}
-          Ignore Scenario Name
+          />
+          <span>Ignore Scenario Name</span>
         </label>
+
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
+            className={styles.checkboxInput}
             checked={ignoreConnections}
             onChange={(e) => setIgnoreConnections(e.target.checked)}
-          />{" "}
-          Ignore Connection IDs
+          />
+          <span>Ignore Connection IDs</span>
         </label>
+
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
+            className={styles.checkboxInput}
             checked={ignoreModuleNames}
             onChange={(e) => setIgnoreModuleNames(e.target.checked)}
-          />{" "}
-          Ignore Module Renames
+          />
+          <span>Ignore Module Renames</span>
         </label>
+
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
+            className={styles.checkboxInput}
             checked={showRawMappings}
             onChange={(e) => setShowRawMappings(e.target.checked)}
-          />{" "}
-          Show Raw Mappings
+          />
+          <span>Show Raw Mappings</span>
         </label>
       </div>
     </div>
