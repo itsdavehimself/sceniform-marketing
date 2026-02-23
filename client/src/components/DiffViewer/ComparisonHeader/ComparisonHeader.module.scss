@@ -3,7 +3,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  padding-bottom: 1rem;
+  padding: 0 1rem 1rem 0;
 
   /* Assuming you add a .dark class to your body or main wrapper */
   :global(.dark) & {

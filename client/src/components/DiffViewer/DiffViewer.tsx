@@ -1,7 +1,12 @@
 import React from "react";
 import styles from "./DiffViewer.module.scss";
 import PathGroup from "./PathGroup/PathGroup";
-import { FoldVertical, UnfoldVertical, FileBraces } from "lucide-react";
+import {
+  FoldVertical,
+  UnfoldVertical,
+  FileBraces,
+  GitCompare,
+} from "lucide-react";
 
 interface DiffViewerProps {
   isDarkMode: boolean;
@@ -19,6 +24,10 @@ interface DiffViewerProps {
   handleScrollToModule: (id: string | number) => void;
   isAllExpanded: boolean;
   handleToggleAll: () => void;
+  viewBlueprints: boolean;
+  setViewBlueprints: React.Dispatch<React.SetStateAction<boolean>>;
+  prodJson: string;
+  sandboxJson: string;
 }
 
 const DiffViewer: React.FC<DiffViewerProps> = ({
@@ -37,6 +46,10 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
   handleScrollToModule,
   isAllExpanded,
   handleToggleAll,
+  viewBlueprints,
+  setViewBlueprints,
+  prodJson,
+  sandboxJson,
 }) => {
   const wasLabel = isReverse ? "SANDBOX (OLD)" : "PROD (OLD)";
   const becomesLabel = isReverse ? "PROD (NEW)" : "SANDBOX (NEW)";
@@ -46,8 +59,16 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
       <div className={styles.comparisonControls}>
         {diffReport && (
           <>
-            <button className={styles.controlButton} title="View Blueprints">
-              <FileBraces size={20} />
+            <button
+              className={styles.controlButton}
+              title={viewBlueprints ? "View Comparison" : "View Blueprints"}
+              onClick={() => setViewBlueprints((prev) => !prev)}
+            >
+              {viewBlueprints ? (
+                <GitCompare size={20} />
+              ) : (
+                <FileBraces size={20} />
+              )}
             </button>
             <button
               onClick={handleToggleAll}
@@ -64,59 +85,70 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
         )}
       </div>
       <div className={styles.scrollContainer}>
-        {!diffReport ? (
-          <div className={styles.emptyState}>
-            Add both blueprints to generate report.
-          </div>
-        ) : diffReport.changes.length === 0 ? (
-          <div className={styles.successState}>
-            ✅ No Logic Changes Detected
-          </div>
+        {!viewBlueprints ? (
+          <>
+            {!diffReport ? (
+              <div className={styles.emptyState}>
+                Loading your blueprints to compare.
+              </div>
+            ) : diffReport.changes.length === 0 ? (
+              <div className={styles.successState}>
+                ✅ No Logic Changes Detected
+              </div>
+            ) : (
+              sortedGroupKeys.map((path) => {
+                // Check if ancestor is collapsed
+                const closestCollapsedAncestor = sortedGroupKeys.find(
+                  (potentialAncestor) =>
+                    collapsedPaths.has(potentialAncestor) &&
+                    path.startsWith(potentialAncestor + " ➞ "),
+                );
+
+                if (closestCollapsedAncestor) return null;
+
+                // Filter logic
+                const groupItems = processedGroups[path];
+                const filteredItems = showErrorsOnly
+                  ? groupItems.filter((item: any) => {
+                      const id =
+                        item.type === "REPLACEMENT"
+                          ? item.moduleId
+                          : item.moduleId;
+                      return errorStats.errorModuleIds.has(id);
+                    })
+                  : groupItems;
+
+                if (filteredItems.length === 0) return null;
+
+                return (
+                  <PathGroup
+                    key={path}
+                    path={path}
+                    isDarkMode={isDarkMode}
+                    processedGroups={processedGroups}
+                    filteredItems={filteredItems}
+                    isPathCollapsed={
+                      !["Scenario Settings", "Main Flow"].includes(path) &&
+                      collapsedPaths.has(path)
+                    }
+                    togglePathCollapse={togglePathCollapse}
+                    collapsedIds={collapsedIds}
+                    toggleCollapse={toggleCollapse}
+                    highlightedModuleId={highlightedModuleId}
+                    handleScrollToModule={handleScrollToModule}
+                    errorStats={errorStats}
+                    wasLabel={wasLabel}
+                    becomesLabel={becomesLabel}
+                  />
+                );
+              })
+            )}
+          </>
         ) : (
-          sortedGroupKeys.map((path) => {
-            // Check if ancestor is collapsed
-            const closestCollapsedAncestor = sortedGroupKeys.find(
-              (potentialAncestor) =>
-                collapsedPaths.has(potentialAncestor) &&
-                path.startsWith(potentialAncestor + " ➞ "),
-            );
-
-            if (closestCollapsedAncestor) return null;
-
-            // Filter logic
-            const groupItems = processedGroups[path];
-            const filteredItems = showErrorsOnly
-              ? groupItems.filter((item: any) => {
-                  const id =
-                    item.type === "REPLACEMENT" ? item.moduleId : item.moduleId;
-                  return errorStats.errorModuleIds.has(id);
-                })
-              : groupItems;
-
-            if (filteredItems.length === 0) return null;
-
-            return (
-              <PathGroup
-                key={path}
-                path={path}
-                isDarkMode={isDarkMode}
-                processedGroups={processedGroups}
-                filteredItems={filteredItems}
-                isPathCollapsed={
-                  !["Scenario Settings", "Main Flow"].includes(path) &&
-                  collapsedPaths.has(path)
-                }
-                togglePathCollapse={togglePathCollapse}
-                collapsedIds={collapsedIds}
-                toggleCollapse={toggleCollapse}
-                highlightedModuleId={highlightedModuleId}
-                handleScrollToModule={handleScrollToModule}
-                errorStats={errorStats}
-                wasLabel={wasLabel}
-                becomesLabel={becomesLabel}
-              />
-            );
-          })
+          <div className={styles.blueprintViewer}>
+            <textarea value={isReverse ? sandboxJson : prodJson} />
+            <textarea value={isReverse ? prodJson : sandboxJson} />
+          </div>
         )}
       </div>
     </div>

@@ -6,6 +6,33 @@ interface UseScenariosProps {
   setShowErrorsOnly: (val: boolean) => void;
 }
 
+const groupScenariosByFolder = (scenarios: any[], folders: any[]) => {
+  const folderMap: Record<string, any> = {};
+
+  folderMap["uncategorized"] = {
+    id: null,
+    name: "Uncategorized",
+    scenarios: [],
+  };
+
+  folders.forEach((folder) => {
+    folderMap[folder.id] = {
+      ...folder,
+      scenarios: [],
+    };
+  });
+
+  scenarios.forEach((scenario) => {
+    const folderId = scenario.folderId;
+    if (folderId && folderMap[folderId]) {
+      folderMap[folderId].scenarios.push(scenario);
+    } else {
+      folderMap["uncategorized"].scenarios.push(scenario);
+    }
+  });
+  return Object.values(folderMap);
+};
+
 export const useScenarios = ({
   setProdJson,
   setSandboxJson,
@@ -14,38 +41,40 @@ export const useScenarios = ({
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Fetch the list of scenarios on mount
   useEffect(() => {
-    const fetchScenarios = async () => {
+    const fetchAllData = async () => {
+      setIsLoading(true);
       try {
-        const res = await fetch("http://localhost:1337/api/scenarios");
-        const data = await res.json();
-        const list =
-          data.scenarios || data.items || (Array.isArray(data) ? data : []);
-        setScenarios(list);
+        const [scenariosRes, foldersRes] = await Promise.all([
+          fetch("http://localhost:1337/api/scenarios"),
+          fetch("http://localhost:1337/api/scenarios/folders"),
+        ]);
+
+        const scenariosData = await scenariosRes.json();
+        const foldersData = await foldersRes.json();
+
+        const scenariosList =
+          scenariosData.scenarios ||
+          scenariosData.items ||
+          (Array.isArray(scenariosData) ? scenariosData : []);
+
+        const foldersList =
+          foldersData.scenariosFolders ||
+          foldersData.items ||
+          (Array.isArray(foldersData) ? foldersData : []);
+
+        const groupedData = groupScenariosByFolder(scenariosList, foldersList);
+        setScenarios(groupedData);
       } catch (err) {
-        console.error("Failed to load scenarios list", err);
+        console.error("Failed to load scenarios or folders", err);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchScenarios();
+
+    fetchAllData();
   }, []);
 
-  useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const res = await fetch("http://localhost:1337/api/scenarios/folders");
-        const data = await res.json();
-        const list =
-          data.scenarios || data.items || (Array.isArray(data) ? data : []);
-        console.log(data);
-      } catch (err) {
-        console.error("Failed to load folders list", err);
-      }
-    };
-    fetchFolders();
-  }, []);
-
-  // Fetch a specific blueprint and update the appropriate JSON state
   const fetchBlueprint = async (
     env: "prod" | "sandbox",
     scenarioId: string,

@@ -37,6 +37,7 @@ const Scenarios: React.FC = () => {
     string | number | null
   >(null);
   const [currentView, setCurrentView] = useState<ScenarioView>("deployment");
+  const [viewBlueprints, setViewBlueprints] = useState<boolean>(false);
 
   // --- Scenario Selection State ---
   const [selectedProdId, setSelectedProdId] = useState<string>("");
@@ -190,15 +191,14 @@ const Scenarios: React.FC = () => {
                 scenarios={scenarios}
                 jsonValue={isReverse ? sandboxJson : prodJson}
                 isLoading={isLoading}
-                onSelectChange={(val) =>
-                  isReverse ? setSelectedSandboxId(val) : setSelectedProdId(val)
-                }
-                onFetch={() =>
-                  fetchBlueprint(
-                    isReverse ? "sandbox" : "prod",
-                    isReverse ? selectedSandboxId : selectedProdId,
-                  )
-                }
+                onSelectChange={(val) => {
+                  if (isReverse) {
+                    setSelectedSandboxId(val);
+                  } else {
+                    setSelectedProdId(val);
+                  }
+                  fetchBlueprint(isReverse ? "sandbox" : "prod", val);
+                }}
                 onJsonChange={isReverse ? setSandboxJson : setProdJson}
               />
 
@@ -208,15 +208,14 @@ const Scenarios: React.FC = () => {
                 scenarios={scenarios}
                 jsonValue={isReverse ? prodJson : sandboxJson}
                 isLoading={isLoading}
-                onSelectChange={(val) =>
-                  isReverse ? setSelectedProdId(val) : setSelectedSandboxId(val)
-                }
-                onFetch={() =>
-                  fetchBlueprint(
-                    isReverse ? "prod" : "sandbox",
-                    isReverse ? selectedProdId : selectedSandboxId,
-                  )
-                }
+                onSelectChange={(val) => {
+                  if (isReverse) {
+                    setSelectedProdId(val);
+                  } else {
+                    setSelectedSandboxId(val);
+                  }
+                  fetchBlueprint(isReverse ? "prod" : "sandbox", val);
+                }}
                 onJsonChange={isReverse ? setProdJson : setSandboxJson}
               />
             </div>
@@ -237,6 +236,10 @@ const Scenarios: React.FC = () => {
               handleScrollToModule={handleScrollToModule}
               isAllExpanded={isAllExpanded}
               handleToggleAll={handleToggleAll}
+              viewBlueprints={viewBlueprints}
+              setViewBlueprints={setViewBlueprints}
+              prodJson={prodJson}
+              sandboxJson={sandboxJson}
             />
           </div>
         </div>

@@ -14,3 +14,9 @@ h3 {
   flex-direction: column;
   gap: 0.5rem;
 }
+
+label {
+  &:hover {
+    cursor: pointer;
+  }
+}

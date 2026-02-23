@@ -1,7 +1,6 @@
 .column {
   display: flex;
   flex-direction: column;
-
   background-color: transparent;
   overflow: hidden;
 
@@ -13,7 +12,7 @@
 .comparisonControls {
   display: flex;
   justify-content: end;
-  margin: 0.5rem 0 0;
+  margin: 0.5rem 0 1rem;
   gap: 0.5rem;
 }
 
@@ -35,6 +34,7 @@
   &:hover {
     color: $ds-foreground;
     background-color: $ds-gray-200;
+    border: 1px $ds-gray-400 solid;
   }
 }
 
@@ -61,7 +61,7 @@
   text-align: center;
   color: #bbb;
   margin-top: 50px;
-  font-size: 14px;
+  font-size: 0.8rem;
 }
 
 .successState {
@@ -314,4 +314,24 @@
   :global(.dark) & {
     color: #64b5f6;
   }
+}
+
+.blueprintViewer {
+  display: flex;
+  height: 100%;
+  gap: 1rem;
+}
+
+textArea {
+  flex: 1;
+  resize: none;
+  border: 1px $ds-gray-300 solid;
+  color: $ds-foreground;
+  border-radius: 4px;
+  padding: 0.8rem;
+  font-size: 0.8rem;
+  font-family: $ds-font-code;
+  outline: none;
+  background-color: $ds-background;
+  margin-bottom: 1rem;
 }

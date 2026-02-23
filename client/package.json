@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource-variable/geist-mono": "^5.2.7",
     "jsondiffpatch": "^0.7.3",
     "lodash": "^4.17.23",
     "lucide-react": "^0.575.0",

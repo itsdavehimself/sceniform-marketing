@@ -1,3 +1,15 @@
 body {
+  font-family: $ds-font-main;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: $ds-background;
+  color: $ds-foreground;
   margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }

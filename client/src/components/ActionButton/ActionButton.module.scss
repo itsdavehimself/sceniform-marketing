@@ -6,6 +6,7 @@
   border: none;
   transition: all 0.2s ease;
   color: $ds-gray-600;
+  font-weight: $fw-semibold;
 
   &.primary {
     background-color: $ds-foreground;
@@ -24,6 +25,7 @@
   &.secondary:hover {
     background-color: $ds-gray-200;
     color: $ds-foreground;
+    border: 1px $ds-gray-400 solid;
   }
 
   &.disabled {

@@ -10,6 +10,8 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: $ds-font-main;
+  font-weight: $fw-semibold;
 
   &:hover {
     background-color: $ds-gray-200;
@@ -25,7 +27,6 @@
 
   .title {
     font-size: 0.8rem;
-    font-weight: 500;
   }
 }
 
