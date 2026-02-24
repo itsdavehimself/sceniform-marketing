@@ -98,7 +98,7 @@ const PathGroup: React.FC<PathGroupProps> = ({
       className={styles.pathWrapper}
       style={{
         marginLeft: `${indent}px`,
-        paddingLeft: depth > 0 ? "24px" : "0",
+        paddingLeft: depth > 0 ? "1rem" : "1rem",
       }}
     >
       {depth > 0 && (

@@ -101,7 +101,7 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
           </>
         )}
       </div>
-      <div className={styles.scrollContainer}>
+      <div id="diff-scroll-container" className={styles.scrollContainer}>
         {!viewBlueprints ? (
           <>
             {!diffReport ? (

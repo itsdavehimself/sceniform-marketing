@@ -32,7 +32,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
             checked={ignoreScenarioName}
             onChange={(e) => setIgnoreScenarioName(e.target.checked)}
           />
-          <span>Ignore Scenario Name</span>
+          <span>Preserve Scenario Name</span>
         </label>
 
         <label className={styles.checkboxLabel}>
@@ -42,7 +42,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
             checked={ignoreConnections}
             onChange={(e) => setIgnoreConnections(e.target.checked)}
           />
-          <span>Ignore Connection IDs</span>
+          <span>Preserve Connection IDs</span>
         </label>
 
         <label className={styles.checkboxLabel}>
@@ -52,7 +52,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
             checked={ignoreModuleNames}
             onChange={(e) => setIgnoreModuleNames(e.target.checked)}
           />
-          <span>Ignore Module Renames</span>
+          <span>Preserve Module Renames</span>
         </label>
 
         <label className={styles.checkboxLabel}>

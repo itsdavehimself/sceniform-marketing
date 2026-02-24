@@ -93,8 +93,23 @@ const Scenarios: React.FC = () => {
 
   const handleScrollToModule = (moduleId: string | number) => {
     const element = document.getElementById(`module-card-${moduleId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    const container = document.getElementById("diff-scroll-container");
+
+    if (element && container) {
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+
+      const scrollPosition =
+        container.scrollTop +
+        (elementRect.top - containerRect.top) -
+        containerRect.height / 2 +
+        elementRect.height / 2;
+
+      container.scrollTo({
+        top: scrollPosition,
+        behavior: "smooth",
+      });
+
       setHighlightedModuleId(moduleId);
       setTimeout(() => setHighlightedModuleId(null), 2000);
     }
