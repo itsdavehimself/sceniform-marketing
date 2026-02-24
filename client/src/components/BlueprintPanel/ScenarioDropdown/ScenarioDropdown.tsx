@@ -4,8 +4,8 @@ import {
   ChevronDown,
   ChevronUp,
   Folder,
-  Waypoints,
   ChevronRight,
+  Share2,
 } from "lucide-react";
 
 interface ScenarioDropdownProps {
@@ -114,7 +114,7 @@ const ScenarioDropdown: React.FC<ScenarioDropdownProps> = ({
                           }`}
                           onClick={() => handleSelect(scenario.id.toString())}
                         >
-                          <Waypoints size={14} /> <div>{scenario.name}</div>
+                          <Share2 size={14} /> <div>{scenario.name}</div>
                         </div>
                       ))
                     )}

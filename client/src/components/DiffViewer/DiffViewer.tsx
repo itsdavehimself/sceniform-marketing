@@ -7,6 +7,8 @@ import {
   FileBraces,
   GitCompare,
 } from "lucide-react";
+import JsonView from "react18-json-view";
+import "react18-json-view/src/style.css";
 
 interface DiffViewerProps {
   isDarkMode: boolean;
@@ -54,6 +56,21 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
   const wasLabel = isReverse ? "SANDBOX (OLD)" : "PROD (OLD)";
   const becomesLabel = isReverse ? "PROD (NEW)" : "SANDBOX (NEW)";
 
+  const getSafeJson = (data: any) => {
+    if (!data) return {};
+    if (typeof data !== "string") return data;
+
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      console.warn("Invalid JSON provided to DiffViewer");
+      return { error: "Invalid JSON format" };
+    }
+  };
+
+  const leftData = getSafeJson(isReverse ? sandboxJson : prodJson);
+  const rightData = getSafeJson(isReverse ? prodJson : sandboxJson);
+
   return (
     <div className={styles.column} style={{ flex: 1.5 }}>
       <div className={styles.comparisonControls}>
@@ -89,11 +106,11 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
           <>
             {!diffReport ? (
               <div className={styles.emptyState}>
-                Loading your blueprints to compare.
+                Load your blueprints to compare.
               </div>
             ) : diffReport.changes.length === 0 ? (
               <div className={styles.successState}>
-                ✅ No Logic Changes Detected
+                No Logic Changes Detected
               </div>
             ) : (
               sortedGroupKeys.map((path) => {
@@ -146,8 +163,25 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
           </>
         ) : (
           <div className={styles.blueprintViewer}>
-            <textarea value={isReverse ? sandboxJson : prodJson} />
-            <textarea value={isReverse ? prodJson : sandboxJson} />
+            {/* WRAPPER 1 */}
+            <div className={styles.jsonWrapper}>
+              <JsonView
+                src={leftData}
+                enableClipboard={false}
+                theme="atom"
+                className={styles.jsonViewer}
+              />
+            </div>
+
+            {/* WRAPPER 2 */}
+            <div className={styles.jsonWrapper}>
+              <JsonView
+                src={rightData}
+                enableClipboard={false}
+                theme="atom"
+                className={styles.jsonViewer}
+              />
+            </div>
           </div>
         )}
       </div>

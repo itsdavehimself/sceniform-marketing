@@ -1,7 +1,7 @@
 import SidebarButton from "./SidebarButton/SidebarButton";
 import styles from "./Sidebar.module.scss";
 import { useNavigate } from "react-router-dom";
-import { Brain, Cable, PanelsTopLeft, Settings, Waypoints } from "lucide-react";
+import { Brain, Cable, PanelsTopLeft, Settings, Share2 } from "lucide-react";
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ const Sidebar: React.FC = () => {
         <SidebarButton
           title="Scenarios"
           path="scenarios"
-          icon={Waypoints}
+          icon={Share2}
           navigation={() => navigate("/scenarios")}
         />
         <SidebarButton
