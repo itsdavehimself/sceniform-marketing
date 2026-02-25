@@ -6,6 +6,7 @@ import {
   Folder,
   ChevronRight,
   Share2,
+  Circle,
 } from "lucide-react";
 
 interface ScenarioDropdownProps {
@@ -24,7 +25,7 @@ const ScenarioDropdown: React.FC<ScenarioDropdownProps> = ({
     Record<string, boolean>
   >({});
   const dropdownRef = useRef<HTMLDivElement>(null);
-
+  console.log(folders);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -114,7 +115,12 @@ const ScenarioDropdown: React.FC<ScenarioDropdownProps> = ({
                           }`}
                           onClick={() => handleSelect(scenario.id.toString())}
                         >
-                          <Share2 size={14} /> <div>{scenario.name}</div>
+                          <div className={styles.scenarioLabel}>
+                            <Share2 size={14} /> <div>{scenario.name}</div>
+                          </div>
+                          <div
+                            className={`${styles.circle} ${scenario.isActive ? styles.active : styles.inactive}`}
+                          ></div>
                         </div>
                       ))
                     )}
