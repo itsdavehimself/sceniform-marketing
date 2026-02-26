@@ -1,0 +1,18 @@
+.deploymentModal {
+  display: flex;
+  flex-direction: column;
+  font-family: $ds-font-main;
+  font-size: 0.875rem;
+  gap: 1rem;
+}
+
+p {
+  margin: 0;
+  padding: 0;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: end;
+}

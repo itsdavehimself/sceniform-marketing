@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "./ComparisonHeader.module.scss";
 import ActionButton from "../../ActionButton/ActionButton";
+import Modal from "../../Modal/Modal";
+import DeploymentModal from "../DeploymentModal/DeploymentModal";
 
 interface ComparisonHeaderProps {
   updateScenario: (scenarioId: string, blueprint: string) => void;
@@ -33,6 +35,8 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
   ignoreModuleNames,
   diffReport,
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
   const handleDeploy = () => {
     // 1. Define who is who based on the direction
     const sourceStr = isReverse ? prodJson : sandboxJson;
@@ -219,6 +223,18 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
       <div>
         <h1 className={styles.title}>Deployment Console</h1>
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={
+          !isReverse ? "Deploying to Production" : "Rolling back to Sandbox"
+        }
+      >
+        <DeploymentModal
+          isReverse={isReverse}
+          setIsModalOpen={setIsModalOpen}
+        />
+      </Modal>
 
       <div className={styles.actions}>
         <ActionButton
@@ -228,7 +244,7 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
         />
         <ActionButton
           title={isReverse ? "Rollback to Sandbox" : "Push to Production"}
-          onClick={handleDeploy}
+          onClick={() => setIsModalOpen(true)}
           variant={!diffReport ? "disabled" : "primary"}
         />
       </div>

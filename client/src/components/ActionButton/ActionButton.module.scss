@@ -5,8 +5,8 @@
   font-size: 12px;
   border: none;
   transition: all 0.2s ease;
-  color: $ds-gray-600;
   font-weight: $fw-semibold;
+  color: $ds-foreground;
 
   &.primary {
     background-color: $ds-foreground;
