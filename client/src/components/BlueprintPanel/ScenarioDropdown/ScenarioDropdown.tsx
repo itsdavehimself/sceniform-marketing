@@ -64,8 +64,12 @@ const ScenarioDropdown: React.FC<ScenarioDropdownProps> = ({
   };
 
   return (
-    <div className={styles.customDropdownContainer} ref={dropdownRef}>
-      <div className={styles.selectBox} onClick={() => setIsOpen(!isOpen)}>
+    <div
+      className={styles.customDropdownContainer}
+      ref={dropdownRef}
+      onClick={() => setIsOpen(!isOpen)}
+    >
+      <div className={styles.selectBox}>
         <span className={styles.selectedName}>{getSelectedName()}</span>
         <span className={styles.selectBoxIcon}>
           {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}

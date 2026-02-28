@@ -175,9 +175,9 @@ const Scenarios: React.FC = () => {
         setCurrentView={setCurrentView}
         buttons={[
           { title: "Deployment Console", view: "deployment" },
-          { title: "Changelog", view: "changelog" },
-          { title: "Audit", view: "audit" },
-          { title: "Documentation", view: "documentation" },
+          // { title: "Changelog", view: "changelog" },
+          // { title: "Audit", view: "audit" },
+          // { title: "Documentation", view: "documentation" },
         ]}
       />
 

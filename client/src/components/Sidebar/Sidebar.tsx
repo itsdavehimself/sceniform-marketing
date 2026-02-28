@@ -10,19 +10,19 @@ const Sidebar: React.FC = () => {
     <div className={styles.sideBar}>
       <section className={styles.logo}>Baseflo</section>
       <section className={styles.linkGroup}>
-        <SidebarButton
+        {/* <SidebarButton
           title="Dashboard"
           path="dashboard"
           icon={PanelsTopLeft}
           navigation={() => navigate("/dashboard")}
-        />
+        /> */}
         <SidebarButton
           title="Scenarios"
           path="scenarios"
           icon={Share2}
           navigation={() => navigate("/scenarios")}
         />
-        <SidebarButton
+        {/* <SidebarButton
           title="Agents"
           path="agents"
           icon={Brain}
@@ -33,7 +33,7 @@ const Sidebar: React.FC = () => {
           path="connections"
           icon={Cable}
           navigation={() => navigate("/connections")}
-        />
+        /> */}
         <SidebarButton
           title="Settings"
           path="settings"
