@@ -19,10 +19,22 @@
   font-family: $ds-font-main;
 }
 
+.navLogoGroup {
+  display: flex;
+  gap: 4rem;
+  justify-content: start;
+  align-items: center;
+}
+
+.branding {
+  font-size: 1.5rem;
+  font-weight: $fw-bold;
+}
+
 .navGroup {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 
   a {
     color: $ds-gray-600;
@@ -35,4 +47,10 @@
       color: $ds-foreground;
     }
   }
+}
+
+.authGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }

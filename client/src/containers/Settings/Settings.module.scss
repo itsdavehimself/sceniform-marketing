@@ -1,0 +1,16 @@
+.settingsContainer {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  font-family: $ds-font-main;
+  color: $ds-foreground;
+  justify-content: start;
+  height: 100%;
+  margin-top: 8rem;
+}
+
+h1 {
+  font-weight: $fw-semibold;
+  font-size: 1.8rem;
+  margin-bottom: 3rem;
+}

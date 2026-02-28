@@ -1,17 +1,15 @@
-import { Navigate } from "react-router-dom";
+import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import type { ReactElement } from "react";
 
 const ProtectedRoute = ({ children }: { children: ReactElement }) => {
-  // const user = useAppSelector((state) => state.user.user);
-  // const loading = useAppSelector((state) => state.user.loading);
-
-  // if (loading) return <div>Loading...</div>;
-
-  // if (!user) {
-  //   return <Navigate to="/" replace />;
-  // }
-
-  return children;
+  return (
+    <>
+      <SignedIn>{children}</SignedIn>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    </>
+  );
 };
 
 export default ProtectedRoute;

@@ -4,7 +4,7 @@ type ButtonVariant = "primary" | "secondary" | "outline" | "disabled";
 
 interface ActionButtonProps {
   title: string;
-  onClick: () => void;
+  onClick?: () => void;
   variant?: ButtonVariant;
 }
 

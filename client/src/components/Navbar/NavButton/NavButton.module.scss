@@ -1,5 +1,15 @@
 .navButton {
   background-color: transparent;
-  border: 0;
+  border: none;
+  padding: 0.5rem 0.6rem;
+  border-radius: 4px;
   color: $ds-gray-600;
+  transition: all 0.2s ease;
+  font-weight: $fw-regular;
+
+  &:hover {
+    cursor: pointer;
+    background-color: $ds-gray-200;
+    color: $ds-foreground;
+  }
 }

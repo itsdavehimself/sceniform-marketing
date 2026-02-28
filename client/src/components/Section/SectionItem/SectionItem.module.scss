@@ -1,0 +1,21 @@
+.sectionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+}
+
+.sectionText {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.875rem;
+}
+
+.sectionTitle {
+  font-weight: $fw-semibold;
+}
+
+.sectionDescription {
+  font-weight: $fw-regular;
+  color: $ds-gray-600;
+}

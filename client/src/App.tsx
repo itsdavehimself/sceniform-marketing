@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import styles from "./App.module.scss";
 import ProtectedRoute from "./layouts/ProtectedRoute";
 import WithSidebar from "./layouts/WithSidebar/WithSidebar";
-import Login from "./containers/Login/Login";
+import Settings from "./containers/Settings/Settings";
 import Scenarios from "./containers/Scenarios/Scenarios";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 import LandingPage from "./containers/LandingPage/LandingPage";
@@ -13,7 +13,6 @@ function App() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
       </Route>
       <Route
         element={
@@ -22,11 +21,11 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<Dashboard />} />
+        {/* <Route path="/dashboard" element={<Dashboard />} /> */}
         <Route path="/scenarios" element={<Scenarios />} />
-        <Route path="/agents" />
-        <Route path="/connections" />
-        <Route path="settings" />
+        {/* <Route path="/agents" />
+        <Route path="/connections" /> */}
+        <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
   );
