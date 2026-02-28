@@ -18,6 +18,7 @@ interface ComparisonHeaderProps {
   ignoreConnections: boolean;
   ignoreModuleNames: boolean;
   diffReport: any;
+  onDeploySuccess: () => void;
 }
 
 const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
@@ -34,15 +35,14 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
   ignoreConnections,
   ignoreModuleNames,
   diffReport,
+  onDeploySuccess,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const sourceStr = isReverse ? prodJson : sandboxJson;
+  const targetStr = isReverse ? sandboxJson : prodJson;
+  const targetId = isReverse ? currentSandboxId : currentProdId;
 
-  const handleDeploy = () => {
-    // 1. Define who is who based on the direction
-    const sourceStr = isReverse ? prodJson : sandboxJson;
-    const targetStr = isReverse ? sandboxJson : prodJson;
-    const targetId = isReverse ? currentSandboxId : currentProdId;
-
+  const handleDeploy = (userMappings: Record<number, number>) => {
     if (!sourceStr || !targetStr) {
       alert("Make sure both Sandbox and Prod blueprints are loaded first!");
       return;
@@ -52,6 +52,56 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
       // 2. Parse them into manageable objects
       const sourceObj = JSON.parse(sourceStr);
       const targetObj = JSON.parse(targetStr);
+
+      // ==========================================
+      // 1. APPLY EXPLICIT CONNECTION MAPPINGS
+      // ==========================================
+      const applyConnectionMappings = (obj: any) => {
+        if (!obj || typeof obj !== "object") return;
+
+        if (Array.isArray(obj)) {
+          obj.forEach(applyConnectionMappings);
+        } else {
+          // Replace standard account/connection props
+          if (obj.account && userMappings[obj.account]) {
+            obj.account = userMappings[obj.account];
+          }
+          if (obj.connection && userMappings[obj.connection]) {
+            obj.connection = userMappings[obj.connection];
+          }
+
+          // Replace functional logic parameters
+          if (obj.parameters) {
+            Object.keys(obj.parameters).forEach((key) => {
+              if (key.startsWith("__IMTCONN__")) {
+                const oldId = obj.parameters[key];
+                if (userMappings[oldId]) {
+                  obj.parameters[key] = userMappings[oldId];
+                }
+              }
+            });
+          }
+
+          // Replace visual Make UI parameters
+          if (obj.metadata?.restore?.parameters) {
+            Object.keys(obj.metadata.restore.parameters).forEach((key) => {
+              if (key.startsWith("__IMTCONN__")) {
+                const oldId = obj.metadata.restore.parameters[key];
+                if (userMappings[oldId]) {
+                  obj.metadata.restore.parameters[key] = userMappings[oldId];
+                }
+              }
+            });
+          }
+
+          Object.values(obj).forEach(applyConnectionMappings);
+        }
+      };
+
+      // Execute explicit mapping replacement
+      if (Object.keys(userMappings).length > 0) {
+        applyConnectionMappings(sourceObj);
+      }
 
       // ==========================================
       // 3. THE TRANSFORM ENGINE (Apply Filters)
@@ -111,103 +161,103 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
         console.log("Preserved Module Names:", targetNamesMap);
       }
 
-      if (ignoreConnections) {
-        // Step A: Build a dictionary of Target Module IDs -> Connection Data
-        const targetConnectionsMap: Record<string | number, any> = {};
+      // if (ignoreConnections) {
+      //   // Step A: Build a dictionary of Target Module IDs -> Connection Data
+      //   const targetConnectionsMap: Record<string | number, any> = {};
 
-        const extractConnections = (obj: any) => {
-          if (!obj || typeof obj !== "object") return;
+      //   const extractConnections = (obj: any) => {
+      //     if (!obj || typeof obj !== "object") return;
 
-          if (Array.isArray(obj)) {
-            obj.forEach(extractConnections);
-          } else {
-            // Check if this object is a module (has an ID)
-            if (obj.id !== undefined) {
-              const connData: any = {
-                parameters: {},
-                restoreParameters: {},
-                account: obj.account,
-                connection: obj.connection,
-              };
+      //     if (Array.isArray(obj)) {
+      //       obj.forEach(extractConnections);
+      //     } else {
+      //       // Check if this object is a module (has an ID)
+      //       if (obj.id !== undefined) {
+      //         const connData: any = {
+      //           parameters: {},
+      //           restoreParameters: {},
+      //           account: obj.account,
+      //           connection: obj.connection,
+      //         };
 
-              let hasConnection = false;
+      //         let hasConnection = false;
 
-              // 1. Hunt down the actual functional connection ID(s)
-              if (obj.parameters) {
-                Object.keys(obj.parameters).forEach((key) => {
-                  if (key.startsWith("__IMTCONN__")) {
-                    connData.parameters[key] = obj.parameters[key];
-                    hasConnection = true;
-                  }
-                });
-              }
+      //         // 1. Hunt down the actual functional connection ID(s)
+      //         if (obj.parameters) {
+      //           Object.keys(obj.parameters).forEach((key) => {
+      //             if (key.startsWith("__IMTCONN__")) {
+      //               connData.parameters[key] = obj.parameters[key];
+      //               hasConnection = true;
+      //             }
+      //           });
+      //         }
 
-              // 2. Hunt down the visual label data for the Make UI
-              if (obj.metadata?.restore?.parameters) {
-                Object.keys(obj.metadata.restore.parameters).forEach((key) => {
-                  if (key.startsWith("__IMTCONN__")) {
-                    connData.restoreParameters[key] =
-                      obj.metadata.restore.parameters[key];
-                  }
-                });
-              }
+      //         // 2. Hunt down the visual label data for the Make UI
+      //         if (obj.metadata?.restore?.parameters) {
+      //           Object.keys(obj.metadata.restore.parameters).forEach((key) => {
+      //             if (key.startsWith("__IMTCONN__")) {
+      //               connData.restoreParameters[key] =
+      //                 obj.metadata.restore.parameters[key];
+      //             }
+      //           });
+      //         }
 
-              // Only save if we actually found connection data
-              if (connData.account || connData.connection || hasConnection) {
-                targetConnectionsMap[obj.id] = connData;
-              }
-            }
-            // Keep digging
-            Object.values(obj).forEach(extractConnections);
-          }
-        };
+      //         // Only save if we actually found connection data
+      //         if (connData.account || connData.connection || hasConnection) {
+      //           targetConnectionsMap[obj.id] = connData;
+      //         }
+      //       }
+      //       // Keep digging
+      //       Object.values(obj).forEach(extractConnections);
+      //     }
+      //   };
 
-        // Step B: Inject those connections back into the Source Object
-        const injectConnections = (obj: any) => {
-          if (!obj || typeof obj !== "object") return;
+      //   // Step B: Inject those connections back into the Source Object
+      //   const injectConnections = (obj: any) => {
+      //     if (!obj || typeof obj !== "object") return;
 
-          if (Array.isArray(obj)) {
-            obj.forEach(injectConnections);
-          } else {
-            // If we find a module ID that exists in our target connections map
-            if (obj.id !== undefined && targetConnectionsMap[obj.id]) {
-              const savedAuth = targetConnectionsMap[obj.id];
+      //     if (Array.isArray(obj)) {
+      //       obj.forEach(injectConnections);
+      //     } else {
+      //       // If we find a module ID that exists in our target connections map
+      //       if (obj.id !== undefined && targetConnectionsMap[obj.id]) {
+      //         const savedAuth = targetConnectionsMap[obj.id];
 
-              // 1. Restore the functional connection ID
-              if (Object.keys(savedAuth.parameters).length > 0) {
-                if (!obj.parameters) obj.parameters = {};
-                Object.assign(obj.parameters, savedAuth.parameters);
-              }
+      //         // 1. Restore the functional connection ID
+      //         if (Object.keys(savedAuth.parameters).length > 0) {
+      //           if (!obj.parameters) obj.parameters = {};
+      //           Object.assign(obj.parameters, savedAuth.parameters);
+      //         }
 
-              // 2. Restore the UI label data
-              if (Object.keys(savedAuth.restoreParameters).length > 0) {
-                if (!obj.metadata) obj.metadata = {};
-                if (!obj.metadata.restore) obj.metadata.restore = {};
-                if (!obj.metadata.restore.parameters)
-                  obj.metadata.restore.parameters = {};
-                Object.assign(
-                  obj.metadata.restore.parameters,
-                  savedAuth.restoreParameters,
-                );
-              }
+      //         // 2. Restore the UI label data
+      //         if (Object.keys(savedAuth.restoreParameters).length > 0) {
+      //           if (!obj.metadata) obj.metadata = {};
+      //           if (!obj.metadata.restore) obj.metadata.restore = {};
+      //           if (!obj.metadata.restore.parameters)
+      //             obj.metadata.restore.parameters = {};
+      //           Object.assign(
+      //             obj.metadata.restore.parameters,
+      //             savedAuth.restoreParameters,
+      //           );
+      //         }
 
-              // 3. Restore legacy properties (just in case)
-              if (savedAuth.account !== undefined)
-                obj.account = savedAuth.account;
-              if (savedAuth.connection !== undefined)
-                obj.connection = savedAuth.connection;
-            }
-            // Keep digging
-            Object.values(obj).forEach(injectConnections);
-          }
-        };
+      //         // 3. Restore legacy properties (just in case)
+      //         if (savedAuth.account !== undefined)
+      //           obj.account = savedAuth.account;
+      //         if (savedAuth.connection !== undefined)
+      //           obj.connection = savedAuth.connection;
+      //       }
+      //       // Keep digging
+      //       Object.values(obj).forEach(injectConnections);
+      //     }
+      //   };
 
-        // Execute extraction and injection
-        extractConnections(targetObj);
-        injectConnections(sourceObj);
+      //   // Execute extraction and injection
+      //   extractConnections(targetObj);
+      //   injectConnections(sourceObj);
 
-        console.log("Preserved Connections:", targetConnectionsMap);
-      }
+      //   console.log("Preserved Connections:", targetConnectionsMap);
+      // }
 
       // 4. Send the transformed blueprint!
       const finalPayloadStr = JSON.stringify(sourceObj);
@@ -229,10 +279,16 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
         title={
           !isReverse ? "Deploying to Production" : "Rolling back to Sandbox"
         }
+        size="lg"
       >
         <DeploymentModal
           isReverse={isReverse}
+          sourceJson={sourceStr}
+          targetJson={targetStr}
           setIsModalOpen={setIsModalOpen}
+          handleDeploy={handleDeploy}
+          diffReport={diffReport}
+          onDeploySuccess={onDeploySuccess}
         />
       </Modal>
 

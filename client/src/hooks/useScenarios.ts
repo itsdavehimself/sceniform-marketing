@@ -121,11 +121,8 @@ export const useScenarios = ({
       if (!res.ok) throw new Error("Server responded with an error");
 
       const data = await res.json();
-      alert("Update successful!");
-      console.log(data);
     } catch (err) {
       console.error("Error updating scenario:", err);
-      alert("Update failed.");
     }
   };
 

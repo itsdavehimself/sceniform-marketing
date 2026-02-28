@@ -50,8 +50,12 @@ function flattenScenario(
       incomingFrom: previousNodeName,
       mapper: mod.mapper || {},
       parameters: mod.parameters || {},
+
+      // ADD THESE TWO LINES
+      account: mod.account,
+      connection: mod.connection,
+
       routes: mod.routes || [],
-      // Pass availability of error handler to the node object so we can detect if one was added/removed
       hasErrorHandler: !!(mod.onerror && mod.onerror.length > 0),
       filter: mod.filter || null,
       connectionLabel: connectionLabel,

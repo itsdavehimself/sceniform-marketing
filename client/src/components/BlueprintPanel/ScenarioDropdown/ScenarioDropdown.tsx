@@ -25,7 +25,6 @@ const ScenarioDropdown: React.FC<ScenarioDropdownProps> = ({
     Record<string, boolean>
   >({});
   const dropdownRef = useRef<HTMLDivElement>(null);
-  console.log(folders);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

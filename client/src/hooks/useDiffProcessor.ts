@@ -10,6 +10,7 @@ interface DiffProcessorProps {
   ignoreConnections: boolean;
   ignoreModuleNames: boolean;
   showRawMappings: boolean;
+  connections: any[];
 }
 
 export const useDiffProcessor = ({
@@ -20,6 +21,7 @@ export const useDiffProcessor = ({
   ignoreConnections,
   ignoreModuleNames,
   showRawMappings,
+  connections,
 }: DiffProcessorProps) => {
   // 1. Calculate the core diff report
   const diffReport = useMemo(() => {
@@ -32,6 +34,7 @@ export const useDiffProcessor = ({
         ignoreConnections,
         ignoreModuleNames,
         showRawMappings,
+        connections,
       };
       return isReverse
         ? compareBlueprints(prod, sandbox, options)
@@ -48,6 +51,7 @@ export const useDiffProcessor = ({
     ignoreConnections,
     ignoreModuleNames,
     showRawMappings,
+    connections,
   ]);
 
   // 2. Tally up the error statistics

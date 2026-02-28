@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import JsonView from "react18-json-view";
 import "react18-json-view/src/style.css";
+import SquareButton from "../SquareButton/SquareBotton";
 
 interface DiffViewerProps {
   isDarkMode: boolean;
@@ -76,28 +77,28 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
       <div className={styles.comparisonControls}>
         {diffReport && (
           <>
-            <button
-              className={styles.controlButton}
+            <SquareButton
               title={viewBlueprints ? "View Comparison" : "View Blueprints"}
               onClick={() => setViewBlueprints((prev) => !prev)}
-            >
-              {viewBlueprints ? (
-                <GitCompare size={20} />
-              ) : (
-                <FileBraces size={20} />
-              )}
-            </button>
-            <button
-              onClick={handleToggleAll}
-              className={styles.controlButton}
+              icon={
+                viewBlueprints ? (
+                  <GitCompare size={20} />
+                ) : (
+                  <FileBraces size={20} />
+                )
+              }
+            />
+            <SquareButton
               title={isAllExpanded ? "Collapse All" : "Expand All"}
-            >
-              {isAllExpanded ? (
-                <FoldVertical size={20} />
-              ) : (
-                <UnfoldVertical size={20} />
-              )}
-            </button>
+              onClick={handleToggleAll}
+              icon={
+                isAllExpanded ? (
+                  <FoldVertical size={20} />
+                ) : (
+                  <UnfoldVertical size={20} />
+                )
+              }
+            />
           </>
         )}
       </div>

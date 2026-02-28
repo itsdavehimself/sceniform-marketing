@@ -14,6 +14,7 @@ export const useConnections = (props?: UseConnectionsProps) => {
           "http://localhost:1337/api/scenarios/connections",
         );
         const json = await response.json();
+        console.log(json);
         setConnections(json.connections);
       } catch (err) {
         console.error("Failed to load connections:", err);

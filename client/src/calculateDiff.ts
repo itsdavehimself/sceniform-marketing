@@ -12,6 +12,7 @@ export interface DiffOptions {
   ignoreConnections?: boolean;
   ignoreModuleNames?: boolean;
   showRawMappings?: boolean;
+  connections?: any[];
 }
 
 export function compareBlueprints(

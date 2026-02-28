@@ -39,20 +39,20 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
           <input
             type="checkbox"
             className={styles.checkboxInput}
-            checked={ignoreConnections}
-            onChange={(e) => setIgnoreConnections(e.target.checked)}
+            checked={ignoreModuleNames}
+            onChange={(e) => setIgnoreModuleNames(e.target.checked)}
           />
-          <span>Preserve Connection IDs</span>
+          <span>Preserve Module Names</span>
         </label>
 
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
             className={styles.checkboxInput}
-            checked={ignoreModuleNames}
-            onChange={(e) => setIgnoreModuleNames(e.target.checked)}
+            checked={ignoreConnections}
+            onChange={(e) => setIgnoreConnections(e.target.checked)}
           />
-          <span>Preserve Module Renames</span>
+          <span>Hide Connection Difference</span>
         </label>
 
         <label className={styles.checkboxLabel}>

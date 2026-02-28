@@ -1,6 +1,8 @@
 import React from "react";
 import styles from "./BlueprintPanel.module.scss";
 import ScenarioDropdown from "./ScenarioDropdown/ScenarioDropdown";
+import SquareButton from "../SquareButton/SquareBotton";
+import { RefreshCw } from "lucide-react";
 
 interface BlueprintPanelProps {
   title: string;
@@ -10,6 +12,7 @@ interface BlueprintPanelProps {
   isLoading: boolean;
   onSelectChange: (id: string) => void;
   onJsonChange: (val: string) => void;
+  onRefresh: () => void;
 }
 
 const BlueprintPanel: React.FC<BlueprintPanelProps> = ({
@@ -20,6 +23,7 @@ const BlueprintPanel: React.FC<BlueprintPanelProps> = ({
   isLoading,
   onSelectChange,
   onJsonChange,
+  onRefresh,
 }) => {
   return (
     <div className={styles.column}>
@@ -29,6 +33,11 @@ const BlueprintPanel: React.FC<BlueprintPanelProps> = ({
           folders={scenarios}
           selectedId={selectedId}
           onSelectChange={onSelectChange}
+        />
+        <SquareButton
+          icon={<RefreshCw size={20} />}
+          onClick={onRefresh}
+          title="Refresh Scenario Blueprint"
         />
       </div>
     </div>

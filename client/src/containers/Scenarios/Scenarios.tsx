@@ -6,6 +6,7 @@ type ScenarioView = "deployment" | "changelog" | "audit" | "documentation";
 // Custom Hooks
 import { useDiffProcessor } from "../../hooks/useDiffProcessor";
 import { useScenarios } from "../../hooks/useScenarios";
+import { useConnections } from "../../hooks/useConnections";
 
 // Components
 import BlueprintPanel from "../../components/BlueprintPanel/BlueprintPanel";
@@ -23,7 +24,7 @@ const Scenarios: React.FC = () => {
 
   // --- Filter Toggles ---
   const [ignoreScenarioName, setIgnoreScenarioName] = useState<boolean>(true);
-  const [ignoreConnections, setIgnoreConnections] = useState<boolean>(false);
+  const [ignoreConnections, setIgnoreConnections] = useState<boolean>(true);
   const [ignoreModuleNames, setIgnoreModuleNames] = useState<boolean>(false);
   const [showRawMappings, setShowRawMappings] = useState<boolean>(false);
   const [showErrorsOnly, setShowErrorsOnly] = useState<boolean>(false);
@@ -52,6 +53,8 @@ const Scenarios: React.FC = () => {
     },
   );
 
+  const { connections } = useConnections();
+
   // --- Data Processing Hook ---
   const { diffReport, errorStats, processedGroups, sortedGroupKeys } =
     useDiffProcessor({
@@ -62,7 +65,22 @@ const Scenarios: React.FC = () => {
       ignoreConnections,
       ignoreModuleNames,
       showRawMappings,
+      connections,
     });
+
+  const handleDeploySuccess = () => {
+    // 1. Reset all view states to default
+    setIsReverse(false);
+    setViewBlueprints(false);
+    setShowErrorsOnly(false);
+    setCollapsedIds(new Set());
+    setCollapsedPaths(new Set());
+    setHighlightedModuleId(null);
+
+    // 2. Refetch both blueprints so the diff viewer updates automatically
+    if (selectedProdId) fetchBlueprint("prod", selectedProdId);
+    if (selectedSandboxId) fetchBlueprint("sandbox", selectedSandboxId);
+  };
 
   // --- UI Handlers ---
   const toggleCollapse = (id: string | number) => {
@@ -178,6 +196,7 @@ const Scenarios: React.FC = () => {
           ignoreConnections={ignoreConnections}
           ignoreModuleNames={ignoreModuleNames}
           diffReport={diffReport}
+          onDeploySuccess={handleDeploySuccess}
         />
         <div className={styles.deploymentContainer}>
           <div className={styles.sidebarContainer}>
@@ -215,6 +234,13 @@ const Scenarios: React.FC = () => {
                   fetchBlueprint(isReverse ? "sandbox" : "prod", val);
                 }}
                 onJsonChange={isReverse ? setSandboxJson : setProdJson}
+                onRefresh={() => {
+                  const targetId = isReverse
+                    ? selectedSandboxId
+                    : selectedProdId;
+                  if (targetId)
+                    fetchBlueprint(isReverse ? "sandbox" : "prod", targetId);
+                }}
               />
 
               <BlueprintPanel

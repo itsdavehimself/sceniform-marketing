@@ -1,0 +1,21 @@
+.controlButton {
+  border: 1px $ds-gray-300 solid;
+  border-radius: 4px;
+  background-color: $ds-gray-100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  height: 2rem;
+  width: 2rem;
+  cursor: pointer;
+  color: $ds-gray-600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: $ds-foreground;
+    background-color: $ds-gray-200;
+    border: 1px $ds-gray-400 solid;
+  }
+}
