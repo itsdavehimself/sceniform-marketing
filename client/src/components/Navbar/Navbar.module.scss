@@ -21,14 +21,21 @@
 
 .navLogoGroup {
   display: flex;
-  gap: 4rem;
+  gap: 2rem;
   justify-content: start;
   align-items: center;
 }
 
 .branding {
+  display: flex;
+  align-items: center;
   font-size: 1.5rem;
   font-weight: $fw-bold;
+}
+
+.logo {
+  height: 1.6rem;
+  width: 1.6rem;
 }
 
 .navGroup {

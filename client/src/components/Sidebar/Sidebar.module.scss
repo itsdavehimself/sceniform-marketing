@@ -14,10 +14,24 @@
   overflow-y: auto;
 }
 
-.logo {
-  font-size: 1.25rem;
+.branding {
+  display: flex;
+  align-items: center;
   font-weight: bold;
   margin-bottom: 2rem;
+  color: $ds-foreground;
+}
+
+.logo {
+  height: 1.6rem;
+  width: 1.6rem;
+}
+
+.baseflo {
+  margin: 0;
+  padding: 0;
+  font-size: 1.5rem;
+  font-weight: $fw-bold;
 }
 
 .linkGroup {

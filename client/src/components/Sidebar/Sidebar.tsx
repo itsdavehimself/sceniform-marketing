@@ -2,13 +2,17 @@ import SidebarButton from "./SidebarButton/SidebarButton";
 import styles from "./Sidebar.module.scss";
 import { useNavigate } from "react-router-dom";
 import { Brain, Cable, PanelsTopLeft, Settings, Share2 } from "lucide-react";
+import logo from "../../assets/baseflo_logo.png";
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
 
   return (
     <div className={styles.sideBar}>
-      <section className={styles.logo}>Baseflo</section>
+      <section className={styles.branding}>
+        <img className={styles.logo} src={logo}></img>
+        <h3 className={styles.baseflo}>Baseflo</h3>
+      </section>
       <section className={styles.linkGroup}>
         {/* <SidebarButton
           title="Dashboard"
