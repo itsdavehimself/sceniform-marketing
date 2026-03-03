@@ -211,10 +211,9 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
         {deployState !== "success" && (
           <ActionButton
             title="Cancel"
-            variant={deployState === "idle" ? "secondary" : "disabled"}
-            onClick={() => {
-              if (deployState === "idle") setIsModalOpen(false);
-            }}
+            variant="secondary"
+            disabled={deployState !== "idle"}
+            onClick={() => setIsModalOpen(false)}
           />
         )}
 
@@ -226,12 +225,10 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
                 ? "Deploying..."
                 : "Close"
           }
-          variant={
-            deployState === "idle" && isDeployReady
-              ? "primary"
-              : deployState === "success"
-                ? "primary"
-                : "disabled"
+          variant="primary"
+          disabled={
+            (deployState === "idle" && !isDeployReady) ||
+            deployState === "deploying"
           }
           onClick={() => {
             if (deployState === "idle") executeDeployment();

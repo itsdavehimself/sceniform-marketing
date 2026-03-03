@@ -12,6 +12,10 @@
   &:hover {
     border: 1px $ds-gray-500 solid;
   }
+
+  &.lg {
+    padding: 0.6rem;
+  }
 }
 
 .selectBox {

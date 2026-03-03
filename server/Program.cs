@@ -1,4 +1,3 @@
-using DiffDetector.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using DiffDetector.Api.Services;
 
@@ -6,14 +5,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient<MakeService>();
 builder.Services.AddControllers();
+builder.Services.AddSingleton<EncryptionService>();
+builder.Services.AddHttpClient();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCors(options =>
 {
@@ -25,9 +26,20 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = "https://innocent-mink-34.clerk.accounts.dev"; 
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateAudience = false, 
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

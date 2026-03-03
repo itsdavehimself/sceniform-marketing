@@ -33,4 +33,14 @@
     color: $ds-gray-300;
     cursor: default;
   }
+
+  &.disabled:hover {
+    background-color: $ds-gray-600;
+    color: $ds-gray-300;
+    cursor: default;
+  }
+
+  &.lg {
+    padding: 12px 12px;
+  }
 }

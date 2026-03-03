@@ -301,7 +301,8 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
         <ActionButton
           title={isReverse ? "Rollback to Sandbox" : "Push to Production"}
           onClick={() => setIsModalOpen(true)}
-          variant={!diffReport ? "disabled" : "primary"}
+          disabled={!diffReport}
+          variant="primary"
         />
       </div>
     </header>

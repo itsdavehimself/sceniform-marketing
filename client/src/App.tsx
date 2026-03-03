@@ -7,6 +7,9 @@ import Scenarios from "./containers/Scenarios/Scenarios";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 import LandingPage from "./containers/LandingPage/LandingPage";
 import Dashboard from "./containers/Dashboard/Dashboard";
+import Onboarding from "./containers/Onboarding/Onboarding";
+import ConnectionGuard from "./layouts/ConnectionGuard/ConnectionGuard";
+import { MakeProvider } from "./context/MakeContext";
 
 function App() {
   return (
@@ -14,10 +17,26 @@ function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<LandingPage />} />
       </Route>
+
+      <Route
+        path="/onboarding"
+        element={
+          <ProtectedRoute>
+            <ConnectionGuard>
+              <Onboarding />
+            </ConnectionGuard>
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         element={
           <ProtectedRoute>
-            <WithSidebar />
+            <ConnectionGuard>
+              <MakeProvider>
+                <WithSidebar />
+              </MakeProvider>
+            </ConnectionGuard>
           </ProtectedRoute>
         }
       >

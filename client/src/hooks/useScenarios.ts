@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useMakeContext } from "../context/MakeContext";
+import { useAuth } from "@clerk/clerk-react";
 
 interface UseScenariosProps {
   setProdJson: (val: string) => void;
@@ -41,27 +43,37 @@ export const useScenarios = ({
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const { activeTeam, activeOrg } = useMakeContext();
+  const { getToken } = useAuth();
+
   useEffect(() => {
+    if (!activeTeam || !activeOrg) return;
+
     const fetchAllData = async () => {
       setIsLoading(true);
       try {
+        const token = await getToken();
+        const queryParams = `?teamId=${activeTeam.id}&zone=${activeOrg.zone}`;
+        const headers = { Authorization: `Bearer ${token}` };
+
         const [scenariosRes, foldersRes] = await Promise.all([
-          fetch("http://localhost:1337/api/scenarios"),
-          fetch("http://localhost:1337/api/scenarios/folders"),
+          fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/scenarios${queryParams}`,
+            { headers },
+          ),
+          fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/scenarios/folders${queryParams}`,
+            { headers },
+          ),
         ]);
 
         const scenariosData = await scenariosRes.json();
         const foldersData = await foldersRes.json();
 
         const scenariosList =
-          scenariosData.scenarios ||
-          scenariosData.items ||
-          (Array.isArray(scenariosData) ? scenariosData : []);
-
+          scenariosData.scenarios || scenariosData.items || [];
         const foldersList =
-          foldersData.scenariosFolders ||
-          foldersData.items ||
-          (Array.isArray(foldersData) ? foldersData : []);
+          foldersData.scenariosFolders || foldersData.items || [];
 
         const groupedData = groupScenariosByFolder(scenariosList, foldersList);
         setScenarios(groupedData);
@@ -73,20 +85,24 @@ export const useScenarios = ({
     };
 
     fetchAllData();
-  }, []);
+  }, [activeTeam, activeOrg, getToken]);
 
   const fetchBlueprint = async (
     env: "prod" | "sandbox",
     scenarioId: string,
   ) => {
-    if (!scenarioId) return alert("Please select a scenario first.");
+    if (!scenarioId || !activeOrg) return;
 
     setShowErrorsOnly(false);
     setIsLoading(true);
 
     try {
+      const token = await getToken();
+      const headers = { Authorization: `Bearer ${token}` };
+
       const res = await fetch(
-        `http://localhost:1337/api/scenarios/${scenarioId}/blueprint`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/scenarios/${scenarioId}/blueprint?zone=${activeOrg.zone}`,
+        { headers },
       );
       const data = await res.json();
       const parsed =
@@ -99,28 +115,30 @@ export const useScenarios = ({
       else setSandboxJson(formatted);
     } catch (err) {
       console.error("Error fetching blueprint:", err);
-      alert("Could not fetch the blueprint. Check console for details.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const updateScenario = async (scenarioId: string, blueprint: string) => {
-    if (!scenarioId || !blueprint) return alert("Missing ID or Blueprint data");
+    if (!scenarioId || !blueprint || !activeOrg) return;
 
     try {
+      const token = await getToken();
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
       const res = await fetch(
-        `http://localhost:1337/api/scenarios/${scenarioId}/update`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/scenarios/${scenarioId}/update?zone=${activeOrg.zone}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ blueprint: blueprint }),
         },
       );
-
       if (!res.ok) throw new Error("Server responded with an error");
-
-      const data = await res.json();
     } catch (err) {
       console.error("Error updating scenario:", err);
     }

@@ -15,6 +15,7 @@ interface DropdownProps {
   onChange: (value: string | number) => void;
   placeholder?: string;
   className?: string;
+  size?: "sm" | "lg";
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -23,6 +24,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   onChange,
   placeholder = "Select an option",
   className = "",
+  size = "sm",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -95,7 +97,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <div
-      className={`${styles.customDropdownContainer} ${className}`}
+      className={`${styles.customDropdownContainer} ${className} ${styles[size]}`}
       ref={dropdownRef}
       onClick={handleToggle}
     >
