@@ -17,6 +17,19 @@ h3 {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
+  height: 9rem;
+}
+
+.noDiffMessageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.noDiffMessage {
+  color: $ds-gray-400;
+  font-size: 0.7rem;
 }
 
 .badge {
