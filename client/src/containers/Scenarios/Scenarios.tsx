@@ -274,6 +274,9 @@ const Scenarios: React.FC = () => {
               ignoreModuleNames={ignoreModuleNames}
               diffReport={diffReport}
               onDeploySuccess={() => fetchBaseBlueprint(selectedProdId)}
+              sourceConnectionsList={sourceConnectionsList}
+              targetConnectionsList={targetConnectionsList}
+              isConnectionsLoading={isConnectionsLoading}
             />
 
             <div className={styles.blueprints}>

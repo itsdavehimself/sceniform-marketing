@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ActionButton from "../../ActionButton/ActionButton";
 import styles from "./DeploymentModal.module.scss";
-import { useConnections } from "../../../hooks/useConnections";
+// <-- Removed the broken useConnections hook import
 import { useDeploymentMappings } from "../../../hooks/useDeploymentMappings";
 import MappingRow from "./MappingRow/MappingRow";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
@@ -14,6 +14,10 @@ interface DeploymentModalProps {
   handleDeploy: (mappings: Record<number, number>) => void;
   diffReport: any;
   onDeploySuccess: () => void;
+  // <-- ADD THESE
+  sourceConnectionsList: any[];
+  targetConnectionsList: any[];
+  isConnectionsLoading: boolean;
 }
 
 type LogEntry = {
@@ -29,8 +33,13 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
   handleDeploy,
   diffReport,
   onDeploySuccess,
+  // <-- DESTRUCTURE
+  sourceConnectionsList,
+  targetConnectionsList,
+  isConnectionsLoading,
 }) => {
-  const { connections, isLoading } = useConnections();
+  // <-- Removed `const { connections, isLoading } = useConnections();`
+
   const { sourceConnections, mappings, autoMappings, handleMappingChange } =
     useDeploymentMappings(sourceJson, targetJson);
 
@@ -42,6 +51,7 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
   const isDeployReady = sourceConnections.every((conn) => !!mappings[conn.id]);
 
   const executeDeployment = async () => {
+    // ... keep your exact existing executeDeployment logic ...
     if (!isDeployReady) return;
 
     let addedCount = diffReport?.summary?.added || 0;
@@ -68,7 +78,6 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
       { text: "> Validating blueprint structure...", type: "info" },
     ]);
 
-    // 4. DYNAMIC LOGS: Only show them if changes actually exist!
     if (addedCount > 0) {
       await sleep(500);
       setLogs((prev) => [
@@ -144,7 +153,7 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
             </p>
           </div>
 
-          {isLoading ? (
+          {isConnectionsLoading ? (
             <div className={styles.loadingContainer}>
               <LoadingSpinner dimensions={{ x: 6, y: 6 }} />
             </div>
@@ -154,7 +163,9 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
                 <MappingRow
                   key={conn.id}
                   conn={conn}
-                  connections={connections}
+                  // <-- PASS BOTH ARRAYS DOWN
+                  sourceConnections={sourceConnectionsList}
+                  targetConnections={targetConnectionsList}
                   currentMapping={mappings[conn.id] || ""}
                   isAutoMapped={
                     autoMappings[conn.id] !== undefined &&
@@ -166,7 +177,7 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
             </div>
           )}
 
-          {sourceConnections.length === 0 && !isLoading && (
+          {sourceConnections.length === 0 && !isConnectionsLoading && (
             <div className={styles.noConnectionsContainer}>
               <p className={styles.modalHeaderInfo}>
                 No connections detected in this blueprint.
@@ -176,6 +187,7 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
         </>
       )}
 
+      {/* ... keep the rest of your terminal/buttons exactly the same ... */}
       {deployState !== "idle" && (
         <div className={styles.terminalContainer}>
           <div className={styles.terminalHeader}>

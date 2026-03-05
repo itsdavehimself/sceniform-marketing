@@ -1,12 +1,13 @@
 import React from "react";
 import styles from "./MappingRow.module.scss";
-import { ArrowRight, CheckCircle2 } from "lucide-react"; // <-- Import checkmark
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Dropdown, { type DropdownOption } from "../../../Dropdown/Dropdown";
 import AppIcon from "../../../AppIcon/AppIcon";
 
 interface MappingRowProps {
   conn: any;
-  connections: any[];
+  sourceConnections: any[]; // <-- Changed
+  targetConnections: any[]; // <-- Changed
   currentMapping: string | number;
   isAutoMapped: boolean;
   onMappingChange: (sourceId: number, targetId: number) => void;
@@ -14,21 +15,23 @@ interface MappingRowProps {
 
 const MappingRow: React.FC<MappingRowProps> = ({
   conn,
-  connections,
+  sourceConnections,
+  targetConnections,
   currentMapping,
   isAutoMapped,
   onMappingChange,
 }) => {
-  // 1. Find the source connection details
-  const sourceConnDetails = connections.find(
+  // 1. Find the source connection details using the Source list
+  const sourceConnDetails = sourceConnections.find(
     (c: any) => c.id === Number(conn.id),
   );
+
   const displayName = sourceConnDetails
     ? sourceConnDetails.name
     : "Unknown Connection";
 
-  // 2. Filter target connections by app type
-  const filteredConnections = connections.filter((availableConn: any) => {
+  // 2. Filter target connections using the Target list
+  const filteredConnections = targetConnections.filter((availableConn: any) => {
     if (sourceConnDetails && sourceConnDetails.accountName) {
       return availableConn.accountName === sourceConnDetails.accountName;
     }
