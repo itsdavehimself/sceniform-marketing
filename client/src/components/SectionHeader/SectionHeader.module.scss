@@ -6,15 +6,27 @@ h2 {
 
 .sectionHeader {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: flex-end;
   padding-bottom: 0.5rem;
   border-bottom: 1px $ds-gray-300 solid;
   margin: 0 -1rem;
   padding: 0 1rem 0.5rem;
 }
 
+.leftNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .sectionNav {
   display: flex;
   gap: 0.5rem;
+}
+
+.rightContent {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
 }

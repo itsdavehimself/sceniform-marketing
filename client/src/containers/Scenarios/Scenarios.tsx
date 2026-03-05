@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./Scenarios.module.scss";
+import WorkspaceDropdown from "../../components/WorkspaceDropdown/WorkspaceDropdown";
+import { useMakeContext } from "../../context/MakeContext";
 
 type ScenarioView = "deployment" | "changelog" | "audit" | "documentation";
 
-// Custom Hooks
+// Custom Hooks (Now completely decoupled)
 import { useDiffProcessor } from "../../hooks/useDiffProcessor";
 import { useScenarios } from "../../hooks/useScenarios";
 import { useConnections } from "../../hooks/useConnections";
@@ -29,34 +31,104 @@ const Scenarios: React.FC = () => {
   const [showRawMappings, setShowRawMappings] = useState<boolean>(false);
   const [showErrorsOnly, setShowErrorsOnly] = useState<boolean>(false);
 
-  // --- View State ---
+  const [currentView, setCurrentView] = useState<ScenarioView>("deployment");
+
+  // --- Diff Viewer State ---
+  const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
   const [collapsedIds, setCollapsedIds] = useState<Set<string | number>>(
     new Set(),
   );
-  const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
   const [highlightedModuleId, setHighlightedModuleId] = useState<
     string | number | null
   >(null);
-  const [currentView, setCurrentView] = useState<ScenarioView>("deployment");
+  const [isAllExpanded, setIsAllExpanded] = useState(true);
   const [viewBlueprints, setViewBlueprints] = useState<boolean>(false);
 
-  // --- Scenario Selection State ---
   const [selectedProdId, setSelectedProdId] = useState<string>("");
   const [selectedSandboxId, setSelectedSandboxId] = useState<string>("");
 
-  // --- API Hook ---
-  const { scenarios, isLoading, fetchBlueprint, updateScenario } = useScenarios(
-    {
-      setProdJson,
-      setSandboxJson,
-      setShowErrorsOnly,
-    },
+  // --- GLOBAL CONTEXT ---
+  // (You can delete targetOrg/targetTeam from MakeContext.tsx, we don't need them globally!)
+  const { activeOrg, activeTeam, workspaceGroups, availableZones } =
+    useMakeContext();
+
+  // --- LOCAL WORKSPACE STATE ---
+  const [baseOrg, setBaseOrg] = useState(activeOrg);
+  const [baseTeam, setBaseTeam] = useState(activeTeam);
+
+  const [targetOrg, setTargetOrg] = useState(activeOrg);
+  const [targetTeam, setTargetTeam] = useState(activeTeam);
+
+  // SYNC GLOBAL SIDEBAR TO BASE WORKSPACE
+  useEffect(() => {
+    setBaseOrg(activeOrg);
+    setBaseTeam(activeTeam);
+
+    setTargetOrg((prev) => prev || activeOrg);
+    setTargetTeam((prev) => prev || activeTeam);
+  }, [activeOrg, activeTeam]);
+
+  const handleWorkspaceChange = (
+    side: "base" | "target",
+    orgId: number,
+    teamId: number,
+  ) => {
+    const org = workspaceGroups.find((g) => g.orgId === orgId);
+    const team = org?.teams.find((t) => t.id === teamId) || null;
+
+    if (side === "base") {
+      setBaseOrg(
+        org ? { id: org.orgId, name: org.orgName, zone: org.zone } : null,
+      );
+      setBaseTeam(team);
+      setSelectedProdId("");
+      setProdJson("");
+    } else {
+      setTargetOrg(
+        org ? { id: org.orgId, name: org.orgName, zone: org.zone } : null,
+      );
+      setTargetTeam(team);
+      setSelectedSandboxId("");
+      setSandboxJson("");
+    }
+  };
+
+  // --- 2 INDEPENDENT HOOK INSTANCES ---
+  const {
+    scenarios: baseScenarios,
+    isLoading: baseLoading,
+    fetchBlueprint: fetchBaseBlueprint,
+    updateScenario,
+  } = useScenarios({
+    teamId: baseTeam?.id,
+    zone: baseOrg?.zone,
+    setJson: setProdJson,
+    setShowErrorsOnly,
+  });
+
+  const {
+    scenarios: targetScenarios,
+    isLoading: targetLoading,
+    fetchBlueprint: fetchTargetBlueprint,
+  } = useScenarios({
+    teamId: targetTeam?.id,
+    zone: targetOrg?.zone,
+    setJson: setSandboxJson,
+    setShowErrorsOnly,
+  });
+
+  const {
+    connections: sourceConnectionsList,
+    isLoading: isConnectionsLoading,
+  } = useConnections(targetTeam?.id, targetOrg?.zone);
+
+  const { connections: targetConnectionsList } = useConnections(
+    baseTeam?.id,
+    baseOrg?.zone,
   );
 
-  const { connections } = useConnections();
-
-  // --- Data Processing Hook ---
-  const { diffReport, errorStats, processedGroups, sortedGroupKeys } =
+  // --- DIFF ENGINE ---
+  const { diffReport, errorStats, sortedGroupKeys, processedGroups } =
     useDiffProcessor({
       prodJson,
       sandboxJson,
@@ -65,148 +137,114 @@ const Scenarios: React.FC = () => {
       ignoreConnections,
       ignoreModuleNames,
       showRawMappings,
-      connections,
+      connections: targetConnectionsList,
     });
-
-  const handleDeploySuccess = () => {
-    // 1. Reset all view states to default
-    setIsReverse(false);
-    setViewBlueprints(false);
-    setShowErrorsOnly(false);
-    setCollapsedIds(new Set());
-    setCollapsedPaths(new Set());
-    setHighlightedModuleId(null);
-
-    // 2. Refetch both blueprints so the diff viewer updates automatically
-    if (selectedProdId) fetchBlueprint("prod", selectedProdId);
-    if (selectedSandboxId) fetchBlueprint("sandbox", selectedSandboxId);
-  };
-
-  // --- UI Handlers ---
-  const toggleCollapse = (id: string | number) => {
-    const newSet = new Set(collapsedIds);
-    if (newSet.has(id)) newSet.delete(id);
-    else newSet.add(id);
-    setCollapsedIds(newSet);
-  };
 
   const togglePathCollapse = (path: string) => {
     const newSet = new Set(collapsedPaths);
-    if (newSet.has(path)) newSet.delete(path);
-    else newSet.add(path);
+    newSet.has(path) ? newSet.delete(path) : newSet.add(path);
     setCollapsedPaths(newSet);
   };
 
-  const handleToggleAll = () => {
-    if (collapsedIds.size > 0) {
-      setCollapsedIds(new Set());
-    } else {
-      if (!diffReport) return;
-      const allIds = new Set<string | number>();
-      diffReport.changes.forEach((c: any) => allIds.add(c.moduleId));
-      setCollapsedIds(allIds);
-    }
-    if (collapsedPaths.size > 0) setCollapsedPaths(new Set());
+  const toggleCollapse = (id: string | number) => {
+    const newSet = new Set(collapsedIds);
+    newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+    setCollapsedIds(newSet);
   };
 
-  const handleScrollToModule = (moduleId: string | number) => {
-    const element = document.getElementById(`module-card-${moduleId}`);
-    const container = document.getElementById("diff-scroll-container");
-
-    if (element && container) {
-      const containerRect = container.getBoundingClientRect();
-      const elementRect = element.getBoundingClientRect();
-
-      const scrollPosition =
-        container.scrollTop +
-        (elementRect.top - containerRect.top) -
-        containerRect.height / 2 +
-        elementRect.height / 2;
-
-      container.scrollTo({
-        top: scrollPosition,
-        behavior: "smooth",
-      });
-
-      setHighlightedModuleId(moduleId);
+  const handleScrollToModule = (id: string | number) => {
+    setHighlightedModuleId(id);
+    const el = document.getElementById(`module-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
       setTimeout(() => setHighlightedModuleId(null), 2000);
     }
   };
 
-  // --- UI Handlers ---
-
-  // Replace the effects with this handler:
-  const handleToggleShowErrors = (newValue: boolean) => {
-    // 1. If trying to turn ON, but there are no errors, force it off.
-    if (newValue && errorStats.moduleCount === 0) {
-      setShowErrorsOnly(false);
-      return;
-    }
-
-    // 2. Set the toggle state
-    setShowErrorsOnly(newValue);
-
-    // 3. If turning ON, automatically expand the errored modules simultaneously
-    if (newValue && errorStats.moduleCount > 0) {
-      setCollapsedIds((prevCollapsed) => {
-        const nextCollapsed = new Set(prevCollapsed);
-        let changed = false;
-        errorStats.errorModuleIds.forEach((id: any) => {
-          if (nextCollapsed.has(id)) {
-            nextCollapsed.delete(id);
-            changed = true;
-            local;
-          }
-        });
-        return changed ? nextCollapsed : prevCollapsed; // Only update if something actually changed
+  const handleToggleAll = () => {
+    if (isAllExpanded) {
+      setCollapsedPaths(new Set(sortedGroupKeys));
+      const allIds = new Set<string | number>();
+      Object.values(processedGroups).forEach((items: any) => {
+        items.forEach((i: any) => allIds.add(i.moduleId));
       });
+      setCollapsedIds(allIds);
+    } else {
+      setCollapsedPaths(new Set());
+      setCollapsedIds(new Set());
     }
+    setIsAllExpanded(!isAllExpanded);
   };
 
-  const isAllExpanded = collapsedIds.size === 0 && collapsedPaths.size === 0;
+  const buttons = [
+    { title: "Deploy", view: "deployment" as ScenarioView },
+    // { title: "Changelog", view: "changelog" as ScenarioView },
+    // { title: "Audit", view: "audit" as ScenarioView },
+    // { title: "Documentation", view: "documentation" as ScenarioView },
+  ];
+
+  // --- THE RIGHT HEADER CONTENT ---
+  const headerRightContent = (
+    <div className={styles.headerActions}>
+      <div className={styles.workspaceSelectorGroup}>
+        <span className={styles.label}>Base:</span>
+        <div className={styles.dropdownWrapper}>
+          <WorkspaceDropdown
+            groups={workspaceGroups}
+            availableZones={availableZones}
+            selectedOrgId={baseOrg?.id}
+            selectedTeamId={baseTeam?.id}
+            onSelect={(orgId, teamId) =>
+              handleWorkspaceChange("base", orgId, teamId)
+            }
+            placeholder="Select Base"
+          />
+        </div>
+      </div>
+      <div className={styles.workspaceSelectorGroup}>
+        <span className={styles.label}>Target:</span>
+        <div className={styles.dropdownWrapper}>
+          <WorkspaceDropdown
+            groups={workspaceGroups}
+            availableZones={availableZones}
+            selectedOrgId={targetOrg?.id}
+            selectedTeamId={targetTeam?.id}
+            onSelect={(orgId, teamId) =>
+              handleWorkspaceChange("target", orgId, teamId)
+            }
+            placeholder="Select Target"
+          />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div
-      className={`${styles.scenariosContainer} ${isDarkMode ? styles.dark : ""}`}
-    >
+    <div className={`${styles.scenariosContainer} ${isDarkMode ? "dark" : ""}`}>
+      {/* 🚀 THE FIX: Moved SectionHeader OUTSIDE of mainContent so it spans 100% of the screen! */}
       <SectionHeader
         title="Scenarios"
         currentView={currentView}
         setCurrentView={setCurrentView}
-        buttons={[
-          { title: "Deployment Console", view: "deployment" },
-          // { title: "Changelog", view: "changelog" },
-          // { title: "Audit", view: "audit" },
-          // { title: "Documentation", view: "documentation" },
-        ]}
+        buttons={buttons}
+        rightContent={headerRightContent}
       />
 
+      {/* The diff engine remains safely contained in the 1200px center layout */}
       <div className={styles.mainContent}>
-        <ComparisonHeader
-          updateScenario={updateScenario}
-          currentProdId={selectedProdId}
-          currentSandboxId={selectedSandboxId}
-          prodJson={prodJson}
-          sandboxJson={sandboxJson}
-          isDarkMode={isDarkMode}
-          setIsDarkMode={setIsDarkMode}
-          isReverse={isReverse}
-          setIsReverse={setIsReverse}
-          ignoreScenarioName={ignoreScenarioName}
-          ignoreConnections={ignoreConnections}
-          ignoreModuleNames={ignoreModuleNames}
-          diffReport={diffReport}
-          onDeploySuccess={handleDeploySuccess}
-        />
         <div className={styles.deploymentContainer}>
           <div className={styles.sidebarContainer}>
             <OverviewSidebar
               diffReport={diffReport}
               errorStats={errorStats}
-              showErrorsOnly={showErrorsOnly}
-              setShowErrorsOnly={handleToggleShowErrors}
+              processedGroups={processedGroups}
+              handleScrollToModule={handleScrollToModule}
+              viewBlueprints={viewBlueprints}
+              setViewBlueprints={setViewBlueprints}
             />
             <SettingsSidebar
+              isDarkMode={isDarkMode}
+              setIsDarkMode={setIsDarkMode}
               ignoreScenarioName={ignoreScenarioName}
               setIgnoreScenarioName={setIgnoreScenarioName}
               ignoreConnections={ignoreConnections}
@@ -215,49 +253,76 @@ const Scenarios: React.FC = () => {
               setIgnoreModuleNames={setIgnoreModuleNames}
               showRawMappings={showRawMappings}
               setShowRawMappings={setShowRawMappings}
+              showErrorsOnly={showErrorsOnly}
+              setShowErrorsOnly={setShowErrorsOnly}
             />
           </div>
+
           <div className={styles.comparisonContainer}>
+            <ComparisonHeader
+              updateScenario={(id, json) => updateScenario(id, json)}
+              currentProdId={selectedProdId}
+              currentSandboxId={selectedSandboxId}
+              prodJson={prodJson}
+              sandboxJson={sandboxJson}
+              isDarkMode={isDarkMode}
+              setIsDarkMode={setIsDarkMode}
+              isReverse={isReverse}
+              setIsReverse={setIsReverse}
+              ignoreScenarioName={ignoreScenarioName}
+              ignoreConnections={ignoreConnections}
+              ignoreModuleNames={ignoreModuleNames}
+              diffReport={diffReport}
+              onDeploySuccess={() => fetchBaseBlueprint(selectedProdId)}
+            />
+
             <div className={styles.blueprints}>
+              {/* BASE PANEL */}
               <BlueprintPanel
-                title={isReverse ? "Sandbox (New)" : "Production (Current)"}
+                title={isReverse ? "Target (Sandbox)" : "Base (Production)"}
                 selectedId={isReverse ? selectedSandboxId : selectedProdId}
-                scenarios={scenarios}
+                scenarios={isReverse ? targetScenarios : baseScenarios}
                 jsonValue={isReverse ? sandboxJson : prodJson}
-                isLoading={isLoading}
+                isLoading={isReverse ? targetLoading : baseLoading}
                 onSelectChange={(val) => {
                   if (isReverse) {
                     setSelectedSandboxId(val);
+                    fetchTargetBlueprint(val);
                   } else {
                     setSelectedProdId(val);
+                    fetchBaseBlueprint(val);
                   }
-                  fetchBlueprint(isReverse ? "sandbox" : "prod", val);
                 }}
+                onRefresh={() =>
+                  isReverse
+                    ? fetchTargetBlueprint(selectedSandboxId)
+                    : fetchBaseBlueprint(selectedProdId)
+                }
                 onJsonChange={isReverse ? setSandboxJson : setProdJson}
-                onRefresh={() => {
-                  const targetId = isReverse
-                    ? selectedSandboxId
-                    : selectedProdId;
-                  if (targetId)
-                    fetchBlueprint(isReverse ? "sandbox" : "prod", targetId);
-                }}
               />
 
+              {/* TARGET PANEL */}
               <BlueprintPanel
-                title={isReverse ? "Production (Current)" : "Sandbox (New)"}
-                selectedId={isReverse ? selectedProdId : selectedSandboxId}
-                scenarios={scenarios}
-                jsonValue={isReverse ? prodJson : sandboxJson}
-                isLoading={isLoading}
+                title={!isReverse ? "Target (Sandbox)" : "Base (Production)"}
+                selectedId={!isReverse ? selectedSandboxId : selectedProdId}
+                scenarios={!isReverse ? targetScenarios : baseScenarios}
+                jsonValue={!isReverse ? sandboxJson : prodJson}
+                isLoading={!isReverse ? targetLoading : baseLoading}
                 onSelectChange={(val) => {
-                  if (isReverse) {
-                    setSelectedProdId(val);
-                  } else {
+                  if (!isReverse) {
                     setSelectedSandboxId(val);
+                    fetchTargetBlueprint(val);
+                  } else {
+                    setSelectedProdId(val);
+                    fetchBaseBlueprint(val);
                   }
-                  fetchBlueprint(isReverse ? "prod" : "sandbox", val);
                 }}
-                onJsonChange={isReverse ? setProdJson : setSandboxJson}
+                onRefresh={() =>
+                  !isReverse
+                    ? fetchTargetBlueprint(selectedSandboxId)
+                    : fetchBaseBlueprint(selectedProdId)
+                }
+                onJsonChange={!isReverse ? setSandboxJson : setProdJson}
               />
             </div>
 

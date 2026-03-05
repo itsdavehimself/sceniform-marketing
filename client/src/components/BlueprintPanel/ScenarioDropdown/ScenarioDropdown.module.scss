@@ -155,6 +155,7 @@
 .active {
   background-color: $ds-green-500;
   border: 1px $ds-green-500 solid;
+  box-shadow: 0 0 4px rgba(68, 239, 134, 0.4);
 }
 
 .inactive {

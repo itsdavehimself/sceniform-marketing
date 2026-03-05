@@ -11,14 +11,13 @@ import SectionMultiItem from "../../components/Section/SectionMultiItem/SectionM
 import SectionButton from "../../components/Section/SectionButton/SectionButton";
 import { Plus } from "lucide-react";
 import Modal from "../../components/Modal/Modal";
-import { useMakeContext } from "../../context/MakeContext"; // <-- Import Context
+import { useMakeContext } from "../../context/MakeContext";
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
   const { getToken } = useAuth();
   const { signOut } = useClerk();
 
-  // <-- Read from Context instead of the isolated hook
   const { savedKeys, isLoading } = useMakeContext();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

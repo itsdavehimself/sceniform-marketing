@@ -34,9 +34,12 @@ interface MakeContextType {
   availableZones: string[]; // <-- Added: Context tracks which zones are active
   activeOrg: MakeOrganization | null;
   activeTeam: MakeTeam | null;
+  targetOrg: MakeOrganization | null; // <-- ADDED
+  targetTeam: MakeTeam | null; // <-- ADDED
   setActiveOrgId: (id: number) => void;
   setActiveTeamId: (id: number) => void;
   setActiveWorkspace: (orgId: number, teamId: number) => void;
+  setTargetWorkspace: (orgId: number, teamId: number) => void; // <-- ADDED
   isLoading: boolean;
   error: string | null;
   refreshContext: () => void; // <-- Added: The trigger to force updates
@@ -56,6 +59,8 @@ export function MakeProvider({ children }: { children: ReactNode }) {
 
   const [activeOrg, setActiveOrg] = useState<MakeOrganization | null>(null);
   const [activeTeam, setActiveTeam] = useState<MakeTeam | null>(null);
+  const [targetOrg, setTargetOrg] = useState<MakeOrganization | null>(null); // <-- ADDED
+  const [targetTeam, setTargetTeam] = useState<MakeTeam | null>(null); //
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -136,8 +141,26 @@ export function MakeProvider({ children }: { children: ReactNode }) {
             if (prev && orgsList.some((o) => o.id === prev.id)) return prev;
             return orgsList[0];
           });
+          setTargetOrg((prev) => {
+            if (prev && orgsList.some((o) => o.id === prev.id)) return prev;
+            return orgsList[0];
+          });
 
           setActiveTeam((prev) => {
+            if (prev) {
+              const stillExists = groups.some((g) =>
+                g.teams.some((t) => t.id === prev.id),
+              );
+              if (stillExists) return prev;
+            }
+            const firstGroup = groups.find((g) => g.orgId === orgsList[0].id);
+            return firstGroup?.teams[0] || null;
+          });
+          setTargetOrg((prev) => {
+            if (prev && orgsList.some((o) => o.id === prev.id)) return prev;
+            return orgsList[0];
+          });
+          setTargetTeam((prev) => {
             if (prev) {
               const stillExists = groups.some((g) =>
                 g.teams.some((t) => t.id === prev.id),
@@ -160,6 +183,30 @@ export function MakeProvider({ children }: { children: ReactNode }) {
 
     fetchEverything();
   }, [isLoaded, isSignedIn, getToken, refreshTrigger]);
+
+  const handleSetTargetWorkspace = (orgId: number, teamId: number) => {
+    if (teamId) {
+      for (const group of workspaceGroups) {
+        const team = group.teams.find((t) => t.id === teamId);
+        if (team) {
+          setTargetTeam(team);
+
+          if (targetOrg?.id !== group.orgId) {
+            const org = organizations.find((o) => o.id === group.orgId);
+            if (org) setTargetOrg(org);
+          }
+          return;
+        }
+      }
+    }
+
+    const org = organizations.find((o) => o.id === orgId);
+    if (org) {
+      setTargetOrg(org);
+      const group = workspaceGroups.find((g) => g.orgId === orgId);
+      setTargetTeam(group?.teams[0] || null);
+    }
+  };
 
   const handleSetActiveOrgId = (id: number) => {
     const org = organizations.find((o) => o.id === id);
@@ -205,6 +252,7 @@ export function MakeProvider({ children }: { children: ReactNode }) {
         setActiveOrgId: handleSetActiveOrgId,
         setActiveTeamId: handleSetActiveTeamId,
         setActiveWorkspace: handleSetActiveWorkspace,
+        setTargetWorkspace: handleSetTargetWorkspace,
         isLoading,
         error,
         refreshContext,

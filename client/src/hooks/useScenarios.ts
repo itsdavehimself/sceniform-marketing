@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
-import { useMakeContext } from "../context/MakeContext";
 import { useAuth } from "@clerk/clerk-react";
 
 interface UseScenariosProps {
-  setProdJson: (val: string) => void;
-  setSandboxJson: (val: string) => void;
+  teamId?: number | null;
+  zone?: string | null;
+  setJson: (val: string) => void;
   setShowErrorsOnly: (val: boolean) => void;
 }
 
 const groupScenariosByFolder = (scenarios: any[], folders: any[]) => {
   const folderMap: Record<string, any> = {};
-
   folderMap["uncategorized"] = {
     id: null,
     name: "Uncategorized",
@@ -18,10 +17,7 @@ const groupScenariosByFolder = (scenarios: any[], folders: any[]) => {
   };
 
   folders.forEach((folder) => {
-    folderMap[folder.id] = {
-      ...folder,
-      scenarios: [],
-    };
+    folderMap[folder.id] = { ...folder, scenarios: [] };
   });
 
   scenarios.forEach((scenario) => {
@@ -32,66 +28,67 @@ const groupScenariosByFolder = (scenarios: any[], folders: any[]) => {
       folderMap["uncategorized"].scenarios.push(scenario);
     }
   });
+
   return Object.values(folderMap);
 };
 
 export const useScenarios = ({
-  setProdJson,
-  setSandboxJson,
+  teamId,
+  zone,
+  setJson,
   setShowErrorsOnly,
 }: UseScenariosProps) => {
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const { activeTeam, activeOrg } = useMakeContext();
   const { getToken } = useAuth();
 
   useEffect(() => {
-    if (!activeTeam || !activeOrg) return;
+    if (!teamId || !zone) {
+      setScenarios([]);
+      return;
+    }
 
     const fetchAllData = async () => {
       setIsLoading(true);
       try {
         const token = await getToken();
-        const queryParams = `?teamId=${activeTeam.id}&zone=${activeOrg.zone}`;
         const headers = { Authorization: `Bearer ${token}` };
 
         const [scenariosRes, foldersRes] = await Promise.all([
           fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/scenarios${queryParams}`,
+            `${import.meta.env.VITE_API_BASE_URL}/api/scenarios?teamId=${teamId}&zone=${zone}`,
             { headers },
           ),
           fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/scenarios/folders${queryParams}`,
+            `${import.meta.env.VITE_API_BASE_URL}/api/scenarios/folders?teamId=${teamId}&zone=${zone}`,
             { headers },
           ),
         ]);
 
-        const scenariosData = await scenariosRes.json();
-        const foldersData = await foldersRes.json();
+        const scenariosJson = await scenariosRes.json();
+        const foldersJson = await foldersRes.json();
 
-        const scenariosList =
-          scenariosData.scenarios || scenariosData.items || [];
-        const foldersList =
-          foldersData.scenariosFolders || foldersData.items || [];
+        // 🚨 THE FIX: Make.com API hides folders under "scenarios-folders", not "folders"
+        const scenarioList = scenariosJson.scenarios || [];
+        const folderList =
+          foldersJson["scenarios-folders"] ||
+          foldersJson.scenariosFolders ||
+          foldersJson.folders ||
+          [];
 
-        const groupedData = groupScenariosByFolder(scenariosList, foldersList);
-        setScenarios(groupedData);
+        setScenarios(groupScenariosByFolder(scenarioList, folderList));
       } catch (err) {
-        console.error("Failed to load scenarios or folders", err);
+        console.error("Failed to load scenarios/folders:", err);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchAllData();
-  }, [activeTeam, activeOrg, getToken]);
+  }, [teamId, zone, getToken]);
 
-  const fetchBlueprint = async (
-    env: "prod" | "sandbox",
-    scenarioId: string,
-  ) => {
-    if (!scenarioId || !activeOrg) return;
+  const fetchBlueprint = async (scenarioId: string) => {
+    if (!scenarioId || !zone) return;
 
     setShowErrorsOnly(false);
     setIsLoading(true);
@@ -101,9 +98,15 @@ export const useScenarios = ({
       const headers = { Authorization: `Bearer ${token}` };
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/scenarios/${scenarioId}/blueprint?zone=${activeOrg.zone}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/scenarios/${scenarioId}/blueprint?zone=${zone}`,
         { headers },
       );
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Failed to fetch blueprint");
+      }
+
       const data = await res.json();
       const parsed =
         typeof data.blueprint === "string"
@@ -111,36 +114,35 @@ export const useScenarios = ({
           : data.blueprint || data;
       const formatted = JSON.stringify(parsed, null, 2);
 
-      if (env === "prod") setProdJson(formatted);
-      else setSandboxJson(formatted);
-    } catch (err) {
+      setJson(formatted);
+    } catch (err: any) {
       console.error("Error fetching blueprint:", err);
+      alert(`Could not load blueprint: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   const updateScenario = async (scenarioId: string, blueprint: string) => {
-    if (!scenarioId || !blueprint || !activeOrg) return;
+    if (!scenarioId || !blueprint || !zone) return;
 
     try {
       const token = await getToken();
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      };
-
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/scenarios/${scenarioId}/update?zone=${activeOrg.zone}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/scenarios/${scenarioId}/update?zone=${zone}`,
         {
           method: "PATCH",
-          headers,
-          body: JSON.stringify({ blueprint: blueprint }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ blueprint }),
         },
       );
       if (!res.ok) throw new Error("Server responded with an error");
     } catch (err) {
       console.error("Error updating scenario:", err);
+      throw err;
     }
   };
 
