@@ -167,9 +167,11 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
           )}
 
           {sourceConnections.length === 0 && !isLoading && (
-            <p className={styles.modalHeaderInfo}>
-              No connections detected in this blueprint.
-            </p>
+            <div className={styles.noConnectionsContainer}>
+              <p className={styles.modalHeaderInfo}>
+                No connections detected in this blueprint.
+              </p>
+            </div>
           )}
         </>
       )}

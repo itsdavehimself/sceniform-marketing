@@ -8,15 +8,20 @@ import SectionItem from "../../../../components/Section/SectionItem/SectionItem"
 import ActionButton from "../../../../components/ActionButton/ActionButton";
 import LoadingSpinner from "../../../../components/LoadingSpinner/LoadingSpinner";
 import Modal from "../../../../components/Modal/Modal";
-import { useSavedApiKeys } from "../../../../hooks/useSavedApiKeys";
 import BackButton from "../BackButton/BackButton";
+import { useMakeContext } from "../../../../context/MakeContext"; // <-- Import Context
 
 const ApiSettings: React.FC = () => {
   const { uid } = useParams<{ uid: string }>();
   const navigate = useNavigate();
   const { getToken } = useAuth();
 
-  const { savedKeys, isLoading: isFetchingKeys } = useSavedApiKeys();
+  // <-- Grab keys and the trigger from context
+  const {
+    savedKeys,
+    isLoading: isFetchingKeys,
+    refreshContext,
+  } = useMakeContext();
 
   const [label, setLabel] = useState("");
   const [zone, setZone] = useState("");
@@ -97,6 +102,8 @@ const ApiSettings: React.FC = () => {
         const errorText = await res.text();
         throw new Error(errorText || "Failed to delete connection.");
       }
+
+      refreshContext();
 
       navigate("/settings");
     } catch (err: any) {

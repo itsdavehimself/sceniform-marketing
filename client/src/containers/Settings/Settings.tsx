@@ -4,7 +4,6 @@ import Section from "../../components/Section/Section";
 import { SignOutButton, useAuth, useClerk } from "@clerk/clerk-react";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import SectionItem from "../../components/Section/SectionItem/SectionItem";
-import { useSavedApiKeys } from "../../hooks/useSavedApiKeys";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { formatDate } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -12,13 +11,16 @@ import SectionMultiItem from "../../components/Section/SectionMultiItem/SectionM
 import SectionButton from "../../components/Section/SectionButton/SectionButton";
 import { Plus } from "lucide-react";
 import Modal from "../../components/Modal/Modal";
+import { useMakeContext } from "../../context/MakeContext"; // <-- Import Context
 
 const Settings: React.FC = () => {
-  const { savedKeys, isLoading } = useSavedApiKeys();
   const navigate = useNavigate();
-
   const { getToken } = useAuth();
   const { signOut } = useClerk();
+
+  // <-- Read from Context instead of the isolated hook
+  const { savedKeys, isLoading } = useMakeContext();
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);

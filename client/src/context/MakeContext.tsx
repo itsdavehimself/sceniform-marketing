@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
 import { useAuth } from "@clerk/clerk-react";
@@ -18,24 +19,40 @@ export interface MakeTeam {
   name: string;
 }
 
+export interface WorkspaceGroup {
+  orgId: number;
+  orgName: string;
+  zone: string;
+  teams: MakeTeam[];
+}
+
 interface MakeContextType {
   organizations: MakeOrganization[];
   teams: MakeTeam[];
+  workspaceGroups: WorkspaceGroup[];
+  savedKeys: any[]; // <-- Added: Context now manages your saved API keys
+  availableZones: string[]; // <-- Added: Context tracks which zones are active
   activeOrg: MakeOrganization | null;
   activeTeam: MakeTeam | null;
   setActiveOrgId: (id: number) => void;
   setActiveTeamId: (id: number) => void;
+  setActiveWorkspace: (orgId: number, teamId: number) => void;
   isLoading: boolean;
   error: string | null;
+  refreshContext: () => void; // <-- Added: The trigger to force updates
 }
 
-const MakeContext = createContext<MakeContextType | undefined>(undefined);
+export const MakeContext = createContext<MakeContextType | undefined>(
+  undefined,
+);
 
 export function MakeProvider({ children }: { children: ReactNode }) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
   const [organizations, setOrganizations] = useState<MakeOrganization[]>([]);
-  const [teams, setTeams] = useState<MakeTeam[]>([]);
+  const [workspaceGroups, setWorkspaceGroups] = useState<WorkspaceGroup[]>([]);
+  const [savedKeys, setSavedKeys] = useState<any[]>([]);
+  const [availableZones, setAvailableZones] = useState<string[]>([]);
 
   const [activeOrg, setActiveOrg] = useState<MakeOrganization | null>(null);
   const [activeTeam, setActiveTeam] = useState<MakeTeam | null>(null);
@@ -43,64 +60,95 @@ export function MakeProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const refreshContext = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
+
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
 
-    if (organizations.length > 0 || !isLoading) return;
-
-    const fetchOrgs = async () => {
+    const fetchEverything = async () => {
       setIsLoading(true);
       try {
         const token = await getToken();
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/MakeConnections/organizations`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+        const headers = { Authorization: `Bearer ${token}` };
 
-        if (!response.ok) throw new Error("Failed to fetch organizations");
+        // FETCH ORGANIZATIONS & API KEYS SIMULTANEOUSLY
+        const [orgsRes, connRes] = await Promise.all([
+          fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/MakeConnections/organizations`,
+            { headers },
+          ),
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/MakeConnections`, {
+            headers,
+          }),
+        ]);
 
-        const data = await response.json();
+        if (!orgsRes.ok) throw new Error("Failed to fetch organizations");
 
-        const orgsList = data.organizations || [];
+        const orgsData = await orgsRes.json();
+        const connData = connRes.ok
+          ? await connRes.json()
+          : { connections: [] };
+
+        const orgsList: MakeOrganization[] = orgsData.organizations || [];
         setOrganizations(orgsList);
 
-        if (orgsList.length > 0) {
-          setActiveOrg(orgsList[0]);
-        }
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        const keys = connData.connections || [];
+        setSavedKeys(keys);
 
-    fetchOrgs();
-  }, [isLoaded, isSignedIn, getToken]);
+        const zones = keys.map((c: any) => c.zone);
+        setAvailableZones(zones);
 
-  useEffect(() => {
-    if (!activeOrg) return;
-
-    const fetchTeams = async () => {
-      setIsLoading(true);
-      try {
-        const token = await getToken();
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/MakeConnections/teams?organizationId=${activeOrg.id}&zone=${activeOrg.zone}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+        const groups: WorkspaceGroup[] = await Promise.all(
+          orgsList.map(async (org) => {
+            try {
+              const teamRes = await fetch(
+                `${import.meta.env.VITE_API_BASE_URL}/api/MakeConnections/teams?organizationId=${org.id}&zone=${org.zone}`,
+                { headers },
+              );
+              const teamData = await teamRes.json();
+              return {
+                orgId: org.id,
+                orgName: org.name,
+                zone: org.zone,
+                teams: teamData.teams || [],
+              };
+            } catch (err) {
+              console.error(`Failed to fetch teams for org ${org.name}`, err);
+              return {
+                orgId: org.id,
+                orgName: org.name,
+                zone: org.zone,
+                teams: [],
+              };
+            }
+          }),
         );
 
-        if (!response.ok) throw new Error("Failed to fetch teams");
+        setWorkspaceGroups(groups);
 
-        const data = await response.json();
+        // Auto-select logic
+        if (orgsList.length > 0) {
+          setActiveOrg((prev) => {
+            if (prev && orgsList.some((o) => o.id === prev.id)) return prev;
+            return orgsList[0];
+          });
 
-        const teamsList = data.teams || [];
-        setTeams(teamsList);
-
-        if (teamsList.length > 0) {
-          setActiveTeam(teamsList[0]);
+          setActiveTeam((prev) => {
+            if (prev) {
+              const stillExists = groups.some((g) =>
+                g.teams.some((t) => t.id === prev.id),
+              );
+              if (stillExists) return prev;
+            }
+            const firstGroup = groups.find((g) => g.orgId === orgsList[0].id);
+            return firstGroup?.teams[0] || null;
+          });
         } else {
+          setActiveOrg(null);
           setActiveTeam(null);
         }
       } catch (err: any) {
@@ -110,34 +158,56 @@ export function MakeProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    fetchTeams();
-  }, [activeOrg, getToken]);
+    fetchEverything();
+  }, [isLoaded, isSignedIn, getToken, refreshTrigger]);
 
   const handleSetActiveOrgId = (id: number) => {
     const org = organizations.find((o) => o.id === id);
     if (org) {
       setActiveOrg(org);
-      setActiveTeam(null);
-      setTeams([]);
+      const group = workspaceGroups.find((g) => g.orgId === id);
+      setActiveTeam(group?.teams[0] || null);
     }
   };
 
   const handleSetActiveTeamId = (id: number) => {
-    const team = teams.find((t) => t.id === id);
-    if (team) setActiveTeam(team);
+    for (const group of workspaceGroups) {
+      const team = group.teams.find((t) => t.id === id);
+      if (team) {
+        setActiveTeam(team);
+        if (activeOrg?.id !== group.orgId) {
+          const org = organizations.find((o) => o.id === group.orgId);
+          if (org) setActiveOrg(org);
+        }
+        return;
+      }
+    }
   };
+
+  const handleSetActiveWorkspace = (orgId: number, teamId: number) => {
+    handleSetActiveOrgId(orgId);
+    handleSetActiveTeamId(teamId);
+  };
+
+  const currentTeams =
+    workspaceGroups.find((g) => g.orgId === activeOrg?.id)?.teams || [];
 
   return (
     <MakeContext.Provider
       value={{
         organizations,
-        teams,
+        teams: currentTeams,
+        workspaceGroups,
+        savedKeys,
+        availableZones,
         activeOrg,
         activeTeam,
         setActiveOrgId: handleSetActiveOrgId,
         setActiveTeamId: handleSetActiveTeamId,
+        setActiveWorkspace: handleSetActiveWorkspace,
         isLoading,
         error,
+        refreshContext,
       }}
     >
       {children}
@@ -147,8 +217,7 @@ export function MakeProvider({ children }: { children: ReactNode }) {
 
 export function useMakeContext() {
   const context = useContext(MakeContext);
-  if (context === undefined) {
+  if (context === undefined)
     throw new Error("useMakeContext must be used within a MakeProvider");
-  }
   return context;
 }

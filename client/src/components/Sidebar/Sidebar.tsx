@@ -3,30 +3,19 @@ import styles from "./Sidebar.module.scss";
 import { useNavigate } from "react-router-dom";
 import { Brain, Cable, PanelsTopLeft, Settings, Share2 } from "lucide-react";
 import logo from "../../assets/diffra_logo.png";
-import Dropdown from "../../components/Dropdown/Dropdown";
+import WorkspaceDropdown from "../../components/WorkspaceDropdown/WorkspaceDropdown";
 import { useMakeContext } from "../../context/MakeContext";
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
 
   const {
-    organizations,
-    teams,
+    workspaceGroups,
     activeOrg,
     activeTeam,
-    setActiveOrgId,
-    setActiveTeamId,
+    setActiveWorkspace,
+    availableZones,
   } = useMakeContext();
-
-  const orgOptions = organizations.map((org) => ({
-    label: org.name,
-    value: org.id,
-  }));
-
-  const teamOptions = teams.map((team) => ({
-    label: team.name,
-    value: team.id,
-  }));
 
   return (
     <div className={styles.sideBar}>
@@ -37,22 +26,14 @@ const Sidebar: React.FC = () => {
 
       <section className={styles.workspaceSelector}>
         <div className={styles.selectorGroup}>
-          <span className={styles.selectorLabel}>Organization</span>
-          <Dropdown
-            options={orgOptions}
-            value={activeOrg?.id || ""}
-            onChange={(val) => setActiveOrgId(Number(val))}
-            placeholder="Select Organization"
-          />
-        </div>
-
-        <div className={styles.selectorGroup}>
-          <span className={styles.selectorLabel}>Team</span>
-          <Dropdown
-            options={teamOptions}
-            value={activeTeam?.id || ""}
-            onChange={(val) => setActiveTeamId(Number(val))}
-            placeholder="Select Team"
+          <span className={styles.selectorLabel}>Workspace</span>
+          <WorkspaceDropdown
+            groups={workspaceGroups}
+            selectedOrgId={activeOrg?.id}
+            selectedTeamId={activeTeam?.id}
+            onSelect={(orgId, teamId) => setActiveWorkspace(orgId, teamId)}
+            placeholder="Select Workspace"
+            availableZones={availableZones}
           />
         </div>
       </section>

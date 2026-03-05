@@ -1,25 +1,25 @@
-import { useState } from "react";
+import { useState, useContext } from "react"; // <-- add useContext
 import { useAuth } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Info, CheckCircle2 } from "lucide-react";
 import styles from "./MakeConnect.module.scss";
 import ActionButton from "../ActionButton/ActionButton";
-import AppIcon from "../AppIcon/AppIcon";
 import Dropdown from "../Dropdown/Dropdown";
-import { useLocation } from "react-router-dom";
+import AppIcon from "../AppIcon/AppIcon";
 import BackButton from "../../containers/Settings/components/BackButton/BackButton";
+import { MakeContext } from "../../context/MakeContext"; // <-- Import Context
 
 export default function MakeConnect() {
   const { getToken } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Grab context safely (in case this is rendered on the /onboarding route outside the layout)
+  const makeContext = useContext(MakeContext);
+
   const isOnboarding = location.pathname.includes("onboarding");
 
-  // The 2-Step State
   const [step, setStep] = useState<1 | 2>(1);
-
-  // Form State
   const [apiKey, setApiKey] = useState("");
   const [label, setLabel] = useState("");
   const [zone, setZone] = useState("us1");
@@ -64,17 +64,19 @@ export default function MakeConnect() {
           message: "Success! Key verified and securely saved.",
         });
 
-        // Transition Logic
+        // 🔥 FORCE INSTANT GLOBAL REFRESH 🔥
+        if (makeContext?.refreshContext) {
+          makeContext.refreshContext();
+        }
+
         setTimeout(() => {
           if (step === 1 && isOnboarding) {
-            // Move to Step 2, clear form, and default to the other region
             setStep(2);
             setApiKey("");
             setLabel("");
             setZone(zone.startsWith("us") ? "eu1" : "us1");
             setStatus({ type: "idle", message: "" });
           } else if (!isOnboarding) {
-            // They finished adding their second key, go to app
             navigate("/settings");
           } else {
             navigate("/scenarios");
