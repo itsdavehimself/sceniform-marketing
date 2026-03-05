@@ -10,6 +10,8 @@ import Dashboard from "./containers/Dashboard/Dashboard";
 import Onboarding from "./containers/Onboarding/Onboarding";
 import ConnectionGuard from "./layouts/ConnectionGuard/ConnectionGuard";
 import { MakeProvider } from "./context/MakeContext";
+import ApiSettings from "./containers/Settings/components/ApiSettings/ApiSettings";
+import AddApiKey from "./containers/Settings/components/AddApiKey/AddApiKey";
 
 function App() {
   return (
@@ -44,7 +46,11 @@ function App() {
         <Route path="/scenarios" element={<Scenarios />} />
         {/* <Route path="/agents" />
         <Route path="/connections" /> */}
-        <Route path="settings" element={<Settings />} />
+        <Route path="settings">
+          <Route index element={<Settings />} />
+          <Route path="api-key/:uid" element={<ApiSettings />} />
+          <Route path="api-key/add" element={<AddApiKey />} />
+        </Route>
       </Route>
     </Routes>
   );

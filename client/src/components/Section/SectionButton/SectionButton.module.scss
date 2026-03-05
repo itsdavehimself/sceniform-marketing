@@ -1,0 +1,28 @@
+.sectionButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+  border-top: 1px solid $ds-gray-300;
+}
+
+.sectionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: transparent;
+  font-weight: $fw-semibold;
+  border: none;
+  color: $ds-foreground;
+  transition: all 0.2s ease-in-out;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.sectionButton:hover {
+  background-color: $ds-gray-200;
+  color: $ds-foreground;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}

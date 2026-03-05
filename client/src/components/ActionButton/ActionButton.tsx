@@ -1,6 +1,6 @@
 import styles from "./ActionButton.module.scss";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "disabled";
+type ButtonVariant = "primary" | "secondary" | "outline" | "danger";
 
 interface ActionButtonProps {
   title: string;

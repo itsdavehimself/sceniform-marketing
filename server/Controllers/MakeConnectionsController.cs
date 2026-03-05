@@ -117,4 +117,84 @@ public class MakeConnectionsController : ControllerBase
             return StatusCode(500, new { message = ex.Message });
         }
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetSavedConnections()
+    {
+        var clerkUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(clerkUserId)) return Unauthorized();
+
+        var user = await _db.Users
+            .Include(u => u.OrganizationMemberships)
+            .FirstOrDefaultAsync(u => u.ClerkUserId == clerkUserId);
+
+        if (user == null || !user.OrganizationMemberships.Any())
+            return Ok(new { connections = new List<MakeConnectionDto>() });
+
+        var orgId = user.OrganizationMemberships.First().OrganizationId;
+
+        var connections = await _db.MakeConnections
+            .Where(c => c.OrganizationId == orgId)
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new MakeConnectionDto
+            {
+                Uid = c.Uid,
+                Label = c.Label,
+                Zone = c.Zone,
+                CreatedAt = c.CreatedAt,
+                IsActive = c.IsActive
+            })
+            .ToListAsync();
+
+        return Ok(new { connections });
+    }
+
+    public class UpdateConnectionRequest
+    {
+        public string Label { get; set; } = string.Empty;
+    }
+
+    [HttpPatch("{uid}")]
+    public async Task<IActionResult> UpdateConnection(Guid uid, [FromBody] UpdateConnectionRequest request)
+    {
+        var clerkUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(clerkUserId)) return Unauthorized();
+
+        var user = await _db.Users.Include(u => u.OrganizationMemberships).FirstOrDefaultAsync(u => u.ClerkUserId == clerkUserId);
+        if (user == null || !user.OrganizationMemberships.Any()) return Unauthorized();
+
+        var orgId = user.OrganizationMemberships.First().OrganizationId;
+
+        var connection = await _db.MakeConnections
+            .FirstOrDefaultAsync(c => c.Uid == uid && c.OrganizationId == orgId);
+
+        if (connection == null) return NotFound("Connection not found or unauthorized.");
+
+        connection.Label = request.Label;
+        await _db.SaveChangesAsync();
+
+        return Ok(new { Message = "Connection updated successfully." });
+    }
+
+    [HttpDelete("{uid}")]
+    public async Task<IActionResult> DeleteConnection(Guid uid)
+    {
+        var clerkUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(clerkUserId)) return Unauthorized();
+
+        var user = await _db.Users.Include(u => u.OrganizationMemberships).FirstOrDefaultAsync(u => u.ClerkUserId == clerkUserId);
+        if (user == null || !user.OrganizationMemberships.Any()) return Unauthorized();
+
+        var orgId = user.OrganizationMemberships.First().OrganizationId;
+
+        var connection = await _db.MakeConnections
+            .FirstOrDefaultAsync(c => c.Uid == uid && c.OrganizationId == orgId);
+
+        if (connection == null) return NotFound("Connection not found or unauthorized.");
+
+        _db.MakeConnections.Remove(connection);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { Message = "Connection deleted successfully." });
+    }
 }

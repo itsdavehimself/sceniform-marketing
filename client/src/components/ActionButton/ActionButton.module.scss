@@ -40,6 +40,16 @@
     cursor: default;
   }
 
+  &.danger {
+    background-color: $ds-red-500;
+    color: $ds-background;
+  }
+
+  &.danger:hover {
+    background-color: $ds-red-400;
+    cursor: pointer;
+  }
+
   &.lg {
     padding: 12px 12px;
   }

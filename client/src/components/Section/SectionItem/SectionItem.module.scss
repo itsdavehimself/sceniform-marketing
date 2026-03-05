@@ -18,4 +18,11 @@
 .sectionDescription {
   font-weight: $fw-regular;
   color: $ds-gray-600;
+  font-size: 0.875rem;
+}
+
+.sectionChildren {
+  display: flex;
+  width: 8rem;
+  justify-content: end;
 }

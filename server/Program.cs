@@ -4,6 +4,7 @@ using DiffDetector.Api.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient<MakeService>();
+builder.Services.AddHttpClient<ClerkService>();
 builder.Services.AddControllers();
 builder.Services.AddSingleton<EncryptionService>();
 builder.Services.AddHttpClient();

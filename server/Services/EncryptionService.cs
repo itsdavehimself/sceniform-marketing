@@ -9,7 +9,6 @@ public class EncryptionService
 
     public EncryptionService(IConfiguration config)
     {
-        // Must be a 32-character secure string in your appsettings.json!
         _key = config["EncryptionKey"] ?? throw new InvalidOperationException("EncryptionKey missing.");
     }
 

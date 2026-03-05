@@ -2,6 +2,7 @@ public class MakeConnection
 {
     public int Id { get; set; } 
     
+    public Guid Uid { get; set; } = Guid.NewGuid();
     public int OrganizationId { get; set; }
     public Organization Organization { get; set; } = null!;
 

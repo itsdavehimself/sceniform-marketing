@@ -1,0 +1,117 @@
+.settingsContainer {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  font-family: $ds-font-main;
+  color: $ds-foreground;
+  justify-content: start;
+  height: calc(100% - 6rem);
+  margin-top: 6rem;
+  overflow-y: auto;
+}
+
+h1 {
+  font-weight: $fw-semibold;
+  font-size: 1.8rem;
+  margin-bottom: 3rem;
+}
+
+.settingsSections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.formContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: $fw-semibold;
+    color: $ds-foreground;
+  }
+
+  input {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid $ds-gray-300;
+    border-radius: 4px;
+    font-family: $ds-font-main;
+    font-size: 0.875rem;
+    background-color: $ds-background;
+    color: $ds-foreground;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: $ds-gray-600;
+    }
+
+    &:disabled {
+      background-color: $ds-gray-100;
+      color: $ds-gray-500;
+      cursor: not-allowed;
+    }
+
+    :global(.dark) & {
+      border-color: #4b5563;
+      &:disabled {
+        background-color: #252526;
+        color: #9ca3af;
+      }
+    }
+  }
+}
+
+.formFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.status {
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-weight: $fw-semibold;
+}
+
+.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: $ds-green-500;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: $ds-red-500;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.modalText {
+  font-size: 0.875rem;
+  color: $ds-gray-600;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+
+  :global(.dark) & {
+    color: #9ca3af;
+  }
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
