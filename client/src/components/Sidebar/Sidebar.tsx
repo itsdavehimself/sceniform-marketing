@@ -2,7 +2,7 @@ import SidebarButton from "./SidebarButton/SidebarButton";
 import styles from "./Sidebar.module.scss";
 import { useNavigate } from "react-router-dom";
 import { Brain, Cable, PanelsTopLeft, Settings, Share2 } from "lucide-react";
-import logo from "../../assets/diffra_logo.png";
+import logo from "../../assets/sceniform-logo.png";
 import WorkspaceDropdown from "../../components/WorkspaceDropdown/WorkspaceDropdown";
 import { useMakeContext } from "../../context/MakeContext";
 
@@ -20,8 +20,8 @@ const Sidebar: React.FC = () => {
   return (
     <div className={styles.sideBar}>
       <section className={styles.branding}>
-        <img className={styles.logo} src={logo} alt="Diffra Logo" />
-        <h3 className={styles.diffra}>Diffra</h3>
+        <img className={styles.logo} src={logo} alt="Sceniform Logo" />
+        <h3 className={styles.sceniform}>Sceniform</h3>
       </section>
 
       <section className={styles.workspaceSelector}>
