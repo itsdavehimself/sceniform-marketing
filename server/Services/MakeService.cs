@@ -26,8 +26,8 @@ public class MakeService
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "Difflow-App");
     }
 
-    // THE ENGINE: Grabs the active user's key and decrypts it on the fly
-    private async Task<(string ApiKey, string HomeZone)> GetConnectionDetailsAsync()
+    // THE ENGINE: Dynamically grabs the correct user key for the requested zone!
+    private async Task<(string ApiKey, string HomeZone)> GetConnectionDetailsAsync(string? targetZoneUrl = null)
     {
         var clerkUserId = _httpContextAccessor.HttpContext?.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(clerkUserId)) throw new UnauthorizedAccessException("Missing Clerk Token");
@@ -39,14 +39,35 @@ public class MakeService
         var orgId = user?.OrganizationMemberships.FirstOrDefault()?.OrganizationId 
             ?? throw new Exception("User is not in an organization.");
 
-        var connection = await _db.MakeConnections.FirstOrDefaultAsync(c => c.OrganizationId == orgId) 
-            ?? throw new Exception("No Make.com connection found in vault.");
+        MakeConnection? connection = null;
+
+        if (!string.IsNullOrEmpty(targetZoneUrl))
+        {
+            // 1. Convert "eu1.make.com" to just "eu1"
+            var shortZone = targetZoneUrl.Split('.')[0];
+            
+            // 2. Query for this EXACT zone
+            connection = await _db.MakeConnections
+                .FirstOrDefaultAsync(c => c.OrganizationId == orgId && c.Zone == shortZone && c.IsActive);
+        }
+        else
+        {
+            // Fallback: If no zone requested (like getting the initial Organization list), grab the first available key.
+            connection = await _db.MakeConnections
+                .FirstOrDefaultAsync(c => c.OrganizationId == orgId && c.IsActive);
+        }
+
+        if (connection == null)
+        {
+            var missingZone = string.IsNullOrEmpty(targetZoneUrl) ? "any" : targetZoneUrl.Split('.')[0];
+            throw new Exception($"No active Make.com API key found for zone: {missingZone}");
+        }
 
         var apiKey = _encryption.Decrypt(connection.EncryptedApiKey);
         return (apiKey, connection.Zone);
     }
 
-    // 1. GET ORGANIZATIONS (Uses the Home Zone)
+    // 1. GET ORGANIZATIONS (No specific zone required to list orgs, so we don't pass one)
     public async Task<string> GetOrganizationsAsync()
     {
         var (apiKey, homeZone) = await GetConnectionDetailsAsync();
@@ -65,10 +86,10 @@ public class MakeService
         return await response.Content.ReadAsStringAsync();
     }
 
-    // 2. GET TEAMS (Uses the Organization's specific Zone)
+    // 2. GET TEAMS
     public async Task<string> GetTeamsAsync(int organizationId, string targetZone)
     {
-        var (apiKey, _) = await GetConnectionDetailsAsync();
+        var (apiKey, _) = await GetConnectionDetailsAsync(targetZone); // <-- Pass the zone!
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://{targetZone}/api/v2/teams?organizationId={organizationId}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Token", apiKey);
@@ -87,7 +108,7 @@ public class MakeService
     // 3. GET SCENARIOS
     public async Task<string> GetScenariosAsync(int teamId, string targetZone)
     {
-        var (apiKey, _) = await GetConnectionDetailsAsync();
+        var (apiKey, _) = await GetConnectionDetailsAsync(targetZone); // <-- Pass the zone!
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://{targetZone}/api/v2/scenarios?teamId={teamId}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Token", apiKey);
@@ -106,7 +127,7 @@ public class MakeService
     // 4. GET FOLDERS
     public async Task<string> GetFoldersAsync(int teamId, string targetZone)
     {
-        var (apiKey, _) = await GetConnectionDetailsAsync();
+        var (apiKey, _) = await GetConnectionDetailsAsync(targetZone); // <-- Pass the zone!
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://{targetZone}/api/v2/scenarios-folders?teamId={teamId}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Token", apiKey);
@@ -125,7 +146,7 @@ public class MakeService
     // 5. GET BLUEPRINT
     public async Task<string> GetBlueprintAsync(int scenarioId, string targetZone)
     {
-        var (apiKey, _) = await GetConnectionDetailsAsync();
+        var (apiKey, _) = await GetConnectionDetailsAsync(targetZone); // <-- Pass the zone!
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://{targetZone}/api/v2/scenarios/{scenarioId}/blueprint");
         request.Headers.Authorization = new AuthenticationHeaderValue("Token", apiKey);
@@ -144,7 +165,7 @@ public class MakeService
     // 6. PATCH SCENARIO
     public async Task<string> PatchScenarioAsync(int scenarioId, string targetZone, object updateData)
     {        
-        var (apiKey, _) = await GetConnectionDetailsAsync();
+        var (apiKey, _) = await GetConnectionDetailsAsync(targetZone); // <-- Pass the zone!
 
         var request = new HttpRequestMessage(HttpMethod.Patch, $"https://{targetZone}/api/v2/scenarios/{scenarioId}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Token", apiKey);
@@ -166,7 +187,7 @@ public class MakeService
     // 7. GET CONNECTIONS
     public async Task<string> GetConnectionsAsync(int teamId, string targetZone)
     {
-        var (apiKey, _) = await GetConnectionDetailsAsync();
+        var (apiKey, _) = await GetConnectionDetailsAsync(targetZone); // <-- Pass the zone!
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://{targetZone}/api/v2/connections?teamId={teamId}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Token", apiKey);

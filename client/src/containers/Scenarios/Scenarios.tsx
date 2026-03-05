@@ -197,7 +197,7 @@ const Scenarios: React.FC = () => {
             onSelect={(orgId, teamId) =>
               handleWorkspaceChange("base", orgId, teamId)
             }
-            placeholder="Select Base"
+            placeholder="Select base"
           />
         </div>
       </div>
@@ -212,7 +212,7 @@ const Scenarios: React.FC = () => {
             onSelect={(orgId, teamId) =>
               handleWorkspaceChange("target", orgId, teamId)
             }
-            placeholder="Select Target"
+            placeholder="Select target"
           />
         </div>
       </div>
