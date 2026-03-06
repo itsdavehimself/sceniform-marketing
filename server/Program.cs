@@ -1,16 +1,23 @@
 using Microsoft.EntityFrameworkCore;
 using DiffDetector.Api.Services;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpClient<MakeService>();
-builder.Services.AddHttpClient<ClerkService>();
-builder.Services.AddControllers();
-builder.Services.AddSingleton<EncryptionService>();
-builder.Services.AddHttpClient();
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("DiffDetector")
+    .PersistKeysToDbContext<AppDbContext>();
+
+builder.Services.AddSingleton<EncryptionService>();
+
+builder.Services.AddHttpClient<MakeService>();
+builder.Services.AddHttpClient<ClerkService>();
+builder.Services.AddHttpClient();
+
+builder.Services.AddControllers();
 
 
 builder.Services.AddEndpointsApiExplorer();
