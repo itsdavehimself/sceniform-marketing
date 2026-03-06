@@ -1,0 +1,28 @@
+.feature {
+  color: $ds-foreground;
+  display: flex;
+  flex-direction: column;
+}
+
+.featureHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+
+  h4 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.5rem;
+    font-weight: $fw-semibold;
+  }
+}
+
+.icon {
+  color: $ds-gray-500;
+}
+
+.featureText {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}

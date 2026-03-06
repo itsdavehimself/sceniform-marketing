@@ -1,0 +1,226 @@
+.landingPage {
+  font-family: $ds-font-main;
+  color: $ds-foreground;
+}
+
+$video-height: 50rem;
+$shared-content-width: calc(#{$video-height} * (1920 / 1080));
+
+.heroSection {
+  display: flex;
+  flex-direction: column;
+  height: calc(75vh - 74px);
+  width: 100%;
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  margin: 0 auto;
+  width: fit-content;
+  text-align: center;
+  align-items: center;
+  gap: 2rem;
+
+  h1 {
+    font-size: 3.25rem;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.subHeader {
+  width: 40%;
+
+  h3 {
+    font-size: 1.25rem;
+    margin: 0;
+    padding: 0;
+    font-weight: $fw-regular;
+    color: $ds-gray-600;
+  }
+}
+
+.videoSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 74px);
+}
+
+.video {
+  background-color: $ds-gray-300;
+  height: $video-height;
+  width: $shared-content-width;
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
+
+.featureGridSection {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 74px);
+
+  width: $shared-content-width;
+  margin: 0 auto;
+}
+
+.gridHeader {
+  align-self: flex-start;
+  margin: 0 0 4rem 0;
+  padding: 0;
+  font-size: 2.6rem;
+  width: 40rem;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6rem;
+  width: 100%;
+}
+
+/* --- NEW SECTIONS --- */
+
+/* Trust Banner */
+.trustBanner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 0 2rem 0;
+  color: $ds-gray-500;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  width: 100%;
+}
+
+/* Shared utility for the new lower sections */
+.architectureSection,
+.roadmapSection,
+.bottomCtaSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: $shared-content-width;
+  margin: 10rem auto;
+}
+
+.sectionHeader {
+  margin: 0 0 1rem 0;
+  padding: 0;
+  font-size: 2.6rem;
+  text-align: center;
+}
+
+.sectionSubtext {
+  font-size: 1.25rem;
+  color: $ds-gray-600;
+  margin: 0 0 4rem 0;
+  text-align: center;
+}
+
+/* Architecture / Under the Hood */
+.stepGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4rem;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.stepCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  .stepIcon {
+    color: $ds-foreground; // Or a subtle accent color if you have one
+  }
+
+  h4 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  p {
+    color: $ds-gray-600;
+    line-height: 1.6;
+    margin: 0;
+    font-size: 1.05rem;
+  }
+}
+
+/* Roadmap */
+.roadmapList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 650px; /* Kept narrow for readability */
+}
+
+.roadmapItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid $ds-gray-300;
+  border-radius: 8px;
+  background-color: transparent;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: $ds-gray-500; // Subtle hover effect
+  }
+
+  .badge {
+    font-family: monospace;
+    background: $ds-gray-300;
+    color: $ds-foreground;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .roadmapContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    h4 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      color: $ds-gray-600;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+  }
+}
+
+/* Bottom CTA */
+.bottomCtaSection {
+  margin-top: 12rem;
+  margin-bottom: 12rem;
+  text-align: center;
+
+  h2 {
+    font-size: 3.25rem;
+    margin: 0 0 2.5rem 0;
+  }
+}

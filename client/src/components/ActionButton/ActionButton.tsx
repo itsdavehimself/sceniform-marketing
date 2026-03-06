@@ -9,6 +9,7 @@ interface ActionButtonProps {
   type?: "button" | "submit" | "reset" | undefined;
   disabled?: boolean;
   size?: "sm" | "lg";
+  fontSize?: "sm" | "lg";
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
@@ -18,13 +19,17 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   type = "button",
   disabled,
   size = "sm",
+  fontSize = "sm",
 }) => {
+  const fontSizeClass = fontSize === "lg" ? styles.fontLg : styles.fontSm;
+
   const buttonClass = `
-    ${styles.actionButton} 
-    ${styles[variant]}
-    ${styles[size]} 
-    ${disabled ? styles.disabled : ""}
-  `.trim();
+  ${styles.actionButton} 
+  ${styles[variant]} 
+  ${styles[size]} 
+  ${fontSizeClass}
+  ${disabled ? styles.disabled : ""}
+`.trim();
 
   return (
     <button
