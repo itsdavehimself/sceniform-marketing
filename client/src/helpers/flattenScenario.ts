@@ -50,17 +50,15 @@ function flattenScenario(
       incomingFrom: previousNodeName,
       mapper: mod.mapper || {},
       parameters: mod.parameters || {},
-
-      // ADD THESE TWO LINES
       account: mod.account,
       connection: mod.connection,
-
       routes: mod.routes || [],
       hasErrorHandler: !!(mod.onerror && mod.onerror.length > 0),
       filter: mod.filter || null,
       connectionLabel: connectionLabel,
       isFallback: false,
       isDisabled: ancestorDisabled,
+      metadata: mod.metadata || {},
     };
 
     nodes.push(node);

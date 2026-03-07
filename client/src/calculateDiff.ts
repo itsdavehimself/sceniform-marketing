@@ -92,7 +92,7 @@ export function compareBlueprints(
         sbNode.filter || sbNode.isFallback
           ? {
               type: "ADDED",
-              newValue: enrichFilter(sbNode.filter, sandboxIdMap, options),
+              newValue: enrichFilter(sbNode, sandboxIdMap, options),
               isFallback: sbNode.isFallback,
             }
           : null;
@@ -129,8 +129,8 @@ export function compareBlueprints(
       ) {
         filterChange = {
           type: "MODIFIED",
-          oldValue: enrichFilter(prodMatch.filter, prodIdMap, options),
-          newValue: enrichFilter(sbNode.filter, sandboxIdMap, options),
+          oldValue: enrichFilter(prodMatch, prodIdMap, options),
+          newValue: enrichFilter(sbNode, sandboxIdMap, options),
           isFallback: sbNode.isFallback,
           wasFallback: prodMatch.isFallback,
         };
