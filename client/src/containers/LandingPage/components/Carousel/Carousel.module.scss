@@ -51,8 +51,8 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
 
 .imageColumn {
   flex: 1;
-  aspect-ratio: 5 / 4;
-  background-color: $ds-gray-300;
+  aspect-ratio: 16 / 10;
+  background-color: $ds-gray-100;
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
   overflow: hidden;

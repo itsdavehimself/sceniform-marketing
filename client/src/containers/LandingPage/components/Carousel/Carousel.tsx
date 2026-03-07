@@ -1,24 +1,27 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styles from "./Carousel.module.scss";
+import deploy from "../../../../assets/connection-deploy.jpg";
+import success from "../../../../assets/deployment-success.jpg";
+import engine from "../../../../assets/diff-engine.jpg";
 
 const SLIDES = [
   {
     id: 1,
     title: "Semantic Graph Diffing",
     text: "Standard JSON diffs are impossible to read. We analyze your scenario as a connected Directed Acyclic Graph, ignoring visual coordinate noise and highlighting exactly which modules and filters changed.",
-    imageUrl: "",
+    imageUrl: engine,
   },
   {
     id: 2,
     title: "Preserve Production Connections",
     text: "Never overwrite a live authentication token again. Our recursive engine hunts down target connection parameters and preserves them during deployment, so your webhooks stay active.",
-    imageUrl: "",
+    imageUrl: deploy,
   },
   {
     id: 3,
-    title: "Bi-Directional Synchronization",
-    text: "Push Sandbox updates to Production, or execute a one-click rollback if something breaks. Keep your environments perfectly mirrored without the manual rebuild tax.",
-    imageUrl: "",
+    title: "One-Click Production Deploys",
+    text: "Eliminate the manual rebuild tax. Once your changes are reviewed and connections are mapped, deploy complex scenario updates directly to Production with a single click. Sceniform handles the granular module updates automatically.",
+    imageUrl: success,
   },
 ];
 

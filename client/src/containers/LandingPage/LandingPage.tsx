@@ -14,7 +14,6 @@ import FeatureGridItem from "./components/FeatureGridItem/FeatureGridItem";
 import styles from "./LandingPage.module.scss";
 import { SignUpButton } from "@clerk/clerk-react";
 import Carousel from "./components/Carousel/Carousel";
-import logo from "../../assets/sceniform-logo.png";
 import Footer from "./pages/Pricing/components/Footer/Footer";
 
 const LandingPage: React.FC = () => {
@@ -35,7 +34,7 @@ const LandingPage: React.FC = () => {
             <SignUpButton>
               <ActionButton title="Compare Scenarios" size="lg" fontSize="lg" />
             </SignUpButton>
-            <p className={styles.ctaTagline}>No credit card required.</p>
+            <p className={styles.ctaTagline}>Try the differ for free.</p>
           </div>
         </div>
       </section>
