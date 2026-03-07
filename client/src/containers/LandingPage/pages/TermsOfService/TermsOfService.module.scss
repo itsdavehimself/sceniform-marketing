@@ -1,7 +1,10 @@
+.termsContainer {
+  font-family: $ds-font-main;
+}
+
 .termsPage {
   font-family: $ds-font-main;
   color: $ds-foreground;
-  background-color: $ds-background;
   min-height: 100vh;
   padding: 4rem 2rem;
   display: flex;

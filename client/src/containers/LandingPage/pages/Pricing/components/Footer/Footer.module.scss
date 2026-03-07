@@ -1,0 +1,60 @@
+.footer {
+  display: flex;
+  height: fit-content;
+  justify-content: center;
+  padding: 4rem 0;
+  border-top: 1px solid $ds-gray-300;
+  width: 100%;
+  gap: 10rem;
+  color: $ds-foreground;
+}
+
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footerLogo {
+  height: 6rem;
+  width: 6rem;
+}
+
+.linkContainers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10rem;
+}
+
+.linkGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.linkGroupHeader {
+  font-size: 0.875rem;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+
+  a {
+    color: $ds-foreground;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:visited,
+    &:active {
+      color: $ds-foreground;
+    }
+
+    &:hover {
+      color: $ds-gray-600;
+    }
+  }
+}

@@ -1,7 +1,9 @@
-.privacyPage {
+.privacyContainer {
   font-family: $ds-font-main;
+}
+
+.privacyPage {
   color: $ds-foreground;
-  background-color: $ds-background;
   min-height: 100vh;
   padding: 4rem 2rem;
   display: flex;

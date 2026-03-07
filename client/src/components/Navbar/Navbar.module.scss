@@ -31,6 +31,12 @@
   align-items: center;
   font-size: 1.5rem;
   font-weight: $fw-bold;
+  border: none;
+  background-color: transparent;
+
+  &:hover {
+    cursor: pointer;
+  }
 }
 
 .logo {

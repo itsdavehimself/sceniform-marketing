@@ -15,6 +15,7 @@ import styles from "./LandingPage.module.scss";
 import { SignUpButton } from "@clerk/clerk-react";
 import Carousel from "./components/Carousel/Carousel";
 import logo from "../../assets/sceniform-logo.png";
+import Footer from "./pages/Pricing/components/Footer/Footer";
 
 const LandingPage: React.FC = () => {
   return (
@@ -191,32 +192,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* 8. FOOTER */}
-      <footer className={styles.footer}>
-        <div className={styles.logoContainer}>
-          <img className={styles.footerLogo} src={logo} alt="Sceniform Logo" />
-        </div>
-        <div className={styles.linkContainers}>
-          <div className={styles.linkGroup}>
-            <h5 className={styles.linkGroupHeader}>Legal</h5>
-            <div className={styles.links}>
-              <a href="/privacy">Privacy</a>
-              <a href="/tos">Terms of Service</a>
-            </div>
-          </div>
-          <div className={styles.linkGroup}>
-            <h5 className={styles.linkGroupHeader}>Support</h5>
-            <div className={styles.links}>
-              <a href="mailto:support@sceniform.com">Contact</a>
-            </div>
-          </div>
-          <div className={styles.linkGroup}>
-            <h5 className={styles.linkGroupHeader}>Resources</h5>
-            <div className={styles.links}>
-              <a href="/pricing">Pricing</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 };

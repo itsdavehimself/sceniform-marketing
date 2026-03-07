@@ -12,9 +12,9 @@ const Navbar: React.FC = () => {
     <header className={styles.header}>
       <nav className={styles.navbar}>
         <div className={styles.navLogoGroup}>
-          <div className={styles.branding}>
+          <button className={styles.branding} onClick={() => navigate("/")}>
             <img className={styles.logo} src={logo}></img>Sceniform
-          </div>
+          </button>
           <div className={styles.navGroup}>
             <div className={styles.navGroup}>
               <NavButton
