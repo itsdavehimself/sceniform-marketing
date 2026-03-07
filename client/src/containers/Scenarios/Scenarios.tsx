@@ -49,8 +49,13 @@ const Scenarios: React.FC = () => {
 
   // --- GLOBAL CONTEXT ---
   // (You can delete targetOrg/targetTeam from MakeContext.tsx, we don't need them globally!)
-  const { activeOrg, activeTeam, workspaceGroups, availableZones } =
-    useMakeContext();
+  const {
+    activeOrg,
+    activeTeam,
+    workspaceGroups,
+    availableZones,
+    setActiveWorkspace,
+  } = useMakeContext();
 
   // --- LOCAL WORKSPACE STATE ---
   const [baseOrg, setBaseOrg] = useState(activeOrg);
@@ -77,6 +82,7 @@ const Scenarios: React.FC = () => {
     const team = org?.teams.find((t) => t.id === teamId) || null;
 
     if (side === "base") {
+      setActiveWorkspace(orgId, teamId);
       setBaseOrg(
         org ? { id: org.orgId, name: org.orgName, zone: org.zone } : null,
       );
@@ -277,6 +283,10 @@ const Scenarios: React.FC = () => {
               sourceConnectionsList={sourceConnectionsList}
               targetConnectionsList={targetConnectionsList}
               isConnectionsLoading={isConnectionsLoading}
+              baseZone={baseOrg?.zone}
+              targetZone={targetOrg?.zone}
+              baseTeamId={baseTeam?.id}
+              targetTeamId={targetTeam?.id}
             />
 
             <div className={styles.blueprints}>

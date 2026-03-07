@@ -166,3 +166,8 @@ p {
 .logModified {
   color: $ds-amber-500;
 }
+
+.logError {
+  color: $ds-red-500;
+  font-weight: bold;
+}

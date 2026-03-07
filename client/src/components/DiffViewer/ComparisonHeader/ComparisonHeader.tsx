@@ -5,7 +5,7 @@ import Modal from "../../Modal/Modal";
 import DeploymentModal from "../DeploymentModal/DeploymentModal";
 
 interface ComparisonHeaderProps {
-  updateScenario: (scenarioId: string, blueprint: string) => void;
+  updateScenario: (scenarioId: string, blueprint: string) => Promise<void>;
   currentProdId: string;
   currentSandboxId: string;
   prodJson: string;
@@ -19,10 +19,13 @@ interface ComparisonHeaderProps {
   ignoreModuleNames: boolean;
   diffReport: any;
   onDeploySuccess: () => void;
-  // <-- ADD THESE 3 PROPS
   sourceConnectionsList: any[];
   targetConnectionsList: any[];
   isConnectionsLoading: boolean;
+  baseZone?: string;
+  targetZone?: string;
+  baseTeamId?: number;
+  targetTeamId?: number;
 }
 
 const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
@@ -40,108 +43,108 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
   ignoreModuleNames,
   diffReport,
   onDeploySuccess,
-  // <-- DESTRUCTURE THEM
   sourceConnectionsList,
   targetConnectionsList,
   isConnectionsLoading,
+  baseZone,
+  targetZone,
+  baseTeamId,
+  targetTeamId,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const sourceStr = isReverse ? prodJson : sandboxJson;
   const targetStr = isReverse ? sandboxJson : prodJson;
   const targetId = isReverse ? currentSandboxId : currentProdId;
 
-  const handleDeploy = (userMappings: Record<number, number>) => {
-    // ... keep your exact existing handleDeploy logic ...
+  const activeTargetZone = isReverse ? targetZone : baseZone;
+  const activeTargetTeamId = isReverse ? targetTeamId : baseTeamId;
+
+  const handleDeploy = async (userMappings: Record<number, number>) => {
     if (!sourceStr || !targetStr) {
-      alert("Make sure both Sandbox and Prod blueprints are loaded first!");
-      return;
+      throw new Error(
+        "Make sure both Sandbox and Prod blueprints are loaded first!",
+      );
     }
 
-    try {
-      const sourceObj = JSON.parse(sourceStr);
-      const targetObj = JSON.parse(targetStr);
+    const sourceObj = JSON.parse(sourceStr);
+    const targetObj = JSON.parse(targetStr);
 
-      const applyConnectionMappings = (obj: any) => {
+    const applyConnectionMappings = (obj: any) => {
+      if (!obj || typeof obj !== "object") return;
+      if (Array.isArray(obj)) {
+        obj.forEach(applyConnectionMappings);
+      } else {
+        if (obj.account && userMappings[obj.account]) {
+          obj.account = userMappings[obj.account];
+        }
+        if (obj.connection && userMappings[obj.connection]) {
+          obj.connection = userMappings[obj.connection];
+        }
+        if (obj.parameters) {
+          Object.keys(obj.parameters).forEach((key) => {
+            if (key.startsWith("__IMTCONN__")) {
+              const oldId = obj.parameters[key];
+              if (userMappings[oldId]) {
+                obj.parameters[key] = userMappings[oldId];
+              }
+            }
+          });
+        }
+        if (obj.metadata?.restore?.parameters) {
+          Object.keys(obj.metadata.restore.parameters).forEach((key) => {
+            if (key.startsWith("__IMTCONN__")) {
+              const oldId = obj.metadata.restore.parameters[key];
+              if (userMappings[oldId]) {
+                obj.metadata.restore.parameters[key] = userMappings[oldId];
+              }
+            }
+          });
+        }
+        Object.values(obj).forEach(applyConnectionMappings);
+      }
+    };
+
+    if (Object.keys(userMappings).length > 0) {
+      applyConnectionMappings(sourceObj);
+    }
+
+    if (ignoreScenarioName && targetObj.name) {
+      sourceObj.name = targetObj.name;
+    }
+
+    if (ignoreModuleNames) {
+      const targetNamesMap: Record<string | number, string> = {};
+      const extractNames = (obj: any) => {
         if (!obj || typeof obj !== "object") return;
         if (Array.isArray(obj)) {
-          obj.forEach(applyConnectionMappings);
+          obj.forEach(extractNames);
         } else {
-          if (obj.account && userMappings[obj.account]) {
-            obj.account = userMappings[obj.account];
+          if (obj.id !== undefined && obj.metadata?.designer?.name) {
+            targetNamesMap[obj.id] = obj.metadata.designer.name;
           }
-          if (obj.connection && userMappings[obj.connection]) {
-            obj.connection = userMappings[obj.connection];
-          }
-          if (obj.parameters) {
-            Object.keys(obj.parameters).forEach((key) => {
-              if (key.startsWith("__IMTCONN__")) {
-                const oldId = obj.parameters[key];
-                if (userMappings[oldId]) {
-                  obj.parameters[key] = userMappings[oldId];
-                }
-              }
-            });
-          }
-          if (obj.metadata?.restore?.parameters) {
-            Object.keys(obj.metadata.restore.parameters).forEach((key) => {
-              if (key.startsWith("__IMTCONN__")) {
-                const oldId = obj.metadata.restore.parameters[key];
-                if (userMappings[oldId]) {
-                  obj.metadata.restore.parameters[key] = userMappings[oldId];
-                }
-              }
-            });
-          }
-          Object.values(obj).forEach(applyConnectionMappings);
+          Object.values(obj).forEach(extractNames);
         }
       };
 
-      if (Object.keys(userMappings).length > 0) {
-        applyConnectionMappings(sourceObj);
-      }
-
-      if (ignoreScenarioName && targetObj.name) {
-        sourceObj.name = targetObj.name;
-      }
-
-      if (ignoreModuleNames) {
-        const targetNamesMap: Record<string | number, string> = {};
-        const extractNames = (obj: any) => {
-          if (!obj || typeof obj !== "object") return;
-          if (Array.isArray(obj)) {
-            obj.forEach(extractNames);
-          } else {
-            if (obj.id !== undefined && obj.metadata?.designer?.name) {
-              targetNamesMap[obj.id] = obj.metadata.designer.name;
-            }
-            Object.values(obj).forEach(extractNames);
+      const injectNames = (obj: any) => {
+        if (!obj || typeof obj !== "object") return;
+        if (Array.isArray(obj)) {
+          obj.forEach(injectNames);
+        } else {
+          if (obj.id !== undefined && targetNamesMap[obj.id] !== undefined) {
+            if (!obj.metadata) obj.metadata = {};
+            if (!obj.metadata.designer) obj.metadata.designer = {};
+            obj.metadata.designer.name = targetNamesMap[obj.id];
           }
-        };
+          Object.values(obj).forEach(injectNames);
+        }
+      };
 
-        const injectNames = (obj: any) => {
-          if (!obj || typeof obj !== "object") return;
-          if (Array.isArray(obj)) {
-            obj.forEach(injectNames);
-          } else {
-            if (obj.id !== undefined && targetNamesMap[obj.id] !== undefined) {
-              if (!obj.metadata) obj.metadata = {};
-              if (!obj.metadata.designer) obj.metadata.designer = {};
-              obj.metadata.designer.name = targetNamesMap[obj.id];
-            }
-            Object.values(obj).forEach(injectNames);
-          }
-        };
-
-        extractNames(targetObj);
-        injectNames(sourceObj);
-      }
-
-      const finalPayloadStr = JSON.stringify(sourceObj);
-      updateScenario(targetId, finalPayloadStr);
-    } catch (error) {
-      console.error("Failed to parse JSON for transformation:", error);
-      alert("Could not process the blueprints. Check console.");
+      extractNames(targetObj);
+      injectNames(sourceObj);
     }
+    const finalPayloadStr = JSON.stringify(sourceObj);
+    await updateScenario(targetId, finalPayloadStr);
   };
 
   return (
@@ -165,7 +168,6 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
           handleDeploy={handleDeploy}
           diffReport={diffReport}
           onDeploySuccess={onDeploySuccess}
-          // <-- PASS THEM INTO THE MODAL (Flip based on direction)
           sourceConnectionsList={
             isReverse ? targetConnectionsList : sourceConnectionsList
           }
@@ -173,6 +175,9 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
             isReverse ? sourceConnectionsList : targetConnectionsList
           }
           isConnectionsLoading={isConnectionsLoading}
+          targetScenarioId={targetId}
+          targetZone={activeTargetZone}
+          targetTeamId={activeTargetTeamId}
         />
       </Modal>
 

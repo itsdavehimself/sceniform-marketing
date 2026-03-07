@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import ActionButton from "../../ActionButton/ActionButton";
 import styles from "./DeploymentModal.module.scss";
-// <-- Removed the broken useConnections hook import
 import { useDeploymentMappings } from "../../../hooks/useDeploymentMappings";
 import MappingRow from "./MappingRow/MappingRow";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
@@ -11,18 +10,28 @@ interface DeploymentModalProps {
   sourceJson: string;
   targetJson: string;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  handleDeploy: (mappings: Record<number, number>) => void;
+  handleDeploy: (mappings: Record<number, number>) => Promise<void>;
   diffReport: any;
   onDeploySuccess: () => void;
-  // <-- ADD THESE
   sourceConnectionsList: any[];
   targetConnectionsList: any[];
   isConnectionsLoading: boolean;
+  targetScenarioId?: string;
+  targetZone?: string;
+  targetTeamId?: number;
 }
 
 type LogEntry = {
   text: string;
-  type: "info" | "success" | "added" | "removed" | "modified";
+  type:
+    | "info"
+    | "success"
+    | "added"
+    | "removed"
+    | "modified"
+    | "link"
+    | "error";
+  url?: string;
 };
 
 const DeploymentModal: React.FC<DeploymentModalProps> = ({
@@ -33,25 +42,25 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
   handleDeploy,
   diffReport,
   onDeploySuccess,
-  // <-- DESTRUCTURE
   sourceConnectionsList,
   targetConnectionsList,
   isConnectionsLoading,
+  targetScenarioId,
+  targetZone,
+  targetTeamId,
 }) => {
-  // <-- Removed `const { connections, isLoading } = useConnections();`
-
   const { sourceConnections, mappings, autoMappings, handleMappingChange } =
     useDeploymentMappings(sourceJson, targetJson);
 
   const [deployState, setDeployState] = useState<
-    "idle" | "deploying" | "success"
+    "idle" | "deploying" | "success" | "error"
   >("idle");
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
   const isDeployReady = sourceConnections.every((conn) => !!mappings[conn.id]);
 
   const executeDeployment = async () => {
-    // ... keep your exact existing executeDeployment logic ...
     if (!isDeployReady) return;
 
     let addedCount = diffReport?.summary?.added || 0;
@@ -129,15 +138,39 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
       { text: `> Pushing to target environment...`, type: "info" },
     ]);
 
-    await sleep(1000);
-    setLogs((prev) => [
-      ...prev,
-      { text: "✓ Deployment successful! 🚀", type: "success" },
-    ]);
+    try {
+      await handleDeploy(mappings);
 
-    await sleep(1200);
-    handleDeploy(mappings);
-    setDeployState("success");
+      await sleep(400);
+      setLogs((prev) => [
+        ...prev,
+        { text: "✓ Deployment successful! 🚀", type: "success" },
+      ]);
+
+      if (targetScenarioId && targetZone && targetTeamId) {
+        await sleep(400);
+        setLogs((prev) => [
+          ...prev,
+          {
+            text: "> Open live scenario in Make.com ↗",
+            type: "link",
+            url: `https://${targetZone}/${targetTeamId}/scenarios/${targetScenarioId}/edit`,
+          },
+        ]);
+      }
+
+      await sleep(1200);
+      setDeployState("success");
+    } catch (err: any) {
+      setLogs((prev) => [
+        ...prev,
+        {
+          text: `❌ Deployment failed: ${err.message || "Unknown API Error"}`,
+          type: "error",
+        },
+      ]);
+      setDeployState("error");
+    }
   };
 
   return (
@@ -163,7 +196,6 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
                 <MappingRow
                   key={conn.id}
                   conn={conn}
-                  // <-- PASS BOTH ARRAYS DOWN
                   sourceConnections={sourceConnectionsList}
                   targetConnections={targetConnectionsList}
                   currentMapping={mappings[conn.id] || ""}
@@ -187,7 +219,6 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
         </>
       )}
 
-      {/* ... keep the rest of your terminal/buttons exactly the same ... */}
       {deployState !== "idle" && (
         <div className={styles.terminalContainer}>
           <div className={styles.terminalHeader}>
@@ -202,11 +233,31 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
           </div>
           <div className={styles.terminalBody}>
             {logs.map((log, index) => {
+              if (log.type === "link") {
+                return (
+                  <div key={index} className={styles.logLine}>
+                    <a
+                      href={log.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "#58a6ff",
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {log.text}
+                    </a>
+                  </div>
+                );
+              }
+
               let colorClass = "";
               if (log.type === "success") colorClass = styles.logSuccess;
               if (log.type === "added") colorClass = styles.logAdded;
               if (log.type === "removed") colorClass = styles.logRemoved;
               if (log.type === "modified") colorClass = styles.logModified;
+              if (log.type === "error") colorClass = styles.logError;
 
               return (
                 <div key={index} className={`${styles.logLine} ${colorClass}`}>
@@ -222,11 +273,10 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
       )}
 
       <div className={styles.buttonContainer}>
-        {deployState !== "success" && (
+        {deployState === "idle" && (
           <ActionButton
             title="Cancel"
             variant="secondary"
-            disabled={deployState !== "idle"}
             onClick={() => setIsModalOpen(false)}
           />
         )}
@@ -246,9 +296,9 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
           }
           onClick={() => {
             if (deployState === "idle") executeDeployment();
-            if (deployState === "success") {
+            if (deployState === "success" || deployState === "error") {
               setIsModalOpen(false);
-              onDeploySuccess();
+              if (deployState === "success") onDeploySuccess();
             }
           }}
         />
