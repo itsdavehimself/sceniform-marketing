@@ -1,0 +1,120 @@
+$video-height: 44rem;
+$shared-content-width: calc(#{$video-height} * (1920 / 1080));
+
+.carouselSection {
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.02);
+  padding: 4rem 0;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid $ds-gray-200;
+  border-bottom: 1px solid $ds-gray-200;
+}
+
+.carouselWrapper {
+  display: flex;
+  flex-direction: column;
+  width: $shared-content-width;
+  margin: 0 auto;
+}
+
+.carouselContainer {
+  width: $shared-content-width;
+  display: grid;
+  align-items: center;
+  min-height: 400px;
+}
+
+.slide {
+  grid-area: 1 / 1;
+  width: 100%;
+  gap: 6rem;
+  align-items: center;
+  display: flex;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(15px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.6s;
+  z-index: 0;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    z-index: 1;
+  }
+}
+
+.imageColumn {
+  flex: 1;
+  aspect-ratio: 5 / 4;
+  background-color: $ds-gray-300;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $ds-gray-500;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.textColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  h2 {
+    font-size: 2.6rem;
+    margin: 0;
+    color: $ds-foreground;
+    line-height: 1.2;
+  }
+
+  p {
+    font-size: 1.25rem;
+    color: $ds-gray-600;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.indicators {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 4rem;
+  justify-content: center;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $ds-gray-300;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
+    padding: 0;
+
+    &:hover {
+      transform: scale(1.25);
+    }
+
+    &.active {
+      background-color: $ds-foreground;
+      transform: scale(1.25);
+    }
+  }
+}

@@ -12,12 +12,18 @@ import ConnectionGuard from "./layouts/ConnectionGuard/ConnectionGuard";
 import { MakeProvider } from "./context/MakeContext";
 import ApiSettings from "./containers/Settings/components/ApiSettings/ApiSettings";
 import AddApiKey from "./containers/Settings/components/AddApiKey/AddApiKey";
+import PrivacyPolicy from "./containers/LandingPage/pages/PrivacyPolicy/PrivacyPolicy";
+import TermsOfService from "./containers/LandingPage/pages/TermsOfService/TermsOfService";
+import Pricing from "./containers/LandingPage/pages/Pricing/Pricing";
 
 function App() {
   return (
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/tos" element={<TermsOfService />} />
+        <Route path="/pricing" element={<Pricing />} />
       </Route>
 
       <Route

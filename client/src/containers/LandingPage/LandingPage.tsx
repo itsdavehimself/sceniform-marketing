@@ -1,24 +1,20 @@
 import {
   ArrowLeftRight,
   Ban,
-  CheckCircle,
-  EyeOff,
-  FileText,
   Filter,
-  Layers,
   Lock,
   Network,
   Radar,
-  Terminal,
-  Waypoints,
-  Download,
   GitCompare,
   ShieldCheck,
+  Key,
 } from "lucide-react";
 import ActionButton from "../../components/ActionButton/ActionButton";
-import FeatureGridItem from "./components/FeatureGridItem";
+import FeatureGridItem from "./components/FeatureGridItem/FeatureGridItem";
 import styles from "./LandingPage.module.scss";
 import { SignUpButton } from "@clerk/clerk-react";
+import Carousel from "./components/Carousel/Carousel";
+import logo from "../../assets/sceniform-logo.png";
 
 const LandingPage: React.FC = () => {
   return (
@@ -29,15 +25,17 @@ const LandingPage: React.FC = () => {
           <h1>Deploy the logic. Keep the connections.</h1>
           <div className={styles.subHeader}>
             <h3>
-              Stop choosing between a tedious manual rebuild and a destructive
-              JSON import. Visually resolve hotfix drift, catch forgotten
-              filters, and safely merge sandbox scenario updates without
-              dropping your live connections.
+              Stop choosing between tedious manual rebuilds and destructive JSON
+              imports. Visually resolve hotfix drift and merge sandbox updates
+              safely—without ever dropping your live connections.
             </h3>
           </div>
-          <SignUpButton>
-            <ActionButton title="Compare Scenarios" size="lg" fontSize="lg" />
-          </SignUpButton>
+          <div className={styles.cta}>
+            <SignUpButton>
+              <ActionButton title="Compare Scenarios" size="lg" fontSize="lg" />
+            </SignUpButton>
+            <p className={styles.ctaTagline}>No credit card required.</p>
+          </div>
         </div>
       </section>
 
@@ -54,7 +52,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* 4. FEATURE GRID */}
-      <section className={styles.featureGridSection}>
+      <section id="features" className={styles.featureGridSection}>
         <h2 className={styles.gridHeader}>
           Your Make.com scenarios, perfectly synced.
         </h2>
@@ -65,7 +63,7 @@ const LandingPage: React.FC = () => {
             icon={Lock}
           />
           <FeatureGridItem
-            title="Semantic graph diffing"
+            title="Visual logic diffing"
             text="Standard JSON diffs are a nightmare to read. We analyze your scenario as a connected flow of logic, highlighting exactly which modules, filters, and data mappings changed without the code-level headache."
             icon={Network}
           />
@@ -92,28 +90,37 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      <Carousel />
+
       {/* 5. ARCHITECTURE / UNDER THE HOOD */}
       <section className={styles.architectureSection}>
         <h2 className={styles.sectionHeader}>
           How it works: The Safe-Deploy Proxy
         </h2>
         <div className={styles.stepGrid}>
+          {/* Updated Step 1 */}
           <div className={styles.stepCard}>
-            <Download size={32} className={styles.stepIcon} />
-            <h4>1. Fetch</h4>
+            <Key size={32} className={styles.stepIcon} />
+            <h4>1. Secure Connect</h4>
             <p>
-              We pull your Sandbox and Production blueprints directly via the
-              Make API. No raw API keys are stored permanently on our servers.
+              Your Make API credentials are secured at rest using ASP.NET Core
+              Data Protection (AES-GCM). We fetch your blueprints securely via
+              proxy, meaning your raw keys are never exposed to the browser or
+              our server logs.
             </p>
           </div>
+
+          {/* Existing Step 2 */}
           <div className={styles.stepCard}>
             <GitCompare size={32} className={styles.stepIcon} />
             <h4>2. Compare</h4>
             <p>
-              Our React engine computes the semantic DAG diff entirely in your
+              Our React engine computes the semantic diff entirely in your
               browser, filtering out visual coordinate noise instantly.
             </p>
           </div>
+
+          {/* Existing Step 3 */}
           <div className={styles.stepCard}>
             <ShieldCheck size={32} className={styles.stepIcon} />
             <h4>3. Proxy</h4>
@@ -133,33 +140,42 @@ const LandingPage: React.FC = () => {
         </p>
 
         <div className={styles.roadmapList}>
+          {/* NEAR TERM */}
           <div className={styles.roadmapItem}>
             <span className={styles.badge}>Next</span>
             <div className={styles.roadmapContent}>
-              <h4>The Auditor (SOC2 Compliance)</h4>
+              <h4>AI Summaries & Versioning</h4>
               <p>
-                Generate compliant PDF/Sheet paper trails detailing exactly who
-                changed what logic, and when.
+                Translate complex JSON diffs into plain-English commit messages,
+                auto-generate scenario documentation, and track version changes
+                to your LLM prompts over time.
               </p>
             </div>
           </div>
+
+          {/* MID TERM */}
           <div className={styles.roadmapItem}>
             <span className={styles.badge}>Later</span>
             <div className={styles.roadmapContent}>
-              <h4>Variable Impact Analyzer</h4>
+              <h4>The Agency Linter & Auditor</h4>
               <p>
-                A visual trace showing downstream dependencies. E.g., "Deleting
-                this Airtable column will break mapping in Module 20."
+                Enforce strict module naming conventions across your team (e.g.,
+                requiring 'GET [resource]') to standardize client handoffs,
+                streamline new developer onboarding, and generate paper trails
+                of every scenario change.
               </p>
             </div>
           </div>
+
+          {/* FAR TERM */}
           <div className={styles.roadmapItem}>
             <span className={styles.badge}>Future</span>
             <div className={styles.roadmapContent}>
-              <h4>The Blueprint Linter</h4>
+              <h4>Fleet Manager & Active Recovery</h4>
               <p>
-                Static analysis that automatically flags missing error handlers,
-                infinite loops, and unmapped variables before deployment.
+                Deploy master scenario template updates across dozens of client
+                organizations instantly. Get proactive alerts when upstream
+                dependencies or live connections stall.
               </p>
             </div>
           </div>
@@ -168,11 +184,39 @@ const LandingPage: React.FC = () => {
 
       {/* 7. BOTTOM CTA */}
       <section className={styles.bottomCtaSection}>
-        <h2>Ready to stop breaking Production?</h2>
+        <h2>Ready to stop breaking production?</h2>
         <SignUpButton>
           <ActionButton title="Compare Scenarios" size="lg" fontSize="lg" />
         </SignUpButton>
       </section>
+
+      {/* 8. FOOTER */}
+      <footer className={styles.footer}>
+        <div className={styles.logoContainer}>
+          <img className={styles.footerLogo} src={logo} alt="Sceniform Logo" />
+        </div>
+        <div className={styles.linkContainers}>
+          <div className={styles.linkGroup}>
+            <h5 className={styles.linkGroupHeader}>Legal</h5>
+            <div className={styles.links}>
+              <a href="/privacy">Privacy</a>
+              <a href="/tos">Terms of Service</a>
+            </div>
+          </div>
+          <div className={styles.linkGroup}>
+            <h5 className={styles.linkGroupHeader}>Support</h5>
+            <div className={styles.links}>
+              <a href="mailto:support@sceniform.com">Contact</a>
+            </div>
+          </div>
+          <div className={styles.linkGroup}>
+            <h5 className={styles.linkGroupHeader}>Resources</h5>
+            <div className={styles.links}>
+              <a href="/pricing">Pricing</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 };

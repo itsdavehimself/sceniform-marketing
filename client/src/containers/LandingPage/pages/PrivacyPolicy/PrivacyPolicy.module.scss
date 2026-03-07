@@ -1,0 +1,108 @@
+.privacyPage {
+  font-family: $ds-font-main;
+  color: $ds-foreground;
+  background-color: $ds-background;
+  min-height: 100vh;
+  padding: 4rem 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.contentWrapper {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.headerSection {
+  border-bottom: 1px solid $ds-gray-300;
+  padding-bottom: 2rem;
+  margin-bottom: 1rem;
+
+  h1 {
+    font-size: 3rem;
+    margin: 0 0 1rem 0;
+    padding: 0;
+  }
+
+  p {
+    color: $ds-gray-600;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+.policySection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  h2 {
+    font-size: 1.5rem;
+    margin: 1.5rem 0 0.5rem 0;
+    padding: 0;
+    font-weight: 600;
+  }
+
+  p {
+    color: $ds-gray-600;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  li {
+    color: $ds-gray-600;
+    font-size: 1rem;
+    line-height: 1.6;
+
+    strong {
+      color: $ds-foreground;
+      font-weight: 600;
+    }
+  }
+}
+
+.contactBlock {
+  background-color: $ds-gray-100;
+  border: 1px solid $ds-gray-300;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+
+  p {
+    margin: 0 0 0.5rem 0;
+    color: $ds-foreground;
+    font-size: 1rem;
+  }
+}
+
+.email {
+  font-size: 0.8rem;
+
+  a {
+    color: $ds-foreground;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:visited,
+    &:active {
+      color: $ds-foreground;
+    }
+
+    &:hover {
+      color: $ds-gray-600;
+    }
+  }
+}

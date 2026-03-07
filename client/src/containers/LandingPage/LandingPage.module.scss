@@ -3,7 +3,7 @@
   color: $ds-foreground;
 }
 
-$video-height: 50rem;
+$video-height: 44rem;
 $shared-content-width: calc(#{$video-height} * (1920 / 1080));
 
 .heroSection {
@@ -29,6 +29,21 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
     margin: 0;
     padding: 0;
   }
+}
+
+.cta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ctaTagline {
+  margin: 0;
+  padding: 0;
+  color: $ds-gray-600;
+  font-size: 0.7rem;
 }
 
 .subHeader {
@@ -84,9 +99,6 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   width: 100%;
 }
 
-/* --- NEW SECTIONS --- */
-
-/* Trust Banner */
 .trustBanner {
   display: flex;
   justify-content: center;
@@ -100,7 +112,6 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   width: 100%;
 }
 
-/* Shared utility for the new lower sections */
 .architectureSection,
 .roadmapSection,
 .bottomCtaSection {
@@ -125,7 +136,6 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   text-align: center;
 }
 
-/* Architecture / Under the Hood */
 .stepGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -140,7 +150,7 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   gap: 1.25rem;
 
   .stepIcon {
-    color: $ds-foreground; // Or a subtle accent color if you have one
+    color: $ds-gray-500;
   }
 
   h4 {
@@ -157,13 +167,12 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   }
 }
 
-/* Roadmap */
 .roadmapList {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
-  max-width: 650px; /* Kept narrow for readability */
+  max-width: 650px;
 }
 
 .roadmapItem {
@@ -177,7 +186,7 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: $ds-gray-500; // Subtle hover effect
+    border-color: $ds-gray-500;
   }
 
   .badge {
@@ -213,7 +222,6 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   }
 }
 
-/* Bottom CTA */
 .bottomCtaSection {
   margin-top: 12rem;
   margin-bottom: 12rem;
@@ -222,5 +230,66 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   h2 {
     font-size: 3.25rem;
     margin: 0 0 2.5rem 0;
+  }
+}
+
+.footer {
+  display: flex;
+  height: fit-content;
+  justify-content: center;
+  padding: 4rem 0;
+  border-top: 1px solid $ds-gray-300;
+  width: 100%;
+  gap: 10rem;
+  color: $ds-foreground;
+}
+
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footerLogo {
+  height: 6rem;
+  width: 6rem;
+}
+
+.linkContainers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10rem;
+}
+
+.linkGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.linkGroupHeader {
+  font-size: 0.875rem;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+
+  a {
+    color: $ds-foreground;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:visited,
+    &:active {
+      color: $ds-foreground;
+    }
+
+    &:hover {
+      color: $ds-gray-600;
+    }
   }
 }
