@@ -6,8 +6,8 @@ import AppIcon from "../../../AppIcon/AppIcon";
 
 interface MappingRowProps {
   conn: any;
-  sourceConnections: any[]; // <-- Changed
-  targetConnections: any[]; // <-- Changed
+  sourceConnections: any[];
+  targetConnections: any[];
   currentMapping: string | number;
   isAutoMapped: boolean;
   onMappingChange: (sourceId: number, targetId: number) => void;

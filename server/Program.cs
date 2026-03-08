@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using DiffDetector.Api.Services;
 using Microsoft.AspNetCore.DataProtection;
+using DiffDetector.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddSingleton<EncryptionService>();
 
 builder.Services.AddHttpClient<MakeService>();
 builder.Services.AddHttpClient<ClerkService>();
+builder.Services.AddHttpClient<LogoDevService>();
 builder.Services.AddHttpClient();
 
 builder.Services.AddControllers();

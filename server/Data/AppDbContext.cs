@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using DiffDetector.Api.Models;
 
 public class AppDbContext : DbContext, IDataProtectionKeyContext{
    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
@@ -9,6 +10,7 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext{
     public DbSet<OrganizationUser> OrganizationUsers { get; set; }
     public DbSet<MakeConnection> MakeConnections { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<AppDomainCache> AppDomainCaches { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
