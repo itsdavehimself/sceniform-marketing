@@ -193,7 +193,6 @@ const PrivacyPolicy: React.FC = () => {
                 <strong>[Your Legal Name / Sceniform LLC]</strong>
               </p>
               <p className={styles.email}>
-                Email:{" "}
                 <a href="mailto:privacy@sceniform.com">privacy@sceniform.com</a>
               </p>
             </div>

@@ -138,7 +138,6 @@ const TermsOfService: React.FC = () => {
                 <strong>[Your Legal Name / Sceniform LLC]</strong>
               </p>
               <p className={styles.email}>
-                Email:{" "}
                 <a href="mailto:support@sceniform.com">support@sceniform.com</a>
               </p>
             </div>

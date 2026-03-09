@@ -7,7 +7,7 @@ import {
   Radar,
   GitCompare,
   ShieldCheck,
-  Key,
+  KeyRound,
 } from "lucide-react";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import FeatureGridItem from "./components/FeatureGridItem/FeatureGridItem";
@@ -100,7 +100,7 @@ const LandingPage: React.FC = () => {
         <div className={styles.stepGrid}>
           {/* Updated Step 1 */}
           <div className={styles.stepCard}>
-            <Key size={32} className={styles.stepIcon} />
+            <KeyRound size={24} className={styles.stepIcon} />
             <h4>1. Secure Connect</h4>
             <p>
               Your Make API credentials are secured at rest using ASP.NET Core
@@ -112,21 +112,21 @@ const LandingPage: React.FC = () => {
 
           {/* Existing Step 2 */}
           <div className={styles.stepCard}>
-            <GitCompare size={32} className={styles.stepIcon} />
+            <GitCompare size={24} className={styles.stepIcon} />
             <h4>2. Compare</h4>
             <p>
               Our React engine computes the semantic diff entirely in your
-              browser, filtering out visual coordinate noise instantly.
+              browser, filtering out noise instantly.
             </p>
           </div>
 
           {/* Existing Step 3 */}
           <div className={styles.stepCard}>
-            <ShieldCheck size={32} className={styles.stepIcon} />
+            <ShieldCheck size={24} className={styles.stepIcon} />
             <h4>3. Proxy</h4>
             <p>
               When you click deploy, our backend safely proxies the payload to
-              Make, mathematically guaranteeing your live webhooks are locked.
+              Make, guaranteeing your live webhooks and connections are locked.
             </p>
           </div>
         </div>
