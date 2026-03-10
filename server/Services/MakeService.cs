@@ -202,4 +202,23 @@ public class MakeService
 
         return await response.Content.ReadAsStringAsync();
     }
+
+    // 8. GET HOOKS
+    public async Task<string> GetHooksAsync(int teamId, string targetZone)
+    {
+        var (apiKey, _) = await GetConnectionDetailsAsync(targetZone);
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://{targetZone}/api/v2/hooks?teamId={teamId}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Token", apiKey);
+
+        var response = await _httpClient.SendAsync(request);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Make API Hooks failed: {response.StatusCode} - {errorBody}");
+        }
+
+        return await response.Content.ReadAsStringAsync();
+    }
 }

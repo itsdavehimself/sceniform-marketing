@@ -108,4 +108,21 @@ public class ScenariosController : ControllerBase
             return StatusCode(500, new { message = ex.Message });
         }
     }
+
+    [HttpGet("hooks")]
+    public async Task<IActionResult> GetHooks([FromQuery] int teamId, [FromQuery] string zone)
+    {
+        try
+        {
+            if (teamId <= 0 || string.IsNullOrEmpty(zone)) 
+                return BadRequest("Missing teamId or zone parameters.");
+
+            var rawJson = await _makeService.GetHooksAsync(teamId, zone);
+            return Content(rawJson, "application/json");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
 }
