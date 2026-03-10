@@ -1,4 +1,4 @@
-import type { DiffOptions } from "../calculateDiff";
+import type { DiffOptions } from "./calculateDiff";
 import _ from "lodash";
 
 function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
@@ -7,16 +7,15 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
 
   // HELPER: Look up the real connection name
   const getConnectionName = (id: string | number) => {
-    if (!options.connections) return null;
-    const match = options.connections.find((c: any) => c.id === Number(id));
+    if (!options.allConnections) return null;
+    const list = options.allConnections;
+    const match = list.find((c: any) => c.id === Number(id));
     return match ? match.name : null;
   };
 
-  // --- NEW: Translate raw IDs to Human-Readable Labels ---
   const restoreExpect = node.metadata?.restore?.expect || {};
   const nodeExpect = node.metadata?.expect || [];
 
-  // 1. Build a dictionary of Field IDs (fldXYZ) to Labels (Notes, Person, etc.)
   const fieldDict: Record<string, string> = {};
 
   const findSpecs = (obj: any) => {
@@ -24,7 +23,6 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
     if (Array.isArray(obj)) {
       obj.forEach(findSpecs);
     } else {
-      // If we find a "spec" array (like Airtable fields), map the name to the label
       if (Array.isArray(obj.spec)) {
         obj.spec.forEach((field: any) => {
           if (field.name && field.label) {
@@ -36,22 +34,18 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
     }
   };
 
-  // Traverse both metadata trees to find all field definitions
   findSpecs(restoreExpect);
   findSpecs(nodeExpect);
 
-  // 2. Recursive function to replace keys and values in the mapper
   const translate = (obj: any, isRoot = false): any => {
     if (!obj || typeof obj !== "object") return obj;
     if (Array.isArray(obj)) return obj.map((item) => translate(item, false));
 
     const translatedObj: any = {};
     for (const [key, value] of Object.entries(obj)) {
-      // Translate keys (e.g., fld0H5lNM34ni5qPS -> Person)
       const newKey = fieldDict[key] || key;
       let newValue = value;
 
-      // Translate top-level values (e.g., appLjIhgKjM9u4v2O -> Greg)
       if (isRoot && typeof value === "string") {
         if (restoreExpect[key]?.label) {
           newValue = restoreExpect[key].label;
@@ -59,7 +53,6 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
           restoreExpect[key]?.path &&
           Array.isArray(restoreExpect[key].path)
         ) {
-          // Translate Google Drive/Sheets folder paths
           newValue = restoreExpect[key].path.join(" / ");
         }
       }
@@ -73,10 +66,11 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
     return translatedObj;
   };
 
-  // Apply the translation to the mapper before stringifying
   mapper = translate(mapper, true);
 
-  // 1. Handle standard Make Connection ID (__IMTCONN__)
+  // --- CONNECTION HANDLING ---
+
+  // 1. Standard Make Connection ID
   if (parameters.__IMTCONN__) {
     if (!options.ignoreConnections) {
       const connId = parameters.__IMTCONN__;
@@ -87,7 +81,41 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
 
       parameters["Connection"] = `${displayName} (ID: ${connId})`;
     }
+    // Always delete the raw ID so it isn't diffed
     delete parameters.__IMTCONN__;
+  }
+
+  // 2. Legacy 'account' parameter (like in the Email module)
+  if (parameters.account !== undefined) {
+    if (!options.ignoreConnections) {
+      const connId = parameters.account;
+      const realName = getConnectionName(connId);
+      parameters["Account"] = realName
+        ? `${realName} (ID: ${connId})`
+        : `ID: ${connId}`;
+    }
+    // Always delete the raw ID so it isn't diffed
+    delete parameters.account;
+  }
+
+  // 3. Legacy 'connection' parameter
+  if (parameters.connection !== undefined) {
+    if (!options.ignoreConnections) {
+      const connId = parameters.connection;
+      const realName = getConnectionName(connId);
+      parameters["Connection"] = realName
+        ? `${realName} (ID: ${connId})`
+        : `ID: ${connId}`;
+    }
+    // Always delete the raw ID so it isn't diffed
+    delete parameters.connection;
+  }
+
+  // --- HOOK HANDLING ---
+  if (options.ignoreHooks) {
+    delete parameters.hook;
+    delete parameters.webhook;
+    delete parameters.webHook;
   }
 
   const routeStates: Record<string, string> = {};
@@ -104,7 +132,7 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
     parameters: parameters,
   };
 
-  // 2. Handle generic Account / Connection IDs
+  // Catch any straggler accounts/connections placed at the root of the node
   if (!options.ignoreConnections) {
     if (node.account) {
       const realName = getConnectionName(node.account);
@@ -118,6 +146,10 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
         ? `${realName} (ID: ${node.connection})`
         : `ID: ${node.connection}`;
     }
+  }
+
+  if (!options.ignoreHooks && node.hook) {
+    configObject["hook"] = node.hook;
   }
 
   if (Object.keys(routeStates).length > 0) {

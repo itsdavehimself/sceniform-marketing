@@ -5,52 +5,85 @@ import Dropdown, { type DropdownOption } from "../../../Dropdown/Dropdown";
 import AppIcon from "../../../AppIcon/AppIcon";
 
 interface MappingRowProps {
-  conn: any;
-  sourceConnections: any[];
-  targetConnections: any[];
+  entity: any;
+  type: "connection" | "hook";
+  sourceList: any[];
+  targetList: any[];
   currentMapping: string | number;
   isAutoMapped: boolean;
   onMappingChange: (sourceId: number, targetId: number) => void;
+  targetScenarioId?: string | number; // <-- NEW PROP
 }
 
 const MappingRow: React.FC<MappingRowProps> = ({
-  conn,
-  sourceConnections,
-  targetConnections,
+  entity,
+  type,
+  sourceList,
+  targetList,
   currentMapping,
   isAutoMapped,
   onMappingChange,
+  targetScenarioId,
 }) => {
-  // 1. Find the source connection details using the Source list
-  const sourceConnDetails = sourceConnections.find(
-    (c: any) => c.id === Number(conn.id),
-  );
+  // 1. Find the source details
+  const sourceDetails = sourceList.find((i: any) => i.id === Number(entity.id));
 
-  const displayName = sourceConnDetails
-    ? sourceConnDetails.name
-    : "Unknown Connection";
+  const displayName = sourceDetails
+    ? sourceDetails.name
+    : `Unknown ${type === "hook" ? "Webhook" : "Connection"}`;
 
-  // 2. Filter target connections using the Target list
-  const filteredConnections = targetConnections.filter((availableConn: any) => {
-    if (sourceConnDetails && sourceConnDetails.accountName) {
-      return availableConn.accountName === sourceConnDetails.accountName;
+  // 2. Filter valid targets
+  const filteredTargets = targetList.filter((availableItem: any) => {
+    // --- AVAILABILITY CHECK ---
+    // Make sure it isn't assigned to a DIFFERENT scenario.
+    // If it has a scenarioId, it is only valid if it belongs to the scenario we are deploying to
+    // OR if it happens to be the currently selected/auto-mapped value.
+    if (availableItem.scenarioId && availableItem.id !== currentMapping) {
+      if (
+        !targetScenarioId ||
+        String(availableItem.scenarioId) !== String(targetScenarioId)
+      ) {
+        return false;
+      }
     }
-    return true; // Fallback
+
+    if (!sourceDetails) return true;
+
+    // --- TYPE / ACCOUNT MATCHING ---
+    if (type === "connection" && sourceDetails.accountName) {
+      return availableItem.accountName === sourceDetails.accountName;
+    }
+
+    if (type === "hook" && sourceDetails.typeName) {
+      return availableItem.typeName === sourceDetails.typeName;
+    }
+
+    return true;
   });
 
-  // 3. Format the options for the custom Dropdown component
-  const dropdownOptions: DropdownOption[] = filteredConnections.map(
-    (availableConn: any) => ({
-      label: availableConn.name,
-      value: availableConn.id,
-      icon: <AppIcon accountName={availableConn.accountName} size={16} />,
+  // 3. Format Dropdown options
+  const dropdownOptions: DropdownOption[] = filteredTargets.map(
+    (availableItem: any) => ({
+      label: availableItem.name,
+      value: availableItem.id,
+      icon: (
+        <AppIcon
+          accountName={availableItem.accountName}
+          size={16}
+          type={type}
+        />
+      ),
     }),
   );
 
   return (
     <div className={styles.mappingRow}>
       <div className={styles.sourceLabel}>
-        <AppIcon accountName={sourceConnDetails?.accountName} size={16} />
+        <AppIcon
+          accountName={sourceDetails?.accountName}
+          size={16}
+          type={type}
+        />
         <span className={styles.primaryName}>{displayName}</span>
       </div>
 
@@ -62,8 +95,8 @@ const MappingRow: React.FC<MappingRowProps> = ({
         <Dropdown
           options={dropdownOptions}
           value={currentMapping}
-          onChange={(val) => onMappingChange(conn.id, Number(val))}
-          placeholder="Select target connection"
+          onChange={(val) => onMappingChange(entity.id, Number(val))}
+          placeholder={`Select target ${type}`}
           className={styles.dropdown}
         />
       </div>

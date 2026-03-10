@@ -19,9 +19,15 @@ interface ComparisonHeaderProps {
   ignoreModuleNames: boolean;
   diffReport: any;
   onDeploySuccess: () => void;
+  // Connections
   sourceConnectionsList: any[];
   targetConnectionsList: any[];
   isConnectionsLoading: boolean;
+  // Hooks
+  sourceHooksList: any[];
+  targetHooksList: any[];
+  isHooksLoading: boolean;
+  // Meta
   baseZone?: string;
   targetZone?: string;
   baseTeamId?: number;
@@ -46,6 +52,9 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
   sourceConnectionsList,
   targetConnectionsList,
   isConnectionsLoading,
+  sourceHooksList,
+  targetHooksList,
+  isHooksLoading,
   baseZone,
   targetZone,
   baseTeamId,
@@ -59,7 +68,10 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
   const activeTargetZone = isReverse ? targetZone : baseZone;
   const activeTargetTeamId = isReverse ? targetTeamId : baseTeamId;
 
-  const handleDeploy = async (userMappings: Record<number, number>) => {
+  const handleDeploy = async (userMappings: {
+    connections: Record<number, number>;
+    hooks: Record<number, number>;
+  }) => {
     if (!sourceStr || !targetStr) {
       throw new Error(
         "Make sure both Sandbox and Prod blueprints are loaded first!",
@@ -69,43 +81,59 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
     const sourceObj = JSON.parse(sourceStr);
     const targetObj = JSON.parse(targetStr);
 
-    const applyConnectionMappings = (obj: any) => {
+    const applyMappings = (obj: any) => {
       if (!obj || typeof obj !== "object") return;
       if (Array.isArray(obj)) {
-        obj.forEach(applyConnectionMappings);
+        obj.forEach(applyMappings);
       } else {
-        if (obj.account && userMappings[obj.account]) {
-          obj.account = userMappings[obj.account];
+        // --- Swap Connections ---
+        if (obj.account && userMappings.connections[obj.account]) {
+          obj.account = userMappings.connections[obj.account];
         }
-        if (obj.connection && userMappings[obj.connection]) {
-          obj.connection = userMappings[obj.connection];
+        if (obj.connection && userMappings.connections[obj.connection]) {
+          obj.connection = userMappings.connections[obj.connection];
         }
+
         if (obj.parameters) {
           Object.keys(obj.parameters).forEach((key) => {
             if (key.startsWith("__IMTCONN__")) {
               const oldId = obj.parameters[key];
-              if (userMappings[oldId]) {
-                obj.parameters[key] = userMappings[oldId];
+              if (userMappings.connections[oldId]) {
+                obj.parameters[key] = userMappings.connections[oldId];
               }
             }
           });
+
+          // --- Swap Hooks ---
+          if (obj.module?.startsWith("gateway:") && obj.parameters.hook) {
+            const oldHookId = obj.parameters.hook;
+            if (userMappings.hooks[oldHookId]) {
+              obj.parameters.hook = userMappings.hooks[oldHookId];
+            }
+          }
         }
+
         if (obj.metadata?.restore?.parameters) {
           Object.keys(obj.metadata.restore.parameters).forEach((key) => {
             if (key.startsWith("__IMTCONN__")) {
               const oldId = obj.metadata.restore.parameters[key];
-              if (userMappings[oldId]) {
-                obj.metadata.restore.parameters[key] = userMappings[oldId];
+              if (userMappings.connections[oldId]) {
+                obj.metadata.restore.parameters[key] =
+                  userMappings.connections[oldId];
               }
             }
           });
         }
-        Object.values(obj).forEach(applyConnectionMappings);
+
+        Object.values(obj).forEach(applyMappings);
       }
     };
 
-    if (Object.keys(userMappings).length > 0) {
-      applyConnectionMappings(sourceObj);
+    if (
+      Object.keys(userMappings.connections).length > 0 ||
+      Object.keys(userMappings.hooks).length > 0
+    ) {
+      applyMappings(sourceObj);
     }
 
     if (ignoreScenarioName && targetObj.name) {
@@ -175,6 +203,9 @@ const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
             isReverse ? sourceConnectionsList : targetConnectionsList
           }
           isConnectionsLoading={isConnectionsLoading}
+          sourceHooksList={isReverse ? targetHooksList : sourceHooksList}
+          targetHooksList={isReverse ? sourceHooksList : targetHooksList}
+          isHooksLoading={isHooksLoading}
           targetScenarioId={targetId}
           targetZone={activeTargetZone}
           targetTeamId={activeTargetTeamId}

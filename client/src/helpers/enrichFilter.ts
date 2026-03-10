@@ -1,5 +1,5 @@
 // enrichFilter.ts
-import type { DiffOptions } from "../calculateDiff";
+import type { DiffOptions } from "./calculateDiff";
 
 function enrichFilter(node: any, idMap: any, options: DiffOptions) {
   if (!node || !node.filter) return null;

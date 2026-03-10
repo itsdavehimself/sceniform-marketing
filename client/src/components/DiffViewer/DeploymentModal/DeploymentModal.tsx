@@ -10,12 +10,21 @@ interface DeploymentModalProps {
   sourceJson: string;
   targetJson: string;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  handleDeploy: (mappings: Record<number, number>) => Promise<void>;
+  handleDeploy: (mappings: {
+    connections: Record<number, number>;
+    hooks: Record<number, number>;
+  }) => Promise<void>;
   diffReport: any;
   onDeploySuccess: () => void;
+  // Connections
   sourceConnectionsList: any[];
   targetConnectionsList: any[];
   isConnectionsLoading: boolean;
+  // Hooks
+  sourceHooksList: any[];
+  targetHooksList: any[];
+  isHooksLoading: boolean;
+  // Meta
   targetScenarioId?: string;
   targetZone?: string;
   targetTeamId?: number;
@@ -45,20 +54,33 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
   sourceConnectionsList,
   targetConnectionsList,
   isConnectionsLoading,
+  sourceHooksList,
+  targetHooksList,
+  isHooksLoading,
   targetScenarioId,
   targetZone,
   targetTeamId,
 }) => {
-  const { sourceConnections, mappings, autoMappings, handleMappingChange } =
-    useDeploymentMappings(sourceJson, targetJson);
+  const {
+    sourceConnections,
+    sourceHooks,
+    connMappings,
+    hookMappings,
+    autoConnMappings,
+    autoHookMappings,
+    handleConnMappingChange,
+    handleHookMappingChange,
+  } = useDeploymentMappings(sourceJson, targetJson);
 
   const [deployState, setDeployState] = useState<
     "idle" | "deploying" | "success" | "error"
   >("idle");
-
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
-  const isDeployReady = sourceConnections.every((conn) => !!mappings[conn.id]);
+  // Deployment is ready if EVERY connection and EVERY webhook has a target mapping assigned
+  const isDeployReady =
+    sourceConnections.every((conn) => !!connMappings[conn.id]) &&
+    sourceHooks.every((hook) => !!hookMappings[hook.id]);
 
   const executeDeployment = async () => {
     if (!isDeployReady) return;
@@ -97,7 +119,6 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
         },
       ]);
     }
-
     if (removedCount > 0) {
       await sleep(500);
       setLogs((prev) => [
@@ -108,7 +129,6 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
         },
       ]);
     }
-
     if (modifiedCount > 0) {
       await sleep(500);
       setLogs((prev) => [
@@ -123,7 +143,10 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
     await sleep(800);
     setLogs((prev) => [
       ...prev,
-      { text: "> Applying connection mappings...", type: "info" },
+      {
+        text: "> Applying environment bindings (Connections & Webhooks)...",
+        type: "info",
+      },
     ]);
 
     await sleep(700);
@@ -139,7 +162,7 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
     ]);
 
     try {
-      await handleDeploy(mappings);
+      await handleDeploy({ connections: connMappings, hooks: hookMappings });
 
       await sleep(400);
       setLogs((prev) => [
@@ -179,41 +202,73 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
         <>
           <div className={styles.modalHeaderInfo}>
             <p className={styles.helperText}>
-              To prevent overwriting live credentials, map your{" "}
+              To prevent overwriting live data, map your{" "}
               <strong>{isReverse ? "Production" : "Sandbox"}</strong>{" "}
-              connections to the target environment. We've auto-matched existing
-              connections for you.
+              environment bindings to the target environment.
             </p>
           </div>
 
-          {isConnectionsLoading ? (
+          {isConnectionsLoading || isHooksLoading ? (
             <div className={styles.loadingContainer}>
               <LoadingSpinner dimensions={{ x: 6, y: 6 }} />
             </div>
           ) : (
             <div className={styles.mappingsContainer}>
-              {sourceConnections.map((conn) => (
-                <MappingRow
-                  key={conn.id}
-                  conn={conn}
-                  sourceConnections={sourceConnectionsList}
-                  targetConnections={targetConnectionsList}
-                  currentMapping={mappings[conn.id] || ""}
-                  isAutoMapped={
-                    autoMappings[conn.id] !== undefined &&
-                    autoMappings[conn.id] === mappings[conn.id]
-                  }
-                  onMappingChange={handleMappingChange}
-                />
-              ))}
-            </div>
-          )}
+              {/* --- CONNECTIONS SECTION --- */}
+              {sourceConnections.length > 0 && (
+                <div className={styles.mappingSection}>
+                  <h4 className={styles.sectionTitle}>
+                    Connections (OAuth / API Keys)
+                  </h4>
+                  {sourceConnections.map((conn) => (
+                    <MappingRow
+                      key={`conn-${conn.id}`}
+                      entity={conn}
+                      type="connection"
+                      sourceList={sourceConnectionsList}
+                      targetList={targetConnectionsList}
+                      currentMapping={connMappings[conn.id] || ""}
+                      isAutoMapped={
+                        autoConnMappings[conn.id] === connMappings[conn.id]
+                      }
+                      onMappingChange={handleConnMappingChange}
+                      targetScenarioId={targetScenarioId}
+                    />
+                  ))}
+                </div>
+              )}
 
-          {sourceConnections.length === 0 && !isConnectionsLoading && (
-            <div className={styles.noConnectionsContainer}>
-              <p className={styles.modalHeaderInfo}>
-                No connections detected in this blueprint.
-              </p>
+              {/* --- WEBHOOKS SECTION --- */}
+              {sourceHooks.length > 0 && (
+                <div className={styles.mappingSection}>
+                  <h4 className={styles.sectionTitle}>
+                    Entry Points (Webhooks / Mailhooks)
+                  </h4>
+                  {sourceHooks.map((hook) => (
+                    <MappingRow
+                      key={`hook-${hook.id}`}
+                      entity={hook}
+                      type="hook"
+                      sourceList={sourceHooksList}
+                      targetList={targetHooksList}
+                      currentMapping={hookMappings[hook.id] || ""}
+                      isAutoMapped={
+                        autoHookMappings[hook.id] === hookMappings[hook.id]
+                      }
+                      onMappingChange={handleHookMappingChange}
+                      targetScenarioId={targetScenarioId}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {sourceConnections.length === 0 && sourceHooks.length === 0 && (
+                <div className={styles.noConnectionsContainer}>
+                  <p className={styles.modalHeaderInfo}>
+                    No external bindings detected in this blueprint.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </>
@@ -280,7 +335,6 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
             onClick={() => setIsModalOpen(false)}
           />
         )}
-
         <ActionButton
           title={
             deployState === "idle"

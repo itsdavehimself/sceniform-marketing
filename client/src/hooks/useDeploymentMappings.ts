@@ -1,99 +1,148 @@
 import { useState, useMemo } from "react";
-import { extractConnectionId } from "../helpers/extractConnectionId"; // Assuming you saved the helper here!
+import { extractConnectionId } from "../helpers/extractConnectionId";
 
 export const useDeploymentMappings = (
   sourceJson: string,
   targetJson: string,
 ) => {
-  // 1. Find all unique connections in the Sandbox blueprint
-  const sourceConnections = useMemo(() => {
-    if (!sourceJson) return [];
+  // --- 1. EXTRACT SOURCE DEPENDENCIES ---
+  const { sourceConnections, sourceHooks } = useMemo(() => {
+    const conns = new Map<number, string>();
+    const hooks = new Map<number, string>();
+
+    if (!sourceJson) return { sourceConnections: [], sourceHooks: [] };
+
     try {
       const parsed = JSON.parse(sourceJson);
-      const found = new Map<number, string>();
 
       const extract = (obj: any) => {
         if (!obj || typeof obj !== "object") return;
         if (Array.isArray(obj)) {
           obj.forEach(extract);
         } else {
+          // Extract Connections
           const connId = extractConnectionId(obj);
           if (connId) {
             const moduleName =
               obj.metadata?.designer?.name || obj.module || "Unknown App";
-            found.set(connId, moduleName);
+            conns.set(connId, moduleName);
           }
+
+          // Extract Webhooks/Mailhooks
+          if (obj.module?.startsWith("gateway:") && obj.parameters?.hook) {
+            const moduleName = obj.metadata?.designer?.name || obj.module;
+            hooks.set(obj.parameters.hook, moduleName);
+          }
+
           Object.values(obj).forEach(extract);
         }
       };
 
       extract(parsed);
-      return Array.from(found.entries()).map(([id, app]) => ({ id, app }));
     } catch (e) {
       console.error("Failed to parse source JSON", e);
-      return [];
     }
+
+    return {
+      sourceConnections: Array.from(conns.entries()).map(([id, app]) => ({
+        id,
+        app,
+      })),
+      sourceHooks: Array.from(hooks.entries()).map(([id, app]) => ({
+        id,
+        app,
+      })),
+    };
   }, [sourceJson]);
 
-  // 2. Calculate the defaults (NO useEffect, purely derived data!)
-  const autoMappings = useMemo(() => {
-    if (!targetJson || !sourceJson) return {};
+  // --- 2. AUTO-MAPPING LOGIC ---
+  const { autoConnMappings, autoHookMappings } = useMemo(() => {
+    if (!targetJson || !sourceJson)
+      return { autoConnMappings: {}, autoHookMappings: {} };
+
+    const computedConns: Record<number, number> = {};
+    const computedHooks: Record<number, number> = {};
+
     try {
       const targetParsed = JSON.parse(targetJson);
       const sourceParsed = JSON.parse(sourceJson);
-      const computedMappings: Record<number, number> = {};
 
-      const buildModuleConnectionMap = (obj: any, map: Map<number, number>) => {
+      const buildModuleMaps = (
+        obj: any,
+        connMap: Map<number, number>,
+        hookMap: Map<number, number>,
+      ) => {
         if (!obj || typeof obj !== "object") return;
         if (Array.isArray(obj)) {
-          obj.forEach((item) => buildModuleConnectionMap(item, map));
+          obj.forEach((item) => buildModuleMaps(item, connMap, hookMap));
         } else {
-          const connId = extractConnectionId(obj);
-          if (obj.id !== undefined && connId) map.set(obj.id, connId);
+          if (obj.id !== undefined) {
+            const connId = extractConnectionId(obj);
+            if (connId) connMap.set(obj.id, connId);
+
+            if (obj.module?.startsWith("gateway:") && obj.parameters?.hook) {
+              hookMap.set(obj.id, obj.parameters.hook);
+            }
+          }
           Object.values(obj).forEach((val) =>
-            buildModuleConnectionMap(val, map),
+            buildModuleMaps(val, connMap, hookMap),
           );
         }
       };
 
-      const targetModuleConnections = new Map<number, number>();
-      buildModuleConnectionMap(targetParsed, targetModuleConnections);
+      const targetConns = new Map<number, number>();
+      const targetHooks = new Map<number, number>();
+      buildModuleMaps(targetParsed, targetConns, targetHooks);
 
-      const sourceModuleConnections = new Map<number, number>();
-      buildModuleConnectionMap(sourceParsed, sourceModuleConnections);
+      const sourceConns = new Map<number, number>();
+      const sourceHooksMap = new Map<number, number>();
+      buildModuleMaps(sourceParsed, sourceConns, sourceHooksMap);
 
-      sourceModuleConnections.forEach((sourceConnId, moduleId) => {
-        if (targetModuleConnections.has(moduleId)) {
-          computedMappings[sourceConnId] =
-            targetModuleConnections.get(moduleId)!;
-        }
+      // Match by identical Module ID
+      sourceConns.forEach((sourceConnId, moduleId) => {
+        if (targetConns.has(moduleId))
+          computedConns[sourceConnId] = targetConns.get(moduleId)!;
       });
 
-      return computedMappings;
+      sourceHooksMap.forEach((sourceHookId, moduleId) => {
+        if (targetHooks.has(moduleId))
+          computedHooks[sourceHookId] = targetHooks.get(moduleId)!;
+      });
     } catch (e) {
       console.error("Auto-mapping failed", e);
-      return {};
     }
+
+    return { autoConnMappings: computedConns, autoHookMappings: computedHooks };
   }, [sourceJson, targetJson]);
 
-  // 3. Only store what the user MANUALLY changes
-  const [userOverrides, setUserOverrides] = useState<Record<number, number>>(
-    {},
+  // --- 3. USER OVERRIDES ---
+  const [userConnOverrides, setUserConnOverrides] = useState<
+    Record<number, number>
+  >({});
+  const [userHookOverrides, setUserHookOverrides] = useState<
+    Record<number, number>
+  >({});
+
+  // --- 4. FINAL MERGED MAPPINGS ---
+  const finalConnMappings = useMemo(
+    () => ({ ...autoConnMappings, ...userConnOverrides }),
+    [autoConnMappings, userConnOverrides],
   );
-
-  // 4. Merge them together for the final output
-  const finalMappings = useMemo(() => {
-    return { ...autoMappings, ...userOverrides };
-  }, [autoMappings, userOverrides]);
-
-  const handleMappingChange = (sourceId: number, targetId: number) => {
-    setUserOverrides((prev) => ({ ...prev, [sourceId]: targetId }));
-  };
+  const finalHookMappings = useMemo(
+    () => ({ ...autoHookMappings, ...userHookOverrides }),
+    [autoHookMappings, userHookOverrides],
+  );
 
   return {
     sourceConnections,
-    mappings: finalMappings,
-    autoMappings, // Exposing this so the UI knows if a field was auto-mapped!
-    handleMappingChange,
+    sourceHooks,
+    connMappings: finalConnMappings,
+    hookMappings: finalHookMappings,
+    autoConnMappings,
+    autoHookMappings,
+    handleConnMappingChange: (sId: number, tId: number) =>
+      setUserConnOverrides((p) => ({ ...p, [sId]: tId })),
+    handleHookMappingChange: (sId: number, tId: number) =>
+      setUserHookOverrides((p) => ({ ...p, [sId]: tId })),
   };
 };

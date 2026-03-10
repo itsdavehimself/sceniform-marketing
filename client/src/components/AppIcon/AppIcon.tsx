@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { Blocks } from "lucide-react";
+import { Blocks, Radio } from "lucide-react";
 
 interface AppIconProps {
-  accountName: string;
+  accountName?: string;
   size?: number;
+  type?: "connection" | "hook";
 }
 
 const LOGO_DEV_PUBLIC_KEY = import.meta.env.VITE_LOGO_DEV_PK;
-
 const domainCache = new Map<string, Promise<string | null>>();
 
-const AppIcon: React.FC<AppIconProps> = ({ accountName, size = 20 }) => {
+const AppIcon: React.FC<AppIconProps> = ({
+  accountName,
+  size = 20,
+  type = "connection",
+}) => {
   const [domain, setDomain] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(type === "connection");
 
   useEffect(() => {
+    if (type === "hook" || !accountName) {
+      setIsLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     const fetchDomain = async () => {
@@ -55,7 +64,12 @@ const AppIcon: React.FC<AppIconProps> = ({ accountName, size = 20 }) => {
     return () => {
       isMounted = false;
     };
-  }, [accountName]);
+  }, [accountName, type]);
+
+  // If it's a hook, just return a generic Radio/Antenna icon
+  if (type === "hook") {
+    return <Radio size={size} color="#6366f1" />;
+  }
 
   if (isLoading) {
     return <Blocks size={size} color="#e5e7eb" className="animate-pulse" />;

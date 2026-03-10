@@ -1,19 +1,93 @@
 import _ from "lodash";
-import { flattenScenario } from "./helpers/flattenScenario";
-import { findMatch } from "./helpers/findMatch";
-import { createIdMap } from "./helpers/createIdMap";
-import { getDeepDiff } from "./helpers/getDeepDiff";
-import { enrichFilter } from "./helpers/enrichFilter";
-import { normalizeConfig } from "./helpers/normalizeConfig";
-import { SETTING_KEYS } from "./config/SETTING_KEYS";
+import { flattenScenario } from "./flattenScenario";
+import { findMatch } from "./findMatch";
+import { createIdMap } from "./createIdMap";
+import { getDeepDiff } from "./getDeepDiff";
+import { enrichFilter } from "./enrichFilter";
+import { normalizeConfig } from "./normalizeConfig";
+import { SETTING_KEYS } from "../config/SETTING_KEYS";
 
 export interface DiffOptions {
   ignoreScenarioName?: boolean;
   ignoreConnections?: boolean;
+  ignoreHooks?: boolean;
   ignoreModuleNames?: boolean;
   showRawMappings?: boolean;
-  connections?: any[];
+  allConnections?: any[];
+  allHooks?: any[];
 }
+
+// HELPER: Translates raw integers into human-readable labels ONLY
+const injectLiveLabels = (
+  differences: any[],
+  options: DiffOptions,
+  oldNode: any,
+  newNode: any,
+) => {
+  if (!differences) return;
+
+  const getMetaLabel = (node: any, fieldPath: string, rawValue: any) => {
+    if (!node || !node.metadata?.restore) return rawValue;
+    const key = fieldPath.split(".").pop() || fieldPath;
+    const label =
+      node.metadata.restore.parameters?.[key]?.label ||
+      node.metadata.restore.expect?.[key]?.label;
+
+    // Return JUST the label, no ID
+    return label ? label : rawValue;
+  };
+
+  const findName = (
+    id: any,
+    type: "connection" | "hook",
+    node: any,
+    fieldPath: string,
+  ) => {
+    const numId = Number(id);
+    if (isNaN(numId)) return id;
+
+    // 1. Try to find the exact live name from the API lists
+    if (type === "connection" && options.allConnections) {
+      const match = options.allConnections.find((c: any) => c.id === numId);
+      if (match) return match.name; // Return JUST the name, no ID
+    }
+    if (type === "hook" && options.allHooks) {
+      const match = options.allHooks.find((h: any) => h.id === numId);
+      if (match) return match.name; // Return JUST the name, no ID
+    }
+
+    // 2. Fallback to Make's internal metadata label
+    return getMetaLabel(node, fieldPath, id);
+  };
+
+  differences.forEach((diff: any) => {
+    const key = diff.field.split(".").pop() || diff.field;
+
+    // Standard external dependencies
+    if (key === "__IMTCONN__" || key === "account" || key === "connection") {
+      if (diff.oldValue !== undefined)
+        diff.oldValue = findName(
+          diff.oldValue,
+          "connection",
+          oldNode,
+          diff.field,
+        );
+      if (diff.newValue !== undefined)
+        diff.newValue = findName(
+          diff.newValue,
+          "connection",
+          newNode,
+          diff.field,
+        );
+    }
+    if (key === "hook") {
+      if (diff.oldValue !== undefined)
+        diff.oldValue = findName(diff.oldValue, "hook", oldNode, diff.field);
+      if (diff.newValue !== undefined)
+        diff.newValue = findName(diff.newValue, "hook", newNode, diff.field);
+    }
+  });
+};
 
 export function compareBlueprints(
   sandboxJson: any,
@@ -25,12 +99,8 @@ export function compareBlueprints(
     changes: [] as any[],
   };
 
-  // ==========================================
-  // 1. SCENARIO SETTINGS & METADATA
-  // ==========================================
   const metaChanges: any[] = [];
 
-  // A. Compare Name
   if (!options.ignoreScenarioName) {
     if (sandboxJson.name !== prodJson.name) {
       metaChanges.push({
@@ -70,9 +140,6 @@ export function compareBlueprints(
     report.summary.modified++;
   }
 
-  // ==========================================
-  // 2. FLOW & NODE COMPARISON
-  // ==========================================
   const sandboxNodes = flattenScenario(sandboxJson.flow);
   const prodNodes = flattenScenario(prodJson.flow);
   const sandboxIdMap = createIdMap(sandboxNodes);
@@ -87,6 +154,8 @@ export function compareBlueprints(
       // --- ADDED MODULE ---
       const sbConfig = normalizeConfig(sbNode, sandboxIdMap, options);
       const allNewFields = getDeepDiff({}, sbConfig);
+
+      injectLiveLabels(allNewFields, options, null, sbNode);
 
       const filterChange =
         sbNode.filter || sbNode.isFallback
@@ -120,6 +189,8 @@ export function compareBlueprints(
       const prodConfig = normalizeConfig(prodMatch, prodIdMap, options);
 
       const differences = getDeepDiff(prodConfig, sbConfig);
+
+      injectLiveLabels(differences, options, prodMatch, sbNode);
 
       let filterChange = null;
 

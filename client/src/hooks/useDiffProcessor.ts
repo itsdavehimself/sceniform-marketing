@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { compareBlueprints } from "../calculateDiff";
+import { compareBlueprints } from "../helpers/calculateDiff";
 import { getBrokenRefs } from "../helpers/getBrokenRefs";
 
 interface DiffProcessorProps {
@@ -8,9 +8,13 @@ interface DiffProcessorProps {
   isReverse: boolean;
   ignoreScenarioName: boolean;
   ignoreConnections: boolean;
+  ignoreHooks: boolean;
   ignoreModuleNames: boolean;
   showRawMappings: boolean;
-  connections: any[];
+  prodConnections?: any[];
+  sandboxConnections?: any[];
+  prodHooks?: any[];
+  sandboxHooks?: any[];
 }
 
 export const useDiffProcessor = ({
@@ -19,9 +23,13 @@ export const useDiffProcessor = ({
   isReverse,
   ignoreScenarioName,
   ignoreConnections,
+  ignoreHooks,
   ignoreModuleNames,
   showRawMappings,
-  connections,
+  prodConnections = [],
+  sandboxConnections = [],
+  prodHooks = [],
+  sandboxHooks = [],
 }: DiffProcessorProps) => {
   // 1. Calculate the core diff report
   const diffReport = useMemo(() => {
@@ -29,13 +37,20 @@ export const useDiffProcessor = ({
     try {
       const prod = JSON.parse(prodJson);
       const sandbox = JSON.parse(sandboxJson);
+
+      const allConnections = [...prodConnections, ...sandboxConnections];
+      const allHooks = [...prodHooks, ...sandboxHooks];
+
       const options = {
         ignoreScenarioName,
         ignoreConnections,
+        ignoreHooks,
         ignoreModuleNames,
         showRawMappings,
-        connections,
+        allConnections,
+        allHooks,
       };
+
       return isReverse
         ? compareBlueprints(prod, sandbox, options)
         : compareBlueprints(sandbox, prod, options);
@@ -49,9 +64,13 @@ export const useDiffProcessor = ({
     isReverse,
     ignoreScenarioName,
     ignoreConnections,
+    ignoreHooks,
     ignoreModuleNames,
     showRawMappings,
-    connections,
+    prodConnections,
+    sandboxConnections,
+    prodHooks,
+    sandboxHooks,
   ]);
 
   // 2. Tally up the error statistics

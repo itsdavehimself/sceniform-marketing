@@ -19,7 +19,15 @@ const DiffRow: React.FC<DiffRowProps> = ({
   const formatFieldKey = (key: string) =>
     key
       .split(".")
-      .map((part) => (isNaN(Number(part)) ? part : `[${part}]`))
+      .map((part) => {
+        // Translate ugly Make.com architecture keys to UI friendly names
+        if (part === "__IMTCONN__") return "Connection";
+        if (part === "account") return "Account";
+        if (part === "connection") return "Connection";
+        if (part === "hook") return "Webhook";
+
+        return isNaN(Number(part)) ? part : `[${part}]`;
+      })
       .join(" ➞ ");
 
   const brokenInNew = getBrokenRefs(diff.newValue);

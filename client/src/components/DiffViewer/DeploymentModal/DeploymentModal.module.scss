@@ -50,6 +50,18 @@ p {
   flex: 1;
 }
 
+.mappingSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sectionTitle {
+  color: $ds-foreground;
+  margin: 0.5rem 0;
+  padding: 0;
+}
+
 .terminalContainer {
   flex: 1;
   display: flex;

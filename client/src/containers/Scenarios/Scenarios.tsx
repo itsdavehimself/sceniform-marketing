@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import styles from "./Scenarios.module.scss";
 import WorkspaceDropdown from "../../components/WorkspaceDropdown/WorkspaceDropdown";
 import { useMakeContext } from "../../context/MakeContext";
+import { useHooks } from "../../hooks/useHooks";
 
 type ScenarioView = "deployment" | "changelog" | "audit" | "documentation";
 
@@ -27,6 +28,7 @@ const Scenarios: React.FC = () => {
   // --- Filter Toggles ---
   const [ignoreScenarioName, setIgnoreScenarioName] = useState<boolean>(true);
   const [ignoreConnections, setIgnoreConnections] = useState<boolean>(true);
+  const [ignoreHooks, setIgnoreHooks] = useState<boolean>(true);
   const [ignoreModuleNames, setIgnoreModuleNames] = useState<boolean>(false);
   const [showRawMappings, setShowRawMappings] = useState<boolean>(false);
   const [showErrorsOnly, setShowErrorsOnly] = useState<boolean>(false);
@@ -133,6 +135,13 @@ const Scenarios: React.FC = () => {
     baseOrg?.zone,
   );
 
+  const { hooks: sourceHooksList, isLoading: isHooksLoading } = useHooks(
+    targetTeam?.id,
+    targetOrg?.zone,
+  );
+
+  const { hooks: targetHooksList } = useHooks(baseTeam?.id, baseOrg?.zone);
+
   // --- DIFF ENGINE ---
   const { diffReport, errorStats, sortedGroupKeys, processedGroups } =
     useDiffProcessor({
@@ -141,9 +150,13 @@ const Scenarios: React.FC = () => {
       isReverse,
       ignoreScenarioName,
       ignoreConnections,
+      ignoreHooks,
       ignoreModuleNames,
       showRawMappings,
-      connections: targetConnectionsList,
+      prodConnections: targetConnectionsList,
+      sandboxConnections: sourceConnectionsList,
+      prodHooks: targetHooksList,
+      sandboxHooks: sourceHooksList,
     });
 
   const togglePathCollapse = (path: string) => {
@@ -160,9 +173,25 @@ const Scenarios: React.FC = () => {
 
   const handleScrollToModule = (id: string | number) => {
     setHighlightedModuleId(id);
-    const el = document.getElementById(`module-${id}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    const el = document.getElementById(`module-card-${id}`);
+    const container = document.getElementById("diff-scroll-container");
+
+    if (el && container) {
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+
+      const scrollTop =
+        container.scrollTop +
+        (elRect.top - containerRect.top) -
+        containerRect.height / 2 +
+        elRect.height / 2;
+
+      container.scrollTo({
+        top: scrollTop,
+        behavior: "smooth",
+      });
+
       setTimeout(() => setHighlightedModuleId(null), 2000);
     }
   };
@@ -255,6 +284,8 @@ const Scenarios: React.FC = () => {
               setIgnoreScenarioName={setIgnoreScenarioName}
               ignoreConnections={ignoreConnections}
               setIgnoreConnections={setIgnoreConnections}
+              ignoreHooks={ignoreHooks}
+              setIgnoreHooks={setIgnoreHooks}
               ignoreModuleNames={ignoreModuleNames}
               setIgnoreModuleNames={setIgnoreModuleNames}
               showRawMappings={showRawMappings}
@@ -287,6 +318,9 @@ const Scenarios: React.FC = () => {
               targetZone={targetOrg?.zone}
               baseTeamId={baseTeam?.id}
               targetTeamId={targetTeam?.id}
+              sourceHooksList={sourceHooksList || []}
+              targetHooksList={targetHooksList || []}
+              isHooksLoading={isHooksLoading}
             />
 
             <div className={styles.blueprints}>
