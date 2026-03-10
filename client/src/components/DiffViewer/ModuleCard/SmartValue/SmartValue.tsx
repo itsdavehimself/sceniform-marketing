@@ -1,8 +1,9 @@
 import styles from "./SmartValue.module.scss";
 import ClickableBadge from "../../../ClickableBadge/ClickableBadge";
 
+// Updated Regex to catch nested module IDs inside formulas!
 const SMART_MATCH_REGEX =
-  /\[(.*?) ID:(\d+)\]|(\{\{(\d+)\.[^}]*\}\})|(\{\{\[(?:Unknown|Missing Reference|Broken Reference)-(\d+)\].*?\}\})/g;
+  /\[(.*?) ID:(\d+)\]|(\{\{.*?(\b\d+)\..*?\}\})|(\{\{.*?\[(?:Unknown|Missing Reference|Broken Reference)-(\d+)\].*?\}\})/g;
 
 interface SmartValueProps {
   value: any;

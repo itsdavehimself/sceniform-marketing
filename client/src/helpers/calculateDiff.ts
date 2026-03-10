@@ -89,6 +89,54 @@ const injectLiveLabels = (
   });
 };
 
+// HELPER: Translates formula IDs into rich SmartValue strings AFTER the diff
+const translateFormulas = (
+  differences: any[],
+  options: DiffOptions,
+  prodIdMap: any,
+  sandboxIdMap: any,
+) => {
+  if (options.showRawMappings || !differences) return;
+
+  const applyLabels = (val: any, idMap: any) => {
+    if (val === undefined || val === null) return val;
+    if (typeof val === "string") {
+      return val.replace(/\{\{.*?\}\}/g, (formulaBlock) => {
+        return formulaBlock.replace(/(\b\d+)\.(?=[A-Za-z_`])/g, (match, id) => {
+          if (!idMap || !idMap[id]) return `[Unknown-${id}].`;
+          // Return the clean, plain name
+          return `${idMap[id]}.`;
+        });
+      });
+    }
+    if (typeof val === "object") {
+      let str = JSON.stringify(val);
+      str = str.replace(/\{\{.*?\}\}/g, (formulaBlock) => {
+        return formulaBlock.replace(/(\b\d+)\.(?=[A-Za-z_`])/g, (match, id) => {
+          if (!idMap || !idMap[id]) return `[Unknown-${id}].`;
+          // Return the clean, plain name
+          return `${idMap[id]}.`;
+        });
+      });
+      try {
+        return JSON.parse(str);
+      } catch (e) {
+        return val;
+      }
+    }
+    return val;
+  };
+
+  differences.forEach((diff: any) => {
+    if (diff.oldValue !== undefined && prodIdMap) {
+      diff.oldValue = applyLabels(diff.oldValue, prodIdMap);
+    }
+    if (diff.newValue !== undefined && sandboxIdMap) {
+      diff.newValue = applyLabels(diff.newValue, sandboxIdMap);
+    }
+  });
+};
+
 export function compareBlueprints(
   sandboxJson: any,
   prodJson: any,
@@ -150,12 +198,16 @@ export function compareBlueprints(
   sandboxNodes.forEach((sbNode) => {
     const prodMatch = findMatch(sbNode, prodNodes, matchedProdIds);
 
+    // Force raw mappings for the deep diff so upstream name changes don't trigger false flags
+    const diffOptions = { ...options, showRawMappings: true };
+
     if (!prodMatch) {
       // --- ADDED MODULE ---
-      const sbConfig = normalizeConfig(sbNode, sandboxIdMap, options);
+      const sbConfig = normalizeConfig(sbNode, sandboxIdMap, diffOptions);
       const allNewFields = getDeepDiff({}, sbConfig);
 
       injectLiveLabels(allNewFields, options, null, sbNode);
+      translateFormulas(allNewFields, options, null, sandboxIdMap);
 
       const filterChange =
         sbNode.filter || sbNode.isFallback
@@ -185,12 +237,13 @@ export function compareBlueprints(
       // --- MODIFIED MODULE ---
       matchedProdIds.add(prodMatch.uniqueKey);
 
-      const sbConfig = normalizeConfig(sbNode, sandboxIdMap, options);
-      const prodConfig = normalizeConfig(prodMatch, prodIdMap, options);
+      const sbConfig = normalizeConfig(sbNode, sandboxIdMap, diffOptions);
+      const prodConfig = normalizeConfig(prodMatch, prodIdMap, diffOptions);
 
       const differences = getDeepDiff(prodConfig, sbConfig);
 
       injectLiveLabels(differences, options, prodMatch, sbNode);
+      translateFormulas(differences, options, prodIdMap, sandboxIdMap);
 
       let filterChange = null;
 

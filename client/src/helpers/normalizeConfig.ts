@@ -162,9 +162,11 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
 
   let configString = JSON.stringify(configObject);
 
-  configString = configString.replace(/\{\{(\d+)\./g, (match, id) => {
-    if (!idMap[id]) return `{{[Unknown-${id}].`;
-    return options.showRawMappings ? match : `{{${idMap[id]}.`;
+  configString = configString.replace(/\{\{.*?\}\}/g, (formulaBlock) => {
+    return formulaBlock.replace(/(\b\d+)\.(?=[A-Za-z_`])/g, (match, id) => {
+      if (!idMap[id]) return `[Unknown-${id}].`;
+      return options.showRawMappings ? match : `${idMap[id]}.`;
+    });
   });
 
   return JSON.parse(configString);
