@@ -6,18 +6,38 @@ import PathHeader from "./PathHeader/PathHeader";
 import Busline from "./Busline/Busline";
 
 const getLevelStyles = (p: string, isDarkMode: boolean) => {
-  if (p === "Scenario Settings" || p === "Main Flow") {
+  const isMergedFlow = p.includes("🔀 Merged");
+
+  // Strip out the merge modifier to calculate the true base depth!
+  const normalizedPath = p.replace(/ 🔀 Merged/g, "");
+
+  // Now, if this is a Merged flow inside the Main Flow, it will correctly trigger depth: 0
+  if (
+    normalizedPath === "Scenario Settings" ||
+    normalizedPath === "Main Flow"
+  ) {
     return {
       depth: 0,
-      color: isDarkMode ? "#777" : "#ccc",
+      color: isMergedFlow
+        ? isDarkMode
+          ? "#4db6ac"
+          : "#00897b"
+        : isDarkMode
+          ? "#777"
+          : "#ccc",
       indent: 0,
       label: p,
       isErrorFlow: false,
+      isBranchFlow: false,
+      isMergedFlow,
     };
   }
-  const segments = p.split(" ➞ ");
+
+  const segments = normalizedPath.split(" ➞ ");
   const depth = segments.length;
   const isErrorFlow = p.includes("⚠️ Error Handler");
+  const isBranchFlow = p.includes("(Branch");
+
   const colors = [
     "#2196f3",
     "#9c27b0",
@@ -26,17 +46,24 @@ const getLevelStyles = (p: string, isDarkMode: boolean) => {
     "#e91e63",
     "#795548",
   ];
-  const color = isErrorFlow
-    ? isDarkMode
-      ? "#e57373"
-      : "#d32f2f"
-    : colors[(depth - 1) % colors.length];
+  let color = colors[(depth - 1) % colors.length];
+
+  if (isErrorFlow) {
+    color = isDarkMode ? "#e57373" : "#d32f2f";
+  } else if (isBranchFlow) {
+    color = isDarkMode ? "#7986cb" : "#3f51b5";
+  } else if (isMergedFlow) {
+    color = isDarkMode ? "#4db6ac" : "#00897b";
+  }
+
   return {
     depth,
     color,
     indent: depth * 20,
     label: segments[segments.length - 1],
     isErrorFlow,
+    isBranchFlow,
+    isMergedFlow,
   };
 };
 
@@ -91,7 +118,11 @@ const PathGroup: React.FC<PathGroupProps> = ({
   const hiddenCount = isPathCollapsed
     ? getRecursiveModuleCount(path, processedGroups)
     : 0;
-  const displayLabel = label.replace("⚠️ Error Handler", "");
+
+  const displayLabel = label
+    .replace("⚠️ Error Handler", "")
+    .replace(/🔀 Merged/g, "")
+    .trim();
 
   return (
     <div

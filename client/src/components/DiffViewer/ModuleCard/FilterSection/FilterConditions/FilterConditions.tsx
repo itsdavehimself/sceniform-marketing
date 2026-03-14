@@ -8,8 +8,10 @@ interface FilterConditionsProps {
   handleScrollToModule: (id: string | number) => void;
 }
 
-const formatOperator = (op: string) =>
-  !op ? "exists" : op.replace(":", " ").toUpperCase();
+const formatOperator = (op: string) => {
+  if (!op) return "exists";
+  return op.includes(":") ? op.replace(":", " ").toUpperCase() : op;
+};
 
 const FilterConditions: React.FC<FilterConditionsProps> = ({
   conditions,
@@ -27,29 +29,35 @@ const FilterConditions: React.FC<FilterConditionsProps> = ({
 
           <div className={styles.conditionsWrapper}>
             {Array.isArray(orGroup) &&
-              orGroup.map((cond: any, j: number) => (
-                <div key={j} className={styles.conditionRow}>
-                  {j > 0 && <span className={styles.andDivider}>AND</span>}
+              orGroup.map((cond: any, j: number) => {
+                const valA = cond.a !== undefined ? cond.a : cond.operandA;
+                const valO = cond.o !== undefined ? cond.o : cond.operator;
+                const valB = cond.b !== undefined ? cond.b : cond.operandB;
 
-                  <span className={styles.operandA}>
-                    <SmartValue
-                      value={cond.a}
-                      handleScrollToModule={handleScrollToModule}
-                    />
-                  </span>
+                return (
+                  <div key={j} className={styles.conditionRow}>
+                    {j > 0 && <span className={styles.andDivider}>AND</span>}
 
-                  <span className={styles.operator}>
-                    {formatOperator(cond.o)}
-                  </span>
+                    <span className={styles.operandA}>
+                      <SmartValue
+                        value={valA}
+                        handleScrollToModule={handleScrollToModule}
+                      />
+                    </span>
 
-                  <span className={styles.operandB}>
-                    <SmartValue
-                      value={cond.b}
-                      handleScrollToModule={handleScrollToModule}
-                    />
-                  </span>
-                </div>
-              ))}
+                    <span className={styles.operator}>
+                      {formatOperator(valO)}
+                    </span>
+
+                    <span className={styles.operandB}>
+                      <SmartValue
+                        value={valB}
+                        handleScrollToModule={handleScrollToModule}
+                      />
+                    </span>
+                  </div>
+                );
+              })}
           </div>
         </div>
       ))}

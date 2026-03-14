@@ -1,5 +1,6 @@
 import type { DiffOptions } from "./calculateDiff";
 import _ from "lodash";
+import { translateOperator } from "./translateOperators";
 
 function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
   const parameters = _.cloneDeep(node.parameters || {});
@@ -160,6 +161,44 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
     configObject["errorHandler"] = "Active";
   }
 
+  // --- Expose If-Else Conditions to the Diff Engine ---
+  if (
+    node.branches &&
+    Array.isArray(node.branches) &&
+    node.branches.length > 0
+  ) {
+    const branchLogic: any = {};
+    node.branches.forEach((branch: any, index: number) => {
+      // EXACT MATCH to our flattenScenario string
+      const branchLabel = branch.label
+        ? branch.label
+        : branch.type === "else"
+          ? "Else"
+          : "Unnamed";
+      const bName = `Branch ${index + 1}: ${branchLabel}`;
+
+      const readableConditions = (branch.conditions || []).map(
+        (orGroup: any[]) => {
+          return orGroup.map((cond: any) => ({
+            operandA: cond.a,
+            operator: translateOperator(cond.o),
+            operandB: cond.b,
+          }));
+        },
+      );
+
+      branchLogic[bName] = {
+        type: branch.type,
+        conditions: readableConditions,
+      };
+    });
+    configObject["branchLogic"] = branchLogic;
+  }
+
+  if (node.outputs && Array.isArray(node.outputs) && node.outputs.length > 0) {
+    configObject["mergeOutputs"] = node.outputs;
+  }
+
   let configString = JSON.stringify(configObject);
 
   configString = configString.replace(/\{\{.*?\}\}/g, (formulaBlock) => {
@@ -171,5 +210,4 @@ function normalizeConfig(node: any, idMap: any, options: DiffOptions) {
 
   return JSON.parse(configString);
 }
-
 export { normalizeConfig };

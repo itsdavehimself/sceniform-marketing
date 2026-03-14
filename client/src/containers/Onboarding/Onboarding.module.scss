@@ -2,5 +2,85 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
+  font-family: $ds-font-main;
+  background-color: $ds-background;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.pricingWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 700px;
+  gap: 3rem;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.onboardingHeader {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: $fw-semibold;
+    color: $ds-foreground;
+    margin: 0;
+    padding: 0;
+  }
+
+  p {
+    font-size: 1.05rem;
+    color: $ds-gray-600;
+    margin: 0;
+    line-height: 1.6;
+    max-width: 600px;
+  }
+}
+
+.continueAction {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: 1rem;
+}
+
+.continueButton {
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: $ds-font-main;
+  font-weight: $fw-semibold;
+  background-color: $ds-gray-100;
+  color: $ds-foreground;
+  border: 1px $ds-gray-300 solid;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $ds-gray-200;
+    border: 1px $ds-gray-400 solid;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $ds-gray-500;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -1,7 +1,7 @@
 import styles from "./SmartValue.module.scss";
 import ClickableBadge from "../../../ClickableBadge/ClickableBadge";
+import FilterConditions from "../FilterSection/FilterConditions/FilterConditions";
 
-// Updated Regex to catch nested module IDs inside formulas!
 const SMART_MATCH_REGEX =
   /\[(.*?) ID:(\d+)\]|(\{\{.*?(\b\d+)\..*?\}\})|(\{\{.*?\[(?:Unknown|Missing Reference|Broken Reference)-(\d+)\].*?\}\})/g;
 
@@ -16,6 +16,24 @@ const SmartValue: React.FC<SmartValueProps> = ({
 }) => {
   if (value === undefined) return <span>undefined</span>;
   if (value === null) return <span>null</span>;
+
+  const isConditionArray =
+    Array.isArray(value) &&
+    Array.isArray(value[0]) &&
+    typeof value[0][0] === "object" &&
+    ("a" in value[0][0] || "operandA" in value[0][0]);
+
+  if (isConditionArray) {
+    return (
+      <div style={{ marginTop: "8px", marginBottom: "8px" }}>
+        <FilterConditions
+          conditions={value}
+          isDarkMode={false}
+          handleScrollToModule={handleScrollToModule}
+        />
+      </div>
+    );
+  }
 
   const stringValue =
     typeof value === "object" ? JSON.stringify(value, null, 2) : String(value);
