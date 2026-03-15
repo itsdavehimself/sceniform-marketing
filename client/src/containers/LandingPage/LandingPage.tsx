@@ -31,7 +31,7 @@ const LandingPage: React.FC = () => {
             </h3>
           </div>
           <div className={styles.cta}>
-            <SignUpButton>
+            <SignUpButton forceRedirectUrl="https://app.sceniform.com/onboarding">
               <ActionButton title="Compare Scenarios" size="lg" fontSize="lg" />
             </SignUpButton>
             <p className={styles.ctaTagline}>Try the differ for free.</p>
@@ -185,7 +185,7 @@ const LandingPage: React.FC = () => {
       {/* 7. BOTTOM CTA */}
       <section className={styles.bottomCtaSection}>
         <h2>Ready to stop breaking production?</h2>
-        <SignUpButton>
+        <SignUpButton forceRedirectUrl="https://app.sceniform.com/onboarding">
           <ActionButton title="Compare Scenarios" size="lg" fontSize="lg" />
         </SignUpButton>
       </section>
