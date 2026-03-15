@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styles from "./Settings.module.scss";
 import Section from "../../components/Section/Section";
-import { SignOutButton, useAuth, useClerk } from "@clerk/clerk-react";
+import { SignOutButton, useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import SectionItem from "../../components/Section/SectionItem/SectionItem";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
@@ -12,19 +12,46 @@ import SectionButton from "../../components/Section/SectionButton/SectionButton"
 import { Plus } from "lucide-react";
 import Modal from "../../components/Modal/Modal";
 import { useMakeContext } from "../../context/MakeContext";
+import WorkspaceDropdown from "../../components/WorkspaceDropdown/WorkspaceDropdown";
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
   const { getToken, orgRole } = useAuth();
   const { signOut } = useClerk();
+  const { user } = useUser();
 
-  const { savedKeys, isLoading } = useMakeContext();
+  const { savedKeys, isLoading, workspaceGroups } = useMakeContext();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const defaultOrgId = user?.unsafeMetadata?.defaultMakeOrgId as
+    | number
+    | undefined;
+  const defaultTeamId = user?.unsafeMetadata?.defaultMakeTeamId as
+    | number
+    | undefined;
+
   const isAdmin = orgRole === "org:admin";
+
+  const handleSelectDefaultWorkspace = async (
+    orgId: number,
+    teamId: number,
+  ) => {
+    if (!user) return;
+    try {
+      await user.update({
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          defaultMakeOrgId: orgId,
+          defaultMakeTeamId: teamId,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to update default workspace", err);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
@@ -152,6 +179,24 @@ const Settings: React.FC = () => {
               onClick={() => navigate("/settings/api-key/add")}
             />
           )}
+        </Section>
+
+        <Section header="Preferences">
+          <SectionMultiItem
+            title="Default Workspace"
+            description="Select the Make.com organization and team to load automatically when you open the app."
+          >
+            <div>
+              <WorkspaceDropdown
+                groups={workspaceGroups || []}
+                selectedOrgId={defaultOrgId}
+                selectedTeamId={defaultTeamId}
+                onSelect={handleSelectDefaultWorkspace}
+                availableZones={savedKeys.map((k) => k.zone)}
+                placeholder="Select Default Workspace"
+              />
+            </div>
+          </SectionMultiItem>
         </Section>
 
         <Section header="Account">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser, useOrganizationList } from "@clerk/clerk-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import styles from "./ConnectionGuard.module.scss";
@@ -9,18 +9,29 @@ export default function ConnectionGuard({
 }: {
   children: React.ReactNode;
 }) {
-  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn, orgId } = useAuth();
+  const { user } = useUser();
+  const { setActive } = useOrganizationList();
+
   const navigate = useNavigate();
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (!isLoaded || !isSignedIn || !user) return;
 
-    const checkVaultStatus = async () => {
+    const initializeWorkspace = async () => {
       try {
-        const token = await getToken();
+        const defaultOrgId = user.unsafeMetadata?.defaultOrgId as
+          | string
+          | undefined;
 
+        if (defaultOrgId && orgId !== defaultOrgId && setActive) {
+          await setActive({ organization: defaultOrgId });
+          return;
+        }
+
+        const token = await getToken();
         const response = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/MakeConnections/status`,
           {
@@ -31,7 +42,6 @@ export default function ConnectionGuard({
         if (response.ok) {
           const data = await response.json();
           const { hasConnection, hasActiveSubscription } = data;
-
           const isOnboardingPath = location.pathname.includes("/onboarding");
           const currentSearch = location.search;
 
@@ -52,16 +62,19 @@ export default function ConnectionGuard({
           }
         }
       } catch (error) {
-        console.error("Failed to check vault status:", error);
+        console.error("Failed to check workspace status:", error);
       } finally {
         setIsChecking(false);
       }
     };
 
-    checkVaultStatus();
+    initializeWorkspace();
   }, [
     isLoaded,
     isSignedIn,
+    user,
+    orgId,
+    setActive,
     getToken,
     navigate,
     location.pathname,

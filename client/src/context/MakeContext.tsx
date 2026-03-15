@@ -6,7 +6,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 
 export interface MakeOrganization {
   id: number;
@@ -51,6 +51,7 @@ export const MakeContext = createContext<MakeContextType | undefined>(
 
 export function MakeProvider({ children }: { children: ReactNode }) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
 
   const [organizations, setOrganizations] = useState<MakeOrganization[]>([]);
   const [workspaceGroups, setWorkspaceGroups] = useState<WorkspaceGroup[]>([]);
@@ -137,13 +138,29 @@ export function MakeProvider({ children }: { children: ReactNode }) {
 
         // Auto-select logic
         if (orgsList.length > 0) {
+          // 1. Pull default IDs from metadata
+          const defaultOrgId = user?.unsafeMetadata?.defaultMakeOrgId as
+            | number
+            | undefined;
+          const defaultTeamId = user?.unsafeMetadata?.defaultMakeTeamId as
+            | number
+            | undefined;
+
+          // 2. Verify the saved defaults actually exist in the freshly fetched data
+          const defaultOrg = orgsList.find((o) => o.id === defaultOrgId);
+          const defaultGroup = groups.find((g) => g.orgId === defaultOrgId);
+          const defaultTeam = defaultGroup?.teams.find(
+            (t) => t.id === defaultTeamId,
+          );
+
           setActiveOrg((prev) => {
             if (prev && orgsList.some((o) => o.id === prev.id)) return prev;
-            return orgsList[0];
+            return defaultOrg || orgsList[0]; // Fallback to first org if default is missing
           });
+
           setTargetOrg((prev) => {
             if (prev && orgsList.some((o) => o.id === prev.id)) return prev;
-            return orgsList[0];
+            return defaultOrg || orgsList[0];
           });
 
           setActiveTeam((prev) => {
@@ -153,13 +170,13 @@ export function MakeProvider({ children }: { children: ReactNode }) {
               );
               if (stillExists) return prev;
             }
-            const firstGroup = groups.find((g) => g.orgId === orgsList[0].id);
+            if (defaultTeam) return defaultTeam; // Apply default team if found
+            const firstGroup = groups.find(
+              (g) => g.orgId === (defaultOrg?.id || orgsList[0].id),
+            );
             return firstGroup?.teams[0] || null;
           });
-          setTargetOrg((prev) => {
-            if (prev && orgsList.some((o) => o.id === prev.id)) return prev;
-            return orgsList[0];
-          });
+
           setTargetTeam((prev) => {
             if (prev) {
               const stillExists = groups.some((g) =>
@@ -167,12 +184,17 @@ export function MakeProvider({ children }: { children: ReactNode }) {
               );
               if (stillExists) return prev;
             }
-            const firstGroup = groups.find((g) => g.orgId === orgsList[0].id);
+            if (defaultTeam) return defaultTeam;
+            const firstGroup = groups.find(
+              (g) => g.orgId === (defaultOrg?.id || orgsList[0].id),
+            );
             return firstGroup?.teams[0] || null;
           });
         } else {
           setActiveOrg(null);
           setActiveTeam(null);
+          setTargetOrg(null);
+          setTargetTeam(null);
         }
       } catch (err: any) {
         setError(err.message);
