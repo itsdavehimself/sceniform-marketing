@@ -40,7 +40,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = "https://innocent-mink-34.clerk.accounts.dev"; 
+        options.Authority = builder.Configuration["Clerk:Authority"] ?? "https://innocent-mink-34.clerk.accounts.dev";
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
             ValidateAudience = false, 
