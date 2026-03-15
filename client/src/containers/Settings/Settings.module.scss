@@ -1,13 +1,21 @@
 .settingsContainer {
   display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+}
+
+.settingsScrollable {
+  display: flex;
   flex-direction: column;
+  width: 100%;
   max-width: 600px;
   font-family: $ds-font-main;
   color: $ds-foreground;
-  justify-content: start;
-  height: calc(100% - 6rem);
-  margin-top: 6rem;
+  justify-content: flex-start;
+  margin-top: 5rem;
   overflow-y: auto;
+  max-height: calc(100vh - 4rem);
 }
 
 h1 {
@@ -56,4 +64,26 @@ h1 {
 
 .created {
   font-size: 0.75rem;
+}
+
+.modalText {
+  font-size: 0.875rem;
+  color: $ds-foreground;
+  margin-bottom: 1.5rem;
+}
+
+.deleteError {
+  color: $ds-red-500;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.modalButtonGroup {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.dropdownContainer {
+  padding: 0.5rem 0;
 }

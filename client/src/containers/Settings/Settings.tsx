@@ -89,140 +89,119 @@ const Settings: React.FC = () => {
 
   return (
     <main className={styles.settingsContainer}>
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={() => !isDeletingAccount && setIsDeleteModalOpen(false)}
-        title="Delete Account"
-        size="sm"
-      >
-        <p
-          style={{
-            fontSize: "0.875rem",
-            color: "#4b5563",
-            marginBottom: "1.5rem",
-            lineHeight: 1.5,
-          }}
+      <div className={styles.settingsScrollable}>
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => !isDeletingAccount && setIsDeleteModalOpen(false)}
+          title="Delete Account"
+          size="sm"
         >
-          Are you absolutely sure? This will permanently delete your account. If
-          you are the last member of your organization, all API keys and vault
-          data will be immediately destroyed.{" "}
-          <strong>This action cannot be undone.</strong>
-        </p>
-
-        {deleteError && (
-          <p
-            style={{
-              color: "#dc2626",
-              fontSize: "0.875rem",
-              marginBottom: "1rem",
-            }}
-          >
-            {deleteError}
+          <p className={styles.modalText}>
+            Are you absolutely sure? This will permanently delete your account.
+            If you are the last member of your organization, all API keys and
+            vault data will be immediately destroyed.{" "}
+            <strong>This action cannot be undone.</strong>
           </p>
-        )}
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "0.75rem",
-          }}
-        >
-          <ActionButton
-            title="Cancel"
-            variant="secondary"
-            disabled={isDeletingAccount}
-            onClick={() => setIsDeleteModalOpen(false)}
-          />
-          <ActionButton
-            title={isDeletingAccount ? "Deleting..." : "Delete Permanently"}
-            variant="danger"
-            disabled={isDeletingAccount}
-            onClick={handleDeleteAccount}
-          />
-        </div>
-      </Modal>
+          {deleteError && <p className={styles.deleteError}>{deleteError}</p>}
 
-      <h1>Settings</h1>
-      <section className={styles.settingsSections}>
-        <Section header="Connections">
-          <SectionMultiItem
-            title="API Keys"
-            description="Your Make.com API keys. You can have up to one per zone/region (e.g., us1, eu2, etc.)."
-          >
-            {savedKeys.map((k) => (
-              <div key={k.uid} className={styles.apiKeyItem}>
-                <div className={styles.apiKeyInfo}>
-                  <div className={styles.apiKeyLabel}>
-                    {k.label} <span className={styles.zone}>({k.zone})</span>
-                  </div>
-                  <div className={styles.apiKeyDescription}>
-                    <span className={styles.created}>
-                      Created {formatDate(k.createdAt, "MMM dd, yyyy h:mm a")}
-                    </span>
-                  </div>
-                </div>
-                {isAdmin && (
-                  <ActionButton
-                    variant="secondary"
-                    title="Edit"
-                    onClick={() => navigate(`/settings/api-key/${k.uid}`)}
-                  />
-                )}
-              </div>
-            ))}
-          </SectionMultiItem>
-          {isAdmin && (
-            <SectionButton
-              title="Add API Key"
-              icon={Plus}
-              onClick={() => navigate("/settings/api-key/add")}
-            />
-          )}
-        </Section>
-
-        <Section header="Preferences">
-          <SectionMultiItem
-            title="Default Workspace"
-            description="Select the Make.com organization and team to load automatically when you open the app."
-          >
-            <div>
-              <WorkspaceDropdown
-                groups={workspaceGroups || []}
-                selectedOrgId={defaultOrgId}
-                selectedTeamId={defaultTeamId}
-                onSelect={handleSelectDefaultWorkspace}
-                availableZones={savedKeys.map((k) => k.zone)}
-                placeholder="Select Default Workspace"
-              />
-            </div>
-          </SectionMultiItem>
-        </Section>
-
-        <Section header="Account">
-          <SectionItem
-            title="Sign Out"
-            description="Sign out of your current session."
-          >
-            <SignOutButton>
-              <ActionButton title="Sign Out" variant="primary" />
-            </SignOutButton>
-          </SectionItem>
-        </Section>
-
-        <Section header="Danger Zone">
-          <SectionItem
-            title="Delete Account"
-            description="Delete your account and all of its associated data."
-          >
+          <div className={styles.modalButtonGroup}>
             <ActionButton
-              title="Delete Account"
-              variant="danger"
-              onClick={() => setIsDeleteModalOpen(true)}
+              title="Cancel"
+              variant="secondary"
+              disabled={isDeletingAccount}
+              onClick={() => setIsDeleteModalOpen(false)}
             />
-          </SectionItem>
-        </Section>
-      </section>
+            <ActionButton
+              title={isDeletingAccount ? "Deleting..." : "Delete Permanently"}
+              variant="danger"
+              disabled={isDeletingAccount}
+              onClick={handleDeleteAccount}
+            />
+          </div>
+        </Modal>
+
+        <h1>Settings</h1>
+        <section className={styles.settingsSections}>
+          <Section header="Connections">
+            <SectionMultiItem
+              title="API Keys"
+              description="Your Make.com API keys. You can have up to one per zone/region (e.g., us1, eu2, etc.)."
+            >
+              {savedKeys.map((k) => (
+                <div key={k.uid} className={styles.apiKeyItem}>
+                  <div className={styles.apiKeyInfo}>
+                    <div className={styles.apiKeyLabel}>
+                      {k.label} <span className={styles.zone}>({k.zone})</span>
+                    </div>
+                    <div className={styles.apiKeyDescription}>
+                      <span className={styles.created}>
+                        Created {formatDate(k.createdAt, "MMM dd, yyyy h:mm a")}
+                      </span>
+                    </div>
+                  </div>
+                  {isAdmin && (
+                    <ActionButton
+                      variant="secondary"
+                      title="Edit"
+                      onClick={() => navigate(`/settings/api-key/${k.uid}`)}
+                    />
+                  )}
+                </div>
+              ))}
+            </SectionMultiItem>
+            {isAdmin && (
+              <SectionButton
+                title="Add API Key"
+                icon={Plus}
+                onClick={() => navigate("/settings/api-key/add")}
+              />
+            )}
+          </Section>
+
+          <Section header="Preferences">
+            <SectionMultiItem
+              title="Default Workspace"
+              description="Select the Make.com organization and team to load automatically when you open the app."
+            >
+              <div className={styles.dropdownContainer}>
+                <WorkspaceDropdown
+                  groups={workspaceGroups || []}
+                  selectedOrgId={defaultOrgId}
+                  selectedTeamId={defaultTeamId}
+                  onSelect={handleSelectDefaultWorkspace}
+                  availableZones={savedKeys.map((k) => k.zone)}
+                  placeholder="Select Default Workspace"
+                />
+              </div>
+            </SectionMultiItem>
+          </Section>
+
+          <Section header="Account">
+            <SectionItem
+              title="Sign Out"
+              description="Sign out of your current session."
+            >
+              <SignOutButton>
+                <ActionButton title="Sign Out" variant="primary" />
+              </SignOutButton>
+            </SectionItem>
+          </Section>
+
+          <Section header="Danger Zone">
+            <SectionItem
+              title="Delete Account"
+              description="Delete your account and all of its associated data."
+            >
+              <ActionButton
+                title="Delete Account"
+                variant="danger"
+                onClick={() => setIsDeleteModalOpen(true)}
+              />
+            </SectionItem>
+          </Section>
+        </section>
+      </div>
     </main>
   );
 };
