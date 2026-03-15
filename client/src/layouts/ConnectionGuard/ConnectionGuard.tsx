@@ -30,12 +30,23 @@ export default function ConnectionGuard({
 
         if (response.ok) {
           const data = await response.json();
+          const { hasConnection, hasActiveSubscription } = data;
 
-          if (!data.hasConnection && location.pathname !== "/onboarding") {
-            navigate("/onboarding");
+          const isOnboardingPath = location.pathname.includes("/onboarding");
+          const currentSearch = location.search;
+
+          if (!hasActiveSubscription) {
+            if (!isOnboardingPath || currentSearch !== "?step=pricing") {
+              navigate("/onboarding?step=pricing");
+            }
+          } else if (!hasConnection) {
+            if (!isOnboardingPath || currentSearch !== "?step=connect") {
+              navigate("/onboarding?step=connect");
+            }
           } else if (
-            data.hasConnection &&
-            location.pathname === "/onboarding"
+            hasConnection &&
+            hasActiveSubscription &&
+            isOnboardingPath
           ) {
             navigate("/scenarios");
           }
@@ -48,7 +59,14 @@ export default function ConnectionGuard({
     };
 
     checkVaultStatus();
-  }, [isLoaded, isSignedIn, getToken, navigate, location.pathname]);
+  }, [
+    isLoaded,
+    isSignedIn,
+    getToken,
+    navigate,
+    location.pathname,
+    location.search,
+  ]);
 
   if (isChecking) {
     return (

@@ -101,6 +101,65 @@ public class ClerkWebhookController : ControllerBase
             }
         }
 
+        if (eventType == "subscription.created" || eventType == "subscription.updated")
+        {
+            if (!data.TryGetProperty("payer", out var payerElement) || 
+                !payerElement.TryGetProperty("organization_id", out var orgIdElement))
+            {
+                return Ok(); 
+            }
+
+            var clerkOrgId = orgIdElement.GetString();
+            var org = _db.Organizations.FirstOrDefault(o => o.ClerkOrgId == clerkOrgId);
+
+            if (org == null)
+            {
+                return Conflict("Race condition: Organization not in database yet. Clerk, please retry.");
+            }
+
+            if (data.TryGetProperty("status", out var statusElement))
+            {
+                var status = statusElement.GetString();
+                org.IsSubscriptionActive = status == "active" || status == "trialing";
+            }
+
+            if (data.TryGetProperty("items", out var itemsElement) && itemsElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in itemsElement.EnumerateArray())
+                {
+                    var itemStatus = item.GetProperty("status").GetString();
+                    
+                    if (itemStatus == "active" || itemStatus == "canceled") 
+                    {
+                        var slug = item.GetProperty("plan").GetProperty("slug").GetString();
+                        if (!string.IsNullOrEmpty(slug))
+                        {
+                            org.SubscriptionPlan = slug;
+                            break; 
+                        }
+                    }
+                }
+            }
+        }
+
+        if (eventType == "subscription.deleted")
+        {
+            if (!data.TryGetProperty("payer", out var payerElement) || 
+                !payerElement.TryGetProperty("organization_id", out var orgIdElement))
+            {
+                return Ok(); 
+            }
+
+            var clerkOrgId = orgIdElement.GetString();
+            var org = _db.Organizations.FirstOrDefault(o => o.ClerkOrgId == clerkOrgId);
+
+            if (org != null)
+            {
+                org.IsSubscriptionActive = false;
+                org.SubscriptionPlan = "free";
+            }
+        }
+
         await _db.SaveChangesAsync();
         
         return Ok(); 

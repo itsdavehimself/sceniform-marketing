@@ -15,6 +15,7 @@ import AddApiKey from "./containers/Settings/components/AddApiKey/AddApiKey";
 import PrivacyPolicy from "./containers/LandingPage/pages/PrivacyPolicy/PrivacyPolicy";
 import TermsOfService from "./containers/LandingPage/pages/TermsOfService/TermsOfService";
 import Pricing from "./containers/LandingPage/pages/Pricing/Pricing";
+import AdminRoute from "./layouts/AdminRoute";
 
 function App() {
   return (
@@ -54,8 +55,22 @@ function App() {
         <Route path="/connections" /> */}
         <Route path="settings">
           <Route index element={<Settings />} />
-          <Route path="api-key/:uid" element={<ApiSettings />} />
-          <Route path="api-key/add" element={<AddApiKey />} />
+          <Route
+            path="api-key/:uid"
+            element={
+              <AdminRoute>
+                <ApiSettings />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="api-key/add"
+            element={
+              <AdminRoute>
+                <AddApiKey />
+              </AdminRoute>
+            }
+          />
         </Route>
       </Route>
     </Routes>

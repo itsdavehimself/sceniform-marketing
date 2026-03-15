@@ -42,15 +42,30 @@ public class MakeConnectionsController : ControllerBase
         if (user == null || !user.OrganizationMemberships.Any())
             return BadRequest("User not found or does not belong to an organization.");
 
-        var orgId = user.OrganizationMemberships.First().OrganizationId;
+        var membership = user.OrganizationMemberships.First();
+        if (membership.Role != "org:admin")
+        {
+            return StatusCode(403, new { message = "Only organization administrators can manage API keys." });
+        }
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"https://{request.Zone.ToLower()}.make.com/api/v2/organizations");
+        var orgId = membership.OrganizationId;
+        var requestedZone = request.Zone.ToLower();
+
+        var zoneExists = await _db.MakeConnections
+            .AnyAsync(c => c.OrganizationId == orgId && c.Zone == requestedZone);
+
+        if (zoneExists)
+        {
+            return BadRequest($"A connection for the zone '{requestedZone.ToUpper()}' already exists. You can only have one API key per zone.");
+        }
+
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"https://{requestedZone}.make.com/api/v2/organizations");
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Token", request.ApiKey);
         
         var makeResponse = await _httpClient.SendAsync(requestMessage);
         if (!makeResponse.IsSuccessStatusCode)
         {
-            return BadRequest("Make.com rejected this API key. Please check your token and Home Zone.");
+            return BadRequest("Make.com rejected this API key. Please check your token and Server Zone.");
         }
 
         var encryptedKey = _encryption.Encrypt(request.ApiKey);
@@ -61,7 +76,7 @@ public class MakeConnectionsController : ControllerBase
             AddedByUserId = user.Id,
             Label = request.Label,
             EncryptedApiKey = encryptedKey,
-            Zone = request.Zone.ToLower()
+            Zone = requestedZone
         };
 
         _db.MakeConnections.Add(connection);
@@ -78,16 +93,19 @@ public class MakeConnectionsController : ControllerBase
 
         var user = await _db.Users
             .Include(u => u.OrganizationMemberships)
+            .ThenInclude(m => m.Organization)
             .FirstOrDefaultAsync(u => u.ClerkUserId == clerkUserId);
 
         if (user == null || !user.OrganizationMemberships.Any())
-            return Ok(new { hasConnection = false });
+            return Ok(new { hasConnection = false, hasActiveSubscription = false });
 
-        var orgId = user.OrganizationMemberships.First().OrganizationId;
+        var org = user.OrganizationMemberships.First().Organization;
+        var hasConnection = await _db.MakeConnections.AnyAsync(c => c.OrganizationId == org.Id);
 
-        var hasConnection = await _db.MakeConnections.AnyAsync(c => c.OrganizationId == orgId);
-
-        return Ok(new { hasConnection });
+        return Ok(new { 
+            hasConnection, 
+            hasActiveSubscription = org.IsSubscriptionActive 
+        });
     }
 
     [HttpGet("organizations")]
@@ -163,7 +181,13 @@ public class MakeConnectionsController : ControllerBase
         var user = await _db.Users.Include(u => u.OrganizationMemberships).FirstOrDefaultAsync(u => u.ClerkUserId == clerkUserId);
         if (user == null || !user.OrganizationMemberships.Any()) return Unauthorized();
 
-        var orgId = user.OrganizationMemberships.First().OrganizationId;
+        var membership = user.OrganizationMemberships.First();
+        if (membership.Role != "org:admin")
+        {
+            return StatusCode(403, new { message = "Only organization administrators can manage API keys." });
+        }
+
+        var orgId = membership.OrganizationId;
 
         var connection = await _db.MakeConnections
             .FirstOrDefaultAsync(c => c.Uid == uid && c.OrganizationId == orgId);
@@ -185,7 +209,13 @@ public class MakeConnectionsController : ControllerBase
         var user = await _db.Users.Include(u => u.OrganizationMemberships).FirstOrDefaultAsync(u => u.ClerkUserId == clerkUserId);
         if (user == null || !user.OrganizationMemberships.Any()) return Unauthorized();
 
-        var orgId = user.OrganizationMemberships.First().OrganizationId;
+        var membership = user.OrganizationMemberships.First();
+        if (membership.Role != "org:admin")
+        {
+            return StatusCode(403, new { message = "Only organization administrators can manage API keys." });
+        }
+
+        var orgId = membership.OrganizationId;
 
         var connection = await _db.MakeConnections
             .FirstOrDefaultAsync(c => c.Uid == uid && c.OrganizationId == orgId);

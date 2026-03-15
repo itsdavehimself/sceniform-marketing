@@ -15,7 +15,7 @@ import { useMakeContext } from "../../context/MakeContext";
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
-  const { getToken } = useAuth();
+  const { getToken, orgRole } = useAuth();
   const { signOut } = useClerk();
 
   const { savedKeys, isLoading } = useMakeContext();
@@ -23,6 +23,8 @@ const Settings: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const isAdmin = orgRole === "org:admin";
 
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
@@ -133,19 +135,23 @@ const Settings: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <ActionButton
-                  variant="secondary"
-                  title="Edit"
-                  onClick={() => navigate(`/settings/api-key/${k.uid}`)}
-                />
+                {isAdmin && (
+                  <ActionButton
+                    variant="secondary"
+                    title="Edit"
+                    onClick={() => navigate(`/settings/api-key/${k.uid}`)}
+                  />
+                )}
               </div>
             ))}
           </SectionMultiItem>
-          <SectionButton
-            title="Add API Key"
-            icon={Plus}
-            onClick={() => navigate("/settings/api-key/add")}
-          />
+          {isAdmin && (
+            <SectionButton
+              title="Add API Key"
+              icon={Plus}
+              onClick={() => navigate("/settings/api-key/add")}
+            />
+          )}
         </Section>
 
         <Section header="Account">

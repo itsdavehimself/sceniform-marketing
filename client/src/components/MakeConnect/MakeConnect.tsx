@@ -1,4 +1,4 @@
-import { useState, useContext } from "react"; // <-- add useContext
+import { useState, useContext, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Info, CheckCircle2 } from "lucide-react";
@@ -7,34 +7,75 @@ import ActionButton from "../ActionButton/ActionButton";
 import Dropdown from "../Dropdown/Dropdown";
 import AppIcon from "../AppIcon/AppIcon";
 import BackButton from "../../containers/Settings/components/BackButton/BackButton";
-import { MakeContext } from "../../context/MakeContext"; // <-- Import Context
+import { MakeContext } from "../../context/MakeContext";
 
 export default function MakeConnect() {
   const { getToken } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Grab context safely (in case this is rendered on the /onboarding route outside the layout)
   const makeContext = useContext(MakeContext);
-
   const isOnboarding = location.pathname.includes("onboarding");
 
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<number>(1);
   const [apiKey, setApiKey] = useState("");
   const [label, setLabel] = useState("");
-  const [zone, setZone] = useState("us1");
+  const [zone, setZone] = useState("");
+
+  // 🔥 NEW: Local state to track connected zones independently of Context
+  const [localConnectedZones, setLocalConnectedZones] = useState<string[]>([]);
 
   const [status, setStatus] = useState<{
     type: "idle" | "loading" | "success" | "error";
     message: string;
   }>({ type: "idle", message: "" });
 
-  const zoneOptions = [
+  const allZones = [
     { label: "US1 (us1.make.com)", value: "us1" },
     { label: "US2 (us2.make.com)", value: "us2" },
     { label: "EU1 (eu1.make.com)", value: "eu1" },
     { label: "EU2 (eu2.make.com)", value: "eu2" },
   ];
+
+  // 🔥 NEW: Fetch existing connections on mount (handles page refreshes during onboarding)
+  useEffect(() => {
+    const fetchExistingZones = async () => {
+      try {
+        const token = await getToken();
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/MakeConnections`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const zones = data.connections.map((c: any) => c.zone);
+          setLocalConnectedZones(zones);
+        }
+      } catch (err) {
+        console.error("Failed to fetch existing zones", err);
+      }
+    };
+
+    fetchExistingZones();
+  }, [getToken]);
+
+  // Combine Context zones (if available) with our local state
+  const contextZones = makeContext?.availableZones || [];
+  const combinedZones = Array.from(
+    new Set([...contextZones, ...localConnectedZones]),
+  );
+
+  const zoneOptions = allZones.filter((z) => !combinedZones.includes(z.value));
+
+  // Auto-select the first available zone
+  useEffect(() => {
+    if (zoneOptions.length > 0 && !zoneOptions.find((z) => z.value === zone)) {
+      setZone(zoneOptions[0].value);
+    }
+  }, [combinedZones, zoneOptions, zone]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,22 +105,25 @@ export default function MakeConnect() {
           message: "Success! Key verified and securely saved.",
         });
 
-        // 🔥 FORCE INSTANT GLOBAL REFRESH 🔥
+        // 🔥 NEW: Add the newly verified zone to our local state instantly
+        setLocalConnectedZones((prev) => [...prev, zone]);
+
         if (makeContext?.refreshContext) {
           makeContext.refreshContext();
         }
 
         setTimeout(() => {
-          if (step === 1 && isOnboarding) {
-            setStep(2);
-            setApiKey("");
-            setLabel("");
-            setZone(zone.startsWith("us") ? "eu1" : "us1");
-            setStatus({ type: "idle", message: "" });
-          } else if (!isOnboarding) {
-            navigate("/settings");
+          if (isOnboarding) {
+            if (step < 4 && zoneOptions.length > 1) {
+              setStep((prev) => prev + 1);
+              setApiKey("");
+              setLabel("");
+              setStatus({ type: "idle", message: "" });
+            } else {
+              navigate("/scenarios");
+            }
           } else {
-            navigate("/scenarios");
+            navigate("/settings");
           }
         }, 1500);
       } else {
@@ -98,6 +142,28 @@ export default function MakeConnect() {
     navigate("/scenarios");
   };
 
+  if (zoneOptions.length === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>All Zones Connected</h2>
+          <p className={styles.description}>
+            You have successfully connected API keys for all available Make.com
+            regions.
+          </p>
+          <div style={{ marginTop: "1.5rem" }}>
+            <ActionButton
+              title="Go to Scenarios"
+              variant="primary"
+              onClick={() => navigate("/scenarios")}
+              size="lg"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       {!isOnboarding && <BackButton />}
@@ -106,7 +172,7 @@ export default function MakeConnect() {
           {isOnboarding ? (
             <>
               <AppIcon accountName="Make" />
-              {step === 1 ? "Connect Make.com" : "Add Secondary Workspace"}
+              {step === 1 ? "Connect Make.com" : `Add API Key (${step}/4)`}
             </>
           ) : (
             "Add API Key"
@@ -115,7 +181,7 @@ export default function MakeConnect() {
         {isOnboarding ? (
           <p className={styles.description}>
             {step === 1
-              ? "Connect your Base workspace. We will encrypt your token and securely link it to your vault."
+              ? "Connect to your Make.com instance. We will encrypt your token and securely link it to your vault."
               : "Do you have workspaces in other regions (e.g., US vs EU) that you want to compare? If so, you will need a separate API key generated by a workspace owner in that region."}
           </p>
         ) : (
@@ -127,26 +193,23 @@ export default function MakeConnect() {
       </div>
 
       {step === 1 && isOnboarding && (
-        <>
-          <div className={`${styles.alertBox} ${styles.infoAlert}`}>
-            <Info size={20} style={{ flexShrink: 0, marginTop: "2px" }} />
-            <div className={styles.alertContent}>
-              <strong>Working across US & EU servers?</strong>
-              You will need a separate API key for each zone. We will connect
-              your first one now, and you can add your second one on the next
-              screen.
-            </div>
+        <div className={`${styles.alertBox} ${styles.infoAlert}`}>
+          <Info size={20} style={{ flexShrink: 0, marginTop: "2px" }} />
+          <div className={styles.alertContent}>
+            <strong>Working across US & EU servers?</strong>
+            You will need a separate API key for each zone. We will connect your
+            first one now, and you can add more on the next screen.
           </div>
-        </>
+        </div>
       )}
 
-      {step === 2 && (
+      {step > 1 && isOnboarding && (
         <div className={`${styles.alertBox} ${styles.successAlert}`}>
           <CheckCircle2 size={20} style={{ flexShrink: 0, marginTop: "2px" }} />
           <div className={styles.alertContent}>
-            <strong>First connection successful!</strong>
-            Your base workspace is ready. You can add a secondary zone now, or
-            skip and go straight to the deployment console.
+            <strong>Connection successful!</strong>
+            Your previous zone is ready. You can add another zone now, or skip
+            and go straight to the deployment console.
           </div>
         </div>
       )}
@@ -170,9 +233,7 @@ export default function MakeConnect() {
             id="labelInput"
             type="text"
             className={styles.input}
-            placeholder={
-              step === 1 ? "e.g., Acme Agency US" : "e.g., Acme Agency EU"
-            }
+            placeholder="e.g., Acme Agency US"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
           />
@@ -193,7 +254,7 @@ export default function MakeConnect() {
           />
         </div>
 
-        {step === 1 ? (
+        {step === 1 && isOnboarding ? (
           <ActionButton
             title={status.type === "loading" ? "Verifying..." : "Connect"}
             variant="primary"
@@ -203,18 +264,22 @@ export default function MakeConnect() {
           />
         ) : (
           <div className={styles.buttonGroup}>
-            <ActionButton
-              title="Skip for now"
-              variant="secondary"
-              onClick={handleSkip}
-              type="button"
-              size="lg"
-            />
+            {isOnboarding && (
+              <ActionButton
+                title="Skip"
+                variant="secondary"
+                onClick={handleSkip}
+                type="button"
+                size="lg"
+              />
+            )}
             <ActionButton
               title={
                 status.type === "loading"
                   ? "Verifying..."
-                  : "Add Second Connection"
+                  : step === 4 || zoneOptions.length === 1
+                    ? "Add Final Connection"
+                    : "Add Connection"
               }
               variant="primary"
               disabled={status.type === "loading" || !apiKey}
