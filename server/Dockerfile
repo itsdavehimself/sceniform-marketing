@@ -1,5 +1,5 @@
-# 1. Build Stage
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+# 1. Build Stage (Swapped to 8.0 to match your project)
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore dependencies
@@ -14,8 +14,8 @@ RUN dotnet build "DiffDetector.Api.csproj" -c Release -o /app/build
 FROM build AS publish
 RUN dotnet publish "DiffDetector.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# 2. Runtime Stage
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+# 2. Runtime Stage (Swapped to 8.0)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
@@ -23,4 +23,5 @@ COPY --from=publish /app/publish .
 ENV ASPNETCORE_URLS=http://+:10000
 EXPOSE 10000
 
-ENTRYPOINT ["dotnet", "DiffDetector.dll"]
+# ✅ Updated to match your actual DLL name!
+ENTRYPOINT ["dotnet", "DiffDetector.Api.dll"]
