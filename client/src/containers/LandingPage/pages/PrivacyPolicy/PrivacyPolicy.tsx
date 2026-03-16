@@ -18,8 +18,8 @@ const PrivacyPolicy: React.FC = () => {
               Welcome to Sceniform. We build tools for automation agencies to
               visually compare, manage, and deploy Make.com scenario changes.
               Because our platform interacts with your proprietary logic and
-              third-party API keys, privacy and data security are built into the
-              core architecture of our system.
+              third-party authentication credentials, privacy and data security
+              are built into the core architecture of our system.
             </p>
             <p>
               This Privacy Policy explains how we collect, process, and protect
@@ -40,10 +40,18 @@ const PrivacyPolicy: React.FC = () => {
                 authentication ID, and optionally your first and last name.
               </li>
               <li>
-                <strong>Make.com Connection Data:</strong> When you add a
-                Make.com API key, we collect the key itself, alongside metadata
-                such as your Make.com Organization ID, Team ID, and Zone (e.g.,{" "}
-                <code>us1</code>).
+                <strong>Make.com Connection Data:</strong> To connect your
+                environments, we collect Make.com Authentication Credentials
+                (such as static API keys or OAuth 2.0 tokens), alongside
+                metadata such as your Make.com Organization ID, Team ID, and
+                Zone (e.g., <code>us1</code>).
+              </li>
+              <li>
+                <strong>Make.com Preferences & Metadata:</strong> If you set
+                default preferences in your account, we store your preferred
+                Make.com Organization ID and Team ID. We <strong>do not</strong>{" "}
+                store any other Make.com environmental data (such as datastore
+                contents, webhook payloads, or scenario execution histories).
               </li>
             </ul>
           </section>
@@ -73,15 +81,15 @@ const PrivacyPolicy: React.FC = () => {
           <section className={styles.policySection}>
             <h2>3. Data Storage and Security</h2>
             <p>
-              We treat your API keys like highly sensitive infrastructure
-              credentials.
+              We treat your Make.com Authentication Credentials like highly
+              sensitive infrastructure credentials.
             </p>
             <ul>
               <li>
-                <strong>Encryption at Rest:</strong> All Make.com API keys are
-                immediately encrypted at rest within our backend using
-                enterprise-grade Microsoft .NET Data Protection standards before
-                being saved to our database.
+                <strong>Encryption at Rest:</strong> All Make.com Authentication
+                Credentials are immediately encrypted at rest within our backend
+                using enterprise-grade Microsoft .NET Data Protection standards
+                before being saved to our database.
               </li>
               <li>
                 <strong>Transmission:</strong> All data transmitted between your
@@ -100,16 +108,16 @@ const PrivacyPolicy: React.FC = () => {
             </p>
             <ul>
               <li>
-                <strong>Organization Ownership:</strong> Make.com API keys and
-                connections added to Sceniform belong to the{" "}
+                <strong>Organization Ownership:</strong> Make.com connections
+                and credentials added to Sceniform belong to the{" "}
                 <strong>Organization</strong>, not the individual user who added
                 them.
               </li>
               <li>
                 <strong>Team Changes:</strong> If a user leaves your agency and
                 deletes their personal Sceniform account, their account data is
-                purged, but the encrypted Make.com API keys they added will
-                automatically transfer to the next available Organization
+                purged, but the encrypted Make.com credentials they authorized
+                will automatically transfer to the next available Organization
                 Administrator to ensure your workflows remain uninterrupted.
               </li>
             </ul>
@@ -122,6 +130,10 @@ const PrivacyPolicy: React.FC = () => {
               vetted infrastructure providers:
             </p>
             <ul>
+              <li>
+                <strong>Cloudflare:</strong> Frontend hosting, DNS, and Content
+                Delivery Network (CDN) services.
+              </li>
               <li>
                 <strong>Render:</strong> Cloud hosting and backend
                 infrastructure.
@@ -160,13 +172,14 @@ const PrivacyPolicy: React.FC = () => {
                 <strong>Organization Deletion:</strong> If you are the sole
                 member of an Organization and you delete your account (or if the
                 last remaining user in an Organization deletes theirs), the
-                entire Organization—including all encrypted Make.com API keys
+                entire Organization—including all encrypted Make.com credentials
                 and metadata—is permanently destroyed.
               </li>
               <li>
                 <strong>Manual Key Removal:</strong> You can manually delete any
                 Make.com connection from your Sceniform dashboard at any time,
-                which permanently removes the encrypted key from our database.
+                which permanently removes the encrypted credentials and access
+                tokens from our database.
               </li>
             </ul>
           </section>
