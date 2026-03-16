@@ -40,9 +40,9 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* 2. VIDEO DEMO */}
-      <section className={styles.videoSection}>
+      {/* <section className={styles.videoSection}>
         <div className={styles.video}></div>
-      </section>
+      </section> */}
 
       {/* 3. TRUST BANNER (SOCIAL PROOF) */}
       <section className={styles.trustBanner}>
