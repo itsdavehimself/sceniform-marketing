@@ -1,5 +1,5 @@
 import styles from "./Footer.module.scss";
-import logo from "../../../../../../assets/sceniform-logo.png";
+import logo from "../../../../assets/sceniform-logo.png";
 
 const Footer: React.FC = () => {
   return (

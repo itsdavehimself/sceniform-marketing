@@ -10,19 +10,43 @@
   gap: 0.5rem;
   margin-bottom: 0.35rem;
 
+  @media (max-width: $bp-mobile) {
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
   h4 {
     margin: 0;
     padding: 0;
     font-size: 1.5rem;
     font-weight: $fw-semibold;
+
+    @media (max-width: $bp-tablet) {
+      font-size: 1.35rem;
+    }
+
+    @media (max-width: $bp-mobile) {
+      font-size: 1.25rem;
+    }
   }
 }
 
 .icon {
   color: $ds-gray-500;
+
+  @media (max-width: $bp-mobile) {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .featureText {
   font-size: 1rem;
   line-height: 1.5rem;
+  margin: 0;
+  @media (max-width: $bp-mobile) {
+    font-size: 0.95rem;
+    line-height: 1.45rem;
+    color: $ds-gray-600;
+  }
 }

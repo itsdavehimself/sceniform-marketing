@@ -9,6 +9,10 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   justify-content: center;
   border-top: 1px solid $ds-gray-200;
   border-bottom: 1px solid $ds-gray-200;
+
+  @media (max-width: $bp-mobile) {
+    padding: 3rem 0;
+  }
 }
 
 .carouselWrapper {
@@ -16,10 +20,18 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   flex-direction: column;
   width: $shared-content-width;
   margin: 0 auto;
+
+  @media (max-width: $bp-tablet) {
+    width: 90%;
+  }
+
+  @media (max-width: $bp-mobile) {
+    width: calc(100% - 3rem);
+  }
 }
 
 .carouselContainer {
-  width: $shared-content-width;
+  width: 100%;
   display: grid;
   align-items: center;
   min-height: 400px;
@@ -47,6 +59,16 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
     transform: translateX(0);
     z-index: 1;
   }
+
+  @media (max-width: $bp-tablet) {
+    gap: 3rem;
+  }
+
+  @media (max-width: $bp-mobile) {
+    flex-direction: column;
+    gap: 2.5rem;
+    text-align: center;
+  }
 }
 
 .imageColumn {
@@ -60,6 +82,7 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   align-items: center;
   justify-content: center;
   color: $ds-gray-500;
+  width: 100%;
 
   img {
     width: 100%;
@@ -79,6 +102,10 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
     margin: 0;
     color: $ds-foreground;
     line-height: 1.2;
+
+    @media (max-width: $bp-mobile) {
+      font-size: 2rem;
+    }
   }
 
   p {
@@ -86,6 +113,10 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
     color: $ds-gray-600;
     line-height: 1.6;
     margin: 0;
+
+    @media (max-width: $bp-mobile) {
+      font-size: 1.1rem;
+    }
   }
 }
 
@@ -94,6 +125,10 @@ $shared-content-width: calc(#{$video-height} * (1920 / 1080));
   gap: 0.75rem;
   margin-top: 4rem;
   justify-content: center;
+
+  @media (max-width: $bp-mobile) {
+    margin-top: 2rem;
+  }
 
   .dot {
     width: 8px;

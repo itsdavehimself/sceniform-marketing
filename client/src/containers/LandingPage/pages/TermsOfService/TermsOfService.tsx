@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./TermsOfService.module.scss";
-import Footer from "../Pricing/components/Footer/Footer";
+import Footer from "../../components/Footer/Footer";
 
 const TermsOfService: React.FC = () => {
   return (

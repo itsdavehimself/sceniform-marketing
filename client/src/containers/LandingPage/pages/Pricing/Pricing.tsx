@@ -4,7 +4,7 @@ import { SignUpButton } from "@clerk/clerk-react";
 import ActionButton from "../../../../components/ActionButton/ActionButton";
 import PricingSection from "./components/PricingSection/PricingSection";
 import styles from "./Pricing.module.scss";
-import Footer from "./components/Footer/Footer";
+import Footer from "../../components/Footer/Footer";
 
 const PricingPage: React.FC = () => {
   return (

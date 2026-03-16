@@ -1,4 +1,4 @@
-import Footer from "../Pricing/components/Footer/Footer";
+import Footer from "../../components/Footer/Footer";
 import styles from "./PrivacyPolicy.module.scss";
 
 const PrivacyPolicy: React.FC = () => {

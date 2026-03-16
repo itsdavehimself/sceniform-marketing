@@ -12,4 +12,9 @@
     background-color: $ds-gray-200;
     color: $ds-foreground;
   }
+
+  @media (max-width: $bp-mobile) {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.9rem;
+  }
 }

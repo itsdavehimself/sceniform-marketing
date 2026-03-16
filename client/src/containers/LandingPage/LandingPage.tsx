@@ -14,7 +14,7 @@ import FeatureGridItem from "./components/FeatureGridItem/FeatureGridItem";
 import styles from "./LandingPage.module.scss";
 import { SignUpButton } from "@clerk/clerk-react";
 import Carousel from "./components/Carousel/Carousel";
-import Footer from "./pages/Pricing/components/Footer/Footer";
+import Footer from "./components/Footer/Footer";
 
 const LandingPage: React.FC = () => {
   return (
