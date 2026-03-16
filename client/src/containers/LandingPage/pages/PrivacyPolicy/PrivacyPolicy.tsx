@@ -123,7 +123,7 @@ const PrivacyPolicy: React.FC = () => {
             </p>
             <ul>
               <li>
-                <strong>Microsoft Azure:</strong> Cloud hosting and backend
+                <strong>Render:</strong> Cloud hosting and backend
                 infrastructure.
               </li>
               <li>
