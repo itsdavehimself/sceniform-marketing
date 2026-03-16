@@ -72,7 +72,7 @@ const Settings: React.FC = () => {
         throw new Error(errText || "Failed to delete account.");
       }
 
-      await signOut();
+      await signOut({ redirectUrl: "https://sceniform.com" });
     } catch (err: any) {
       setDeleteError(err.message);
       setIsDeletingAccount(false);
@@ -182,7 +182,7 @@ const Settings: React.FC = () => {
               title="Sign Out"
               description="Sign out of your current session."
             >
-              <SignOutButton>
+              <SignOutButton redirectUrl="https://sceniform.com">
                 <ActionButton title="Sign Out" variant="primary" />
               </SignOutButton>
             </SectionItem>
