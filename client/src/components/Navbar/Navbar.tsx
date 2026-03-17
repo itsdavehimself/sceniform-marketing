@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react"; // Imported hamburger icons
+import { Menu, X } from "lucide-react";
 import NavButton from "./NavButton/NavButton";
 import styles from "./Navbar.module.scss";
 import ActionButton from "../ActionButton/ActionButton";
@@ -18,6 +18,8 @@ const Navbar: React.FC = () => {
   const closeMenu = () => {
     setIsMobileMenuOpen(false);
   };
+
+  const appUrl = import.meta.env.VITE_API_BASE_URL || "";
 
   return (
     <header className={styles.header}>
@@ -73,8 +75,8 @@ const Navbar: React.FC = () => {
 
           <div className={styles.authGroup}>
             <SignInButton
-              forceRedirectUrl={"https://app.sceniform.com/scenarios"}
-              signUpForceRedirectUrl={"https://app.sceniform.com/onboarding"}
+              forceRedirectUrl={`${appUrl}/scenarios`}
+              signUpForceRedirectUrl={`${appUrl}/onboarding`}
             >
               <div onClick={closeMenu}>
                 <ActionButton title="Sign In" variant="secondary" />
@@ -82,8 +84,8 @@ const Navbar: React.FC = () => {
             </SignInButton>
 
             <SignUpButton
-              forceRedirectUrl={"https://app.sceniform.com/onboarding"}
-              signInForceRedirectUrl={"https://app.sceniform.com/scenarios"}
+              forceRedirectUrl={`${appUrl}/onboarding`}
+              signInForceRedirectUrl={`${appUrl}/scenarios`}
             >
               <div onClick={closeMenu}>
                 <ActionButton title="Sign Up" variant="primary" />

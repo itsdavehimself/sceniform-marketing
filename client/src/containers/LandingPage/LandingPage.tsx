@@ -17,6 +17,8 @@ import Carousel from "./components/Carousel/Carousel";
 import Footer from "./components/Footer/Footer";
 
 const LandingPage: React.FC = () => {
+  const appUrl = import.meta.env.VITE_API_BASE_URL || "";
+
   return (
     <main className={styles.landingPage}>
       {/* 1. HERO SECTION */}
@@ -31,7 +33,10 @@ const LandingPage: React.FC = () => {
             </h3>
           </div>
           <div className={styles.cta}>
-            <SignUpButton forceRedirectUrl="https://app.sceniform.com/onboarding">
+            <SignUpButton
+              forceRedirectUrl={`${appUrl}/onboarding`}
+              signInForceRedirectUrl={`${appUrl}/scenarios`}
+            >
               <ActionButton title="Compare Scenarios" size="lg" fontSize="lg" />
             </SignUpButton>
             <p className={styles.ctaTagline}>Try the differ for free.</p>
@@ -185,7 +190,10 @@ const LandingPage: React.FC = () => {
       {/* 7. BOTTOM CTA */}
       <section className={styles.bottomCtaSection}>
         <h2>Ready to stop breaking production?</h2>
-        <SignUpButton forceRedirectUrl="https://app.sceniform.com/onboarding">
+        <SignUpButton
+          forceRedirectUrl={`${appUrl}/onboarding`}
+          signInForceRedirectUrl={`${appUrl}/scenarios`}
+        >
           <ActionButton title="Compare Scenarios" size="lg" fontSize="lg" />
         </SignUpButton>
       </section>
