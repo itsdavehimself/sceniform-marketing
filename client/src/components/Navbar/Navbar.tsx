@@ -74,13 +74,16 @@ const Navbar: React.FC = () => {
           <div className={styles.authGroup}>
             <SignInButton
               forceRedirectUrl={"https://app.sceniform.com/scenarios"}
+              signUpForceRedirectUrl={"https://app.sceniform.com/onboarding"}
             >
               <div onClick={closeMenu}>
                 <ActionButton title="Sign In" variant="secondary" />
               </div>
             </SignInButton>
+
             <SignUpButton
               forceRedirectUrl={"https://app.sceniform.com/onboarding"}
+              signInForceRedirectUrl={"https://app.sceniform.com/scenarios"}
             >
               <div onClick={closeMenu}>
                 <ActionButton title="Sign Up" variant="primary" />
