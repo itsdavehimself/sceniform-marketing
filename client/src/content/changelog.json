@@ -1,0 +1,94 @@
+[
+  {
+    "version": "0.1.0",
+    "date": "2026-03-17",
+    "title": "Sceniform MVP Launch",
+    "description": "The official public release of the Sceniform engine, bringing secure, side-by-side Make.com blueprint diffing to automation agencies.",
+    "changes": [
+      {
+        "id": "chg_010",
+        "type": "feature",
+        "category": "Deployment",
+        "message": "Introduced Connection Mapping: Dynamically map and verify environment connections (e.g., Sandbox to Production) before confirming a deployment."
+      },
+      {
+        "id": "chg_009",
+        "type": "security",
+        "category": "General",
+        "message": "Implemented enterprise-grade API key storage and multi-tenant workspace isolation for distinct organizations and teams."
+      },
+      {
+        "id": "chg_008",
+        "type": "feature",
+        "category": "UI/UX",
+        "message": "Added active/inactive scenario indicators and terminal-style error handling directly linked to the source scenarios."
+      }
+    ]
+  },
+  {
+    "version": "0.0.9",
+    "date": "2026-03-14",
+    "title": "Complex Routing & Merge Module Support",
+    "description": "Major upgrades to the DAG parsing engine to handle complex scenario architectures and edge cases.",
+    "changes": [
+      {
+        "id": "chg_007",
+        "type": "feature",
+        "category": "Engine",
+        "message": "Added deep support for if/else logic and Merge modules. The Differ now correctly tracks variables across unified paths after a Router split."
+      },
+      {
+        "id": "chg_006",
+        "type": "bugfix",
+        "category": "Engine",
+        "message": "Fixed a cascading diff issue where child modules were incorrectly flagged as changed when only the parent module was updated."
+      },
+      {
+        "id": "chg_005",
+        "type": "improvement",
+        "category": "UI/UX",
+        "message": "Interactive Tracing: Clicking on mapped variables now accurately auto-scrolls to the origin module, even across deeply nested graphs."
+      }
+    ]
+  },
+  {
+    "version": "0.0.8",
+    "date": "2026-03-06",
+    "title": "Mapping Readability & Engine Performance",
+    "description": "Enhancements to how variable mappings are displayed and backend rendering performance.",
+    "changes": [
+      {
+        "id": "chg_004",
+        "type": "improvement",
+        "category": "UI/UX",
+        "message": "Human-Readable Mappings: The UI now parses and displays human-readable labels in mappings instead of raw Make.com variable IDs."
+      },
+      {
+        "id": "chg_003",
+        "type": "improvement",
+        "category": "Engine",
+        "message": "Added secure backend proxy caching (EF Core) for third-party module logos."
+      }
+    ]
+  },
+  {
+    "version": "0.0.5",
+    "date": "2026-02-23",
+    "title": "Alpha: Core DAG Visualization",
+    "description": "The initial build of the Sceniform differ engine and vertical graph layout.",
+    "changes": [
+      {
+        "id": "chg_002",
+        "type": "feature",
+        "category": "Engine",
+        "message": "Router Analysis: The engine now visually distinguishes between main routes, collapsing router branches, and explicitly identifies disabled routes."
+      },
+      {
+        "id": "chg_001",
+        "type": "feature",
+        "category": "UI/UX",
+        "message": "Introduced the side-by-side blueprint viewer with intelligent indentation."
+      }
+    ]
+  }
+]

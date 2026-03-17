@@ -1,0 +1,36 @@
+.badge {
+  font-family: $ds-font-code;
+  font-size: 0.75rem;
+  font-weight: $fw-semibold;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.feature {
+  background-color: $ds-green-100;
+  color: $ds-green-500;
+  border: 1px solid rgba($ds-green-500, 0.2);
+}
+
+.bugfix {
+  background-color: $ds-red-100;
+  color: $ds-red-500;
+  border: 1px solid rgba($ds-red-500, 0.2);
+}
+
+.improvement {
+  background-color: $ds-blue-100;
+  color: $ds-blue-500;
+  border: 1px solid rgba($ds-blue-500, 0.2);
+}
+
+.security {
+  background-color: $ds-amber-100;
+  color: $ds-amber-500;
+  border: 1px solid rgba($ds-amber-500, 0.2);
+}

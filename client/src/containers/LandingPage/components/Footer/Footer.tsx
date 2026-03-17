@@ -25,6 +25,7 @@ const Footer: React.FC = () => {
           <h5 className={styles.linkGroupHeader}>Resources</h5>
           <div className={styles.links}>
             <a href="/pricing">Pricing</a>
+            <a href="/changelog">Changelog</a>
           </div>
         </div>
       </div>

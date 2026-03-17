@@ -16,6 +16,7 @@ import PrivacyPolicy from "./containers/LandingPage/pages/PrivacyPolicy/PrivacyP
 import TermsOfService from "./containers/LandingPage/pages/TermsOfService/TermsOfService";
 import Pricing from "./containers/LandingPage/pages/Pricing/Pricing";
 import AdminRoute from "./layouts/AdminRoute";
+import Changelog from "./containers/LandingPage/pages/Changelog/Changelog";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/tos" element={<TermsOfService />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/changelog" element={<Changelog />} />
       </Route>
 
       <Route
