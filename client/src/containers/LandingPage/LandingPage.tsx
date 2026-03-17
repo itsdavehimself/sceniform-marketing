@@ -17,7 +17,7 @@ import Carousel from "./components/Carousel/Carousel";
 import Footer from "./components/Footer/Footer";
 
 const LandingPage: React.FC = () => {
-  const appUrl = import.meta.env.VITE_API_BASE_URL || "";
+  const appUrl = import.meta.env.VITE_APP_URL || "";
 
   return (
     <main className={styles.landingPage}>

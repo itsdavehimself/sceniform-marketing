@@ -19,7 +19,7 @@ const Navbar: React.FC = () => {
     setIsMobileMenuOpen(false);
   };
 
-  const appUrl = import.meta.env.VITE_API_BASE_URL || "";
+  const appUrl = import.meta.env.VITE_APP_URL || "";
 
   return (
     <header className={styles.header}>
