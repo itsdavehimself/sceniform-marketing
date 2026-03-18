@@ -1,5 +1,31 @@
 [
   {
+    "version": "0.1.1",
+    "date": "2026-03-18",
+    "title": "Smarter Deployments & Modal Refactor",
+    "description": "Introduced a cleaner tabbed layout for environment bindings, upgraded the connection auto-mapping engine, and squashed a connection detection bug.",
+    "changes": [
+      {
+        "id": "chg_013",
+        "type": "feature",
+        "category": "UI/UX",
+        "message": "Redesigned the Deployment Modal with a tabbed navigation system to distinctly separate Connections, Hooks, Structures, and Stores."
+      },
+      {
+        "id": "chg_012",
+        "type": "improvement",
+        "category": "Deployment",
+        "message": "Upgraded the auto-mapping engine to use a 3-tier fallback system. Sceniform now intelligently maps connections by matching Module IDs, exact Connection IDs, or App Types between environments."
+      },
+      {
+        "id": "chg_011",
+        "type": "bugfix",
+        "category": "Core Engine",
+        "message": "Fixed an extraction bug where certain connections (e.g., standard Google/Gmail modules) were not detected if Make.com stored their IDs without the standard '__IMTCONN__' prefix."
+      }
+    ]
+  },
+  {
     "version": "0.1.0",
     "date": "2026-03-17",
     "title": "Sceniform MVP Launch",
