@@ -5,10 +5,13 @@ import PrivacyPolicy from "./containers/LandingPage/pages/PrivacyPolicy/PrivacyP
 import TermsOfService from "./containers/LandingPage/pages/TermsOfService/TermsOfService";
 import Pricing from "./containers/LandingPage/pages/Pricing/Pricing";
 import Changelog from "./containers/LandingPage/pages/Changelog/Changelog";
+import Page404 from "./components/Page404/Page404";
 
 function App() {
   return (
     <Routes>
+      <Route path="*" element={<Page404 />} />
+
       <Route element={<MainLayout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />

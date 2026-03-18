@@ -1,0 +1,46 @@
+.container404 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: $ds-font-main;
+  color: $ds-foreground;
+  text-align: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.imageContainer {
+  margin-bottom: 2.5rem;
+
+  img {
+    max-width: 800px;
+    height: auto;
+    object-fit: contain;
+  }
+}
+
+.textContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  max-width: 420px;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    color: $ds-gray-600;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
