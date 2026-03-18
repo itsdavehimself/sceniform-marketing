@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ActionButton from "../../ActionButton/ActionButton";
+import SectionHeaderButton from "../../SectionHeader/SectionHeaderButton/SectionHeaderButton";
 import styles from "./DeploymentModal.module.scss";
 import { useDeploymentMappings } from "../../../hooks/useDeploymentMappings";
 import MappingRow from "./MappingRow/MappingRow";
@@ -43,6 +44,9 @@ type LogEntry = {
   url?: string;
 };
 
+// Defined Tab Types
+type TabType = "connections" | "hooks" | "structures" | "stores";
+
 const DeploymentModal: React.FC<DeploymentModalProps> = ({
   isReverse,
   sourceJson,
@@ -76,6 +80,7 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
     "idle" | "deploying" | "success" | "error"
   >("idle");
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>("connections"); // Tab State
 
   // Deployment is ready if EVERY connection and EVERY webhook has a target mapping assigned
   const isDeployReady =
@@ -208,65 +213,105 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
             </p>
           </div>
 
+          {/* TAB NAVIGATION */}
+          <div className={styles.tabNavigation}>
+            <SectionHeaderButton
+              title="Connections"
+              isActive={activeTab === "connections"}
+              onClick={() => setActiveTab("connections")}
+            />
+            <SectionHeaderButton
+              title="Hooks"
+              isActive={activeTab === "hooks"}
+              onClick={() => setActiveTab("hooks")}
+            />
+            <SectionHeaderButton
+              title="Structures"
+              isActive={activeTab === "structures"}
+              onClick={() => setActiveTab("structures")}
+            />
+            <SectionHeaderButton
+              title="Stores"
+              isActive={activeTab === "stores"}
+              onClick={() => setActiveTab("stores")}
+            />
+          </div>
+
           {isConnectionsLoading || isHooksLoading ? (
             <div className={styles.loadingContainer}>
               <LoadingSpinner dimensions={{ x: 6, y: 6 }} />
             </div>
           ) : (
             <div className={styles.mappingsContainer}>
-              {/* --- CONNECTIONS SECTION --- */}
-              {sourceConnections.length > 0 && (
-                <div className={styles.mappingSection}>
-                  <h4 className={styles.sectionTitle}>
-                    Connections (OAuth / API Keys)
-                  </h4>
-                  {sourceConnections.map((conn) => (
-                    <MappingRow
-                      key={`conn-${conn.id}`}
-                      entity={conn}
-                      type="connection"
-                      sourceList={sourceConnectionsList}
-                      targetList={targetConnectionsList}
-                      currentMapping={connMappings[conn.id] || ""}
-                      isAutoMapped={
-                        autoConnMappings[conn.id] === connMappings[conn.id]
-                      }
-                      onMappingChange={handleConnMappingChange}
-                      targetScenarioId={targetScenarioId}
-                    />
-                  ))}
+              {/* --- CONNECTIONS TAB --- */}
+              {activeTab === "connections" &&
+                (sourceConnections.length > 0 ? (
+                  <div className={styles.mappingSection}>
+                    <h4 className={styles.sectionTitle}>
+                      Connections (OAuth / API Keys)
+                    </h4>
+                    {sourceConnections.map((conn) => (
+                      <MappingRow
+                        key={`conn-${conn.id}`}
+                        entity={conn}
+                        type="connection"
+                        sourceList={sourceConnectionsList}
+                        targetList={targetConnectionsList}
+                        currentMapping={connMappings[conn.id] || ""}
+                        isAutoMapped={
+                          autoConnMappings[conn.id] === connMappings[conn.id]
+                        }
+                        onMappingChange={handleConnMappingChange}
+                        targetScenarioId={targetScenarioId}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.emptyTabContainer}>
+                    <p>No connections detected in this blueprint.</p>
+                  </div>
+                ))}
+
+              {/* --- WEBHOOKS TAB --- */}
+              {activeTab === "hooks" &&
+                (sourceHooks.length > 0 ? (
+                  <div className={styles.mappingSection}>
+                    <h4 className={styles.sectionTitle}>
+                      Entry Points (Webhooks / Mailhooks)
+                    </h4>
+                    {sourceHooks.map((hook) => (
+                      <MappingRow
+                        key={`hook-${hook.id}`}
+                        entity={hook}
+                        type="hook"
+                        sourceList={sourceHooksList}
+                        targetList={targetHooksList}
+                        currentMapping={hookMappings[hook.id] || ""}
+                        isAutoMapped={
+                          autoHookMappings[hook.id] === hookMappings[hook.id]
+                        }
+                        onMappingChange={handleHookMappingChange}
+                        targetScenarioId={targetScenarioId}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.emptyTabContainer}>
+                    <p>No entry points detected in this blueprint.</p>
+                  </div>
+                ))}
+
+              {/* --- STRUCTURES TAB (Placeholder) --- */}
+              {activeTab === "structures" && (
+                <div className={styles.emptyTabContainer}>
+                  <p>No data structures detected in this blueprint.</p>
                 </div>
               )}
 
-              {/* --- WEBHOOKS SECTION --- */}
-              {sourceHooks.length > 0 && (
-                <div className={styles.mappingSection}>
-                  <h4 className={styles.sectionTitle}>
-                    Entry Points (Webhooks / Mailhooks)
-                  </h4>
-                  {sourceHooks.map((hook) => (
-                    <MappingRow
-                      key={`hook-${hook.id}`}
-                      entity={hook}
-                      type="hook"
-                      sourceList={sourceHooksList}
-                      targetList={targetHooksList}
-                      currentMapping={hookMappings[hook.id] || ""}
-                      isAutoMapped={
-                        autoHookMappings[hook.id] === hookMappings[hook.id]
-                      }
-                      onMappingChange={handleHookMappingChange}
-                      targetScenarioId={targetScenarioId}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {sourceConnections.length === 0 && sourceHooks.length === 0 && (
-                <div className={styles.noConnectionsContainer}>
-                  <p className={styles.modalHeaderInfo}>
-                    No external bindings detected in this blueprint.
-                  </p>
+              {/* --- STORES TAB (Placeholder) --- */}
+              {activeTab === "stores" && (
+                <div className={styles.emptyTabContainer}>
+                  <p>No data stores detected in this blueprint.</p>
                 </div>
               )}
             </div>
@@ -274,6 +319,7 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
         </>
       )}
 
+      {/* --- DEPLOYMENT TERMINAL (Hidden when idle) --- */}
       {deployState !== "idle" && (
         <div className={styles.terminalContainer}>
           <div className={styles.terminalHeader}>
