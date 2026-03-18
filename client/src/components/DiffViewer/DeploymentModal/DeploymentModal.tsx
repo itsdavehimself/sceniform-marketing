@@ -74,15 +74,24 @@ const DeploymentModal: React.FC<DeploymentModalProps> = ({
     autoHookMappings,
     handleConnMappingChange,
     handleHookMappingChange,
-  } = useDeploymentMappings(sourceJson, targetJson);
+  } = useDeploymentMappings(
+    sourceJson,
+    targetJson,
+    sourceConnectionsList,
+    targetConnectionsList,
+    sourceHooksList,
+    targetHooksList,
+  );
+
+  console.log("source-conns:", sourceConnectionsList);
+  console.log("target-conss:", targetConnectionsList);
 
   const [deployState, setDeployState] = useState<
     "idle" | "deploying" | "success" | "error"
   >("idle");
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<TabType>("connections"); // Tab State
+  const [activeTab, setActiveTab] = useState<TabType>("connections");
 
-  // Deployment is ready if EVERY connection and EVERY webhook has a target mapping assigned
   const isDeployReady =
     sourceConnections.every((conn) => !!connMappings[conn.id]) &&
     sourceHooks.every((hook) => !!hookMappings[hook.id]);

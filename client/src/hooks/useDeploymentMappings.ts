@@ -4,6 +4,10 @@ import { extractConnectionId } from "../helpers/extractConnectionId";
 export const useDeploymentMappings = (
   sourceJson: string,
   targetJson: string,
+  sourceConnectionsList: any[] = [],
+  targetConnectionsList: any[] = [],
+  sourceHooksList: any[] = [],
+  targetHooksList: any[] = [],
 ) => {
   // --- 1. EXTRACT SOURCE DEPENDENCIES ---
   const { sourceConnections, sourceHooks } = useMemo(() => {
@@ -45,17 +49,17 @@ export const useDeploymentMappings = (
 
     return {
       sourceConnections: Array.from(conns.entries()).map(([id, app]) => ({
-        id,
+        id: Number(id),
         app,
       })),
       sourceHooks: Array.from(hooks.entries()).map(([id, app]) => ({
-        id,
+        id: Number(id),
         app,
       })),
     };
   }, [sourceJson]);
 
-  // --- 2. AUTO-MAPPING LOGIC ---
+  // --- 2. AUTO-MAPPING LOGIC (3-TIER FALLBACK) ---
   const { autoConnMappings, autoHookMappings } = useMemo(() => {
     if (!targetJson || !sourceJson)
       return { autoConnMappings: {}, autoHookMappings: {} };
@@ -67,6 +71,7 @@ export const useDeploymentMappings = (
       const targetParsed = JSON.parse(targetJson);
       const sourceParsed = JSON.parse(sourceJson);
 
+      // TIER 1: Map by identical Module IDs
       const buildModuleMaps = (
         obj: any,
         connMap: Map<number, number>,
@@ -98,22 +103,89 @@ export const useDeploymentMappings = (
       const sourceHooksMap = new Map<number, number>();
       buildModuleMaps(sourceParsed, sourceConns, sourceHooksMap);
 
-      // Match by identical Module ID
+      // Apply Tier 1 Matches
       sourceConns.forEach((sourceConnId, moduleId) => {
-        if (targetConns.has(moduleId))
+        if (targetConns.has(moduleId)) {
           computedConns[sourceConnId] = targetConns.get(moduleId)!;
+        }
       });
 
       sourceHooksMap.forEach((sourceHookId, moduleId) => {
-        if (targetHooks.has(moduleId))
+        if (targetHooks.has(moduleId)) {
           computedHooks[sourceHookId] = targetHooks.get(moduleId)!;
+        }
+      });
+
+      // TIER 2 & 3: Fallbacks for unmapped connections
+      sourceConnections.forEach((srcConn) => {
+        const srcId = srcConn.id;
+
+        if (!computedConns[srcId]) {
+          // Tier 2: Does this exact connection ID exist in the target environment?
+          const exactMatch = targetConnectionsList.find(
+            (c) => Number(c.id) === srcId,
+          );
+          if (exactMatch) {
+            computedConns[srcId] = srcId;
+          } else {
+            // Tier 3: Find a connection of the same App Type (accountName)
+            const srcDetails = sourceConnectionsList.find(
+              (c) => Number(c.id) === srcId,
+            );
+            if (srcDetails && srcDetails.accountName) {
+              const typeMatch = targetConnectionsList.find(
+                (c) => c.accountName === srcDetails.accountName,
+              );
+              if (typeMatch) {
+                computedConns[srcId] = Number(typeMatch.id);
+              }
+            }
+          }
+        }
+      });
+
+      // TIER 2 & 3: Fallbacks for unmapped hooks
+      sourceHooks.forEach((srcHook) => {
+        const srcId = srcHook.id;
+
+        if (!computedHooks[srcId]) {
+          // Tier 2: Exact ID match
+          const exactMatch = targetHooksList.find(
+            (h) => Number(h.id) === srcId,
+          );
+          if (exactMatch) {
+            computedHooks[srcId] = srcId;
+          } else {
+            // Tier 3: Find a hook of the same App Type (typeName)
+            const srcDetails = sourceHooksList.find(
+              (h) => Number(h.id) === srcId,
+            );
+            if (srcDetails && srcDetails.typeName) {
+              const typeMatch = targetHooksList.find(
+                (h) => h.typeName === srcDetails.typeName,
+              );
+              if (typeMatch) {
+                computedHooks[srcId] = Number(typeMatch.id);
+              }
+            }
+          }
+        }
       });
     } catch (e) {
       console.error("Auto-mapping failed", e);
     }
 
     return { autoConnMappings: computedConns, autoHookMappings: computedHooks };
-  }, [sourceJson, targetJson]);
+  }, [
+    sourceJson,
+    targetJson,
+    sourceConnectionsList,
+    targetConnectionsList,
+    sourceHooksList,
+    targetHooksList,
+    sourceConnections,
+    sourceHooks,
+  ]);
 
   // --- 3. USER OVERRIDES ---
   const [userConnOverrides, setUserConnOverrides] = useState<
