@@ -1,5 +1,43 @@
 [
   {
+    "version": "0.1.3",
+    "date": "2026-03-20",
+    "title": "Data Stores Mapping & Schema Normalization",
+    "description": "Added comprehensive support for Make.com Data Stores, including deployment mapping, schema mismatch detection, and Diff Viewer integration.",
+    "changes": [
+      {
+        "id": "chg_023",
+        "type": "feature",
+        "category": "UI/UX",
+        "message": "Added a 'Hide Data Store Difference' toggle to the Settings Sidebar, allowing users to optionally filter out Data Store ID changes from the comparison report."
+      },
+      {
+        "id": "chg_022",
+        "type": "improvement",
+        "category": "Engine",
+        "message": "Robust Data Store Schema Extraction & Pruning: The deployment engine now uses a multi-tier fallback system to extract Data Store schemas (including parsing the raw blueprint metadata.expect cache) to safely strip orphaned fields before pushing payloads to production."
+      },
+      {
+        "id": "chg_021",
+        "type": "feature",
+        "category": "Deployment",
+        "message": "Added Data Store Mapping: Users can now map Sandbox data stores to Production data stores directly in the deployment modal, complete with a dedicated 'Stores' tab and database icons."
+      },
+      {
+        "id": "chg_020",
+        "type": "feature",
+        "category": "UI/UX",
+        "message": "Data Store Mismatch Warnings: The engine now fetches and deeply compares the underlying Data Structure schemas of mapped Data Stores, alerting users with caution flags if the schemas differ."
+      },
+      {
+        "id": "chg_019",
+        "type": "improvement",
+        "category": "UI/UX",
+        "message": "Human-Readable Data Stores: The Diff Viewer now dynamically looks up and displays the actual names of Data Stores instead of raw Make.com IDs."
+      }
+    ]
+  },
+  {
     "version": "0.1.2",
     "date": "2026-03-19",
     "title": "Data Structures Mapping & Safe Payload Pruning",
