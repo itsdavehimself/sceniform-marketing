@@ -1,5 +1,43 @@
 [
   {
+    "version": "0.1.2",
+    "date": "2026-03-19",
+    "title": "Data Structures Mapping & Safe Payload Pruning",
+    "description": "Introduced full support for Make.com Data Structures, including deployment mapping, schema mismatch detection, and safe pruning of orphaned fields.",
+    "changes": [
+      {
+        "id": "chg_018",
+        "type": "feature",
+        "category": "Deployment",
+        "message": "Added Data Structure Mapping: Users can now map Sandbox data structures to Production data structures directly in the deployment modal alongside Connections and Webhooks."
+      },
+      {
+        "id": "chg_017",
+        "type": "feature",
+        "category": "UI/UX",
+        "message": "Data Structure Mismatch Warnings: The engine now deeply compares Data Structure specs (using lodash) and alerts users with caution flags if the mapped structures have divergent schemas."
+      },
+      {
+        "id": "chg_016",
+        "type": "improvement",
+        "category": "Engine",
+        "message": "Safe Pruning of Orphaned Fields: The deployment engine now recursively scans and removes fields from the JSON payload if they exist in the Sandbox structure but are missing in the Production structure, preventing dirty data injection."
+      },
+      {
+        "id": "chg_015",
+        "type": "bugfix",
+        "category": "Core Engine",
+        "message": "Resolved a bug where Make.com's stale visual cache (metadata.restore) caused the Differ to display incorrect Data Structure names post-deployment. Sceniform now forcefully injects the true API names during the deployment push."
+      },
+      {
+        "id": "chg_014",
+        "type": "feature",
+        "category": "UI/UX",
+        "message": "Added a 'Hide Data Structure Difference' toggle to the Settings Sidebar to let users ignore underlying structural ID changes while preserving actual mapping visibility."
+      }
+    ]
+  },
+  {
     "version": "0.1.1",
     "date": "2026-03-18",
     "title": "Smarter Deployments & Modal Refactor",
