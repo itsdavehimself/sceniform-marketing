@@ -35,7 +35,7 @@
         "id": "chg_028",
         "type": "feature",
         "category": "Agency Management",
-        "message": "Usage Quota System: Organizations now have transparent tracking of monthly scenario comparisons, ensuring predictable resource usage across agency teams."
+        "message": "Usage Quota System: Organizations now have transparent tracking of monthly scenario comparisons."
       },
       {
         "id": "chg_027",
@@ -48,12 +48,6 @@
         "type": "improvement",
         "category": "UI/UX",
         "message": "Real-time Usage Insights: Integrated a color-coded quota widget that provides instant visibility into workspace comparison limits directly within the Scenarios sidebar."
-      },
-      {
-        "id": "chg_025",
-        "type": "improvement",
-        "category": "UI/UX",
-        "message": "Refined Navigation & Settings: Overhauled the administrative interface with a pixel-perfect, centered layout and fixed navigation controls for a more consistent management experience."
       }
     ]
   },
@@ -61,7 +55,7 @@
     "version": "0.1.3",
     "date": "2026-03-20",
     "title": "Data Integrity & Environment Safeguards",
-    "description": "Comprehensive support for Make.com Data Stores, ensuring that multi-environment syncing never results in schema mismatches or broken production logic.",
+    "description": "Comprehensive support for Make.com Data Stores, preventing schema mismatches or broken production logic resulting from multi-environment syncing.",
     "changes": [
       {
         "id": "chg_023",
