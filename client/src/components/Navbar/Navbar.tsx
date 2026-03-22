@@ -71,6 +71,13 @@ const Navbar: React.FC = () => {
                 closeMenu();
               }}
             />
+            <NavButton
+              title="Playground"
+              onClick={() => {
+                navigate(`${appUrl}/playground`);
+                closeMenu();
+              }}
+            />
           </div>
 
           <div className={styles.authGroup}>

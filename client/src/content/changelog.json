@@ -2,9 +2,15 @@
   {
     "version": "0.1.5",
     "date": "2026-03-22",
-    "title": "Enterprise Scale, Smart Quotas & Global Sync",
-    "description": "Unlocked massive blueprint support for professional automation agencies, added intelligent safeguards to protect deployment limits, and introduced instant environment syncing.",
+    "title": "Enterprise Scale, Smart Quotas & The Sceniform Playground",
+    "description": "Unlocked massive blueprint support for professional automation agencies, added intelligent safeguards to protect deployment limits, and introduced an interactive, zero-friction sandbox to test drive the Differ Engine.",
     "changes": [
+      {
+        "id": "chg_032",
+        "type": "feature",
+        "category": "Growth",
+        "message": "Interactive Blueprint Playground: Experience the power of the Sceniform Differ Engine instantly. Agencies can now drag-and-drop Make.com JSON blueprints directly into our new unauthenticated sandbox to visually compare logic changes on the fly—no account required."
+      },
       {
         "id": "chg_031",
         "type": "feature",
