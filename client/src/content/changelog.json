@@ -1,6 +1,26 @@
 [
 [
   {
+    "version": "0.1.5",
+    "date": "2026-03-22",
+    "title": "Enterprise Scale & Smart Quota Protection",
+    "description": "Unlocked massive blueprint support for professional automation agencies and added intelligent safeguards to protect your monthly deployment limits.",
+    "changes": [
+      {
+        "id": "chg_030",
+        "type": "feature",
+        "category": "Performance",
+        "message": "Unlimited Module Scale for Pro: The differ engine has been fully unlocked for Pro workspaces, allowing seamless comparison and deployment of massive, enterprise-grade workflows (20+ modules)."
+      },
+      {
+        "id": "chg_029",
+        "type": "improvement",
+        "category": "Reliability",
+        "message": "Smart Quota Protection: Sceniform now instantly pre-validates scenario complexity before loading the engine, ensuring you never waste a monthly comparison limit on an unsupported blueprint."
+      }
+    ]
+  },
+  {
     "version": "0.1.4",
     "date": "2026-03-21",
     "title": "Agency Controls & Pro Tier Infrastructure",
