@@ -1,6 +1,5 @@
 [
-[
-{
+  {
     "version": "0.1.5",
     "date": "2026-03-22",
     "title": "Enterprise Scale, Smart Quotas & Global Sync",
@@ -157,8 +156,7 @@
         "message": "Interactive Logic Tracing: Instant auto-scrolling to the origin module of any mapped variable, making audits of complex graphs 10x faster."
       }
     ]
-  }
-]
+  },
   {
     "version": "0.0.8",
     "date": "2026-03-06",
