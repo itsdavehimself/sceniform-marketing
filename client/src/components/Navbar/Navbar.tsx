@@ -74,7 +74,7 @@ const Navbar: React.FC = () => {
             <NavButton
               title="Playground"
               onClick={() => {
-                navigate(`${appUrl}/playground`);
+                window.location.href = `${appUrl}/playground`;
                 closeMenu();
               }}
             />
