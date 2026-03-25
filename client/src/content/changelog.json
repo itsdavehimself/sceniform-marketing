@@ -1,5 +1,25 @@
 [
   {
+    "version": "0.1.6",
+    "date": "2026-03-25",
+    "title": "Visual Audits at Agency Speed: Native Icons & Polished Diff Cards",
+    "description": "We know that for agencies, speed and accuracy are everything during deployments. This update brings a massive visual overhaul to the differ engine, introducing native Make.com module iconography and a much cleaner, high-contrast difference view to accelerate your code reviews.",
+    "changes": [
+      {
+        "id": "chg_034",
+        "type": "improvement",
+        "category": "UI/UX",
+        "message": "Instant Visual Recognition: We've integrated native Make.com application logos and color-coded built-in icons directly into the module cards. Your team can now visually parse massive, multi-app client workflows at a glance without having to read every single module name."
+      },
+      {
+        "id": "chg_033",
+        "type": "improvement",
+        "category": "UI/UX",
+        "message": "Polished Deployment Cards: The difference view cards have been completely redesigned. With cleaner layouts, improved typography, and sharper status badges, identifying the exact logic changes between Sandbox and Production is now faster, reducing cognitive load during critical pushes."
+      }
+    ]
+  },
+  {
     "version": "0.1.5",
     "date": "2026-03-22",
     "title": "Enterprise Scale, Smart Quotas & The Sceniform Playground",
