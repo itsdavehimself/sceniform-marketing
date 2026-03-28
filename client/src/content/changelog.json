@@ -1,5 +1,25 @@
 [
   {
+    "version": "0.1.7",
+    "date": "2026-03-28",
+    "title": "Autonomous AI Agent & Knowledge Base Support",
+    "description": "Full differ engine support for Make.com's new AI Agent modules, enabling automation agencies to safely track, diff, and deploy advanced AI-driven workflows across environments.",
+    "changes": [
+      {
+        "id": "chg_036",
+        "type": "feature",
+        "category": "Engine",
+        "message": "Deep AI Tool Tracking: The Differ Engine now fully parses Make.com's nested AI 'Tools', rendering them as distinct logic branches within the UI. Agencies can now visually audit advanced AI workflows and Knowledge Base modules with the same precision as standard routing logic."
+      },
+      {
+        "id": "chg_035",
+        "type": "feature",
+        "category": "Deployment",
+        "message": "Dynamic AI Connection Mapping: Safely deploy Make.com's unique AI provider connections. Seamlessly map your Sandbox AI models to secure Production credentials within the deployment modal before pushing live."
+      }
+    ]
+  },
+  {
     "version": "0.1.6",
     "date": "2026-03-25",
     "title": "Visual Audits at Agency Speed: Native Icons & Polished Diff Cards",
