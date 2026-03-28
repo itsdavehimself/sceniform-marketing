@@ -3,19 +3,19 @@
     "version": "0.1.6",
     "date": "2026-03-25",
     "title": "Visual Audits at Agency Speed: Native Icons & Polished Diff Cards",
-    "description": "We know that for agencies, speed and accuracy are everything during deployments. This update brings a massive visual overhaul to the differ engine, introducing native Make.com module iconography and a much cleaner, high-contrast difference view to accelerate your code reviews.",
+    "description": "Accelerated deployment reviews with a massive visual overhaul to the Differ Engine, featuring native Make.com iconography and high-contrast logic comparison views.",
     "changes": [
       {
         "id": "chg_034",
         "type": "improvement",
         "category": "UI/UX",
-        "message": "Instant Visual Recognition: We've integrated native Make.com application logos and color-coded built-in icons directly into the module cards. Your team can now visually parse massive, multi-app client workflows at a glance without having to read every single module name."
+        "message": "Instant Visual Recognition: Native Make.com application logos and color-coded built-in icons are now integrated directly into module cards. Teams can visually parse complex, multi-app client workflows at a glance, eliminating the need to manually read every module label."
       },
       {
         "id": "chg_033",
         "type": "improvement",
         "category": "UI/UX",
-        "message": "Polished Deployment Cards: The difference view cards have been completely redesigned. With cleaner layouts, improved typography, and sharper status badges, identifying the exact logic changes between Sandbox and Production is now faster, reducing cognitive load during critical pushes."
+        "message": "Polished Deployment Cards: A complete redesign of the difference view cards introduces cleaner layouts, improved typography, and sharper status badges. These enhancements expedite the identification of logic changes between Sandbox and Production, significantly reducing cognitive load during critical deployment pushes."
       }
     ]
   },
