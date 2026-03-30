@@ -1,5 +1,25 @@
 [
   {
+    "version": "0.1.8",
+    "date": "2026-03-30",
+    "title": "Deep AI Agent Inspection & Streamlined Deployments",
+    "description": "Enhanced the Differ Engine to recursively detect and validate deeply nested AI Agent configurations, alongside a modernized deployment settings interface.",
+    "changes": [
+      {
+        "id": "chg_038",
+        "type": "feature",
+        "category": "Risk Management",
+        "message": "Smart Agent Validation: Sceniform now deeply audits mapped AI Agents, instantly warning you in the deployment modal if the underlying system prompts, models, or tool configurations drift between Sandbox and Production."
+      },
+      {
+        "id": "chg_037",
+        "type": "improvement",
+        "category": "UI/UX",
+        "message": "Categorized Deployment Settings: Completely reorganized the deployment settings sidebar into logical groups (Preservation Rules, Environment Filters, and Display Options) for a cleaner, more intuitive agency experience."
+      }
+    ]
+  },
+  {
     "version": "0.1.7",
     "date": "2026-03-28",
     "title": "Autonomous AI Agent & Knowledge Base Support",
