@@ -1,5 +1,31 @@
 [
   {
+    "version": "0.2.0",
+    "date": "2026-04-02",
+    "title": "Complete Accountability: Enterprise Audit Logs & Deployment Analytics",
+    "description": "Empower your agency with absolute deployment traceability. We've introduced a robust Historical Audit Log to track every scenario promotion, giving teams granular visibility into who deployed what, when, and the exact architectural impact across all client workspaces.",
+    "changes": [
+      {
+        "id": "chg_041",
+        "type": "feature",
+        "category": "Agency Management",
+        "message": "Historical Audit Logs: A brand new dedicated dashboard for tracking deployment history. Agencies can now monitor exactly which team member pushed a workflow, capturing the exact source and target Make.com organizations and teams (e.g., Client Sandbox / Dev Team ➔ Client Live / Prod Team)."
+      },
+      {
+        "id": "chg_040",
+        "type": "feature",
+        "category": "Analytics",
+        "message": "Deployment Velocity Tracking: Added a dynamic 90-day deployment frequency chart. Agency owners can now visually track their team's shipping velocity, identifying peak deployment days and overall automation volume at a glance."
+      },
+      {
+        "id": "chg_039",
+        "type": "improvement",
+        "category": "Accountability",
+        "message": "Granular Impact Metrics & Deep Storage: Every deployment now securely captures the exact architectural delta (modules added, modified, removed) in a highly-optimized Postgres JSONB vault, ensuring airtight compliance and laying the groundwork for historical rollbacks."
+      }
+    ]
+  },
+  {
     "version": "0.1.8",
     "date": "2026-03-30",
     "title": "Deep AI Agent Inspection & Streamlined Deployments",
