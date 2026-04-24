@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.2.1",
+    "date": "2026-04-24",
+    "title": "Time-Travel Audits & Enterprise Reliability",
+    "description": "We've significantly upgraded the Deployment Logs to support full visual diff history, alongside a major polish to our error handling for a seamless agency experience.",
+    "changes": [
+      {
+        "id": "chg_042",
+        "type": "feature",
+        "category": "Accountability",
+        "message": "Time-Travel Debugging: You can now click 'View Diff' on any historical deployment log to recreate the exact visual comparison of the Sandbox and Production blueprints at the exact moment they were pushed. When a client asks 'what changed last month?', your team now has airtight, visual proof."
+      }
+    ]
+  },
+  {
     "version": "0.2.0",
     "date": "2026-04-02",
     "title": "Complete Accountability: Enterprise Audit Logs & Deployment Analytics",
