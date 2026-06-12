@@ -1,5 +1,31 @@
 [
   {
+    "version": "0.3.0",
+    "date": "2026-06-11",
+    "title": "The Schemas Engine: Cross-Team Database & Structure Migration",
+    "description": "We've introduced a dedicated Schemas dashboard allowing agencies to seamlessly bulk-migrate Make.com Data Structures and Data Stores across different client workspaces, complete with intelligent dependency mapping and collision safeguards.",
+    "changes": [
+      {
+        "id": "chg_045",
+        "type": "feature",
+        "category": "Data Management",
+        "message": "Cross-Team Data Store Syncing: Safely bulk-migrate entire Data Stores across your organization's teams."
+      },
+      {
+        "id": "chg_044",
+        "type": "feature",
+        "category": "UI/UX",
+        "message": "Interactive Schema Previews: Never guess what data shape you are moving. The new Schemas interface instantly translates Make.com's heavily nested specification arrays into clean, human-readable JSON preview formats."
+      },
+      {
+        "id": "chg_043",
+        "type": "improvement",
+        "category": "Safety",
+        "message": "Intelligent Collision Deflection: Migrating schemas with identical names will no longer fail or risk overwriting live data. Sceniform automatically detects name collisions in the target team and securely appends an origin suffix (e.g., 'Migrated from Sandbox Team') to protect existing client architectures."
+      }
+    ]
+  },
+  {
     "version": "0.2.1",
     "date": "2026-04-24",
     "title": "Time-Travel Audits & Enterprise Reliability",
