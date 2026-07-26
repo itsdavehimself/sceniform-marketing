@@ -1,5 +1,25 @@
 [
   {
+    "version": "0.3.1",
+    "date": "2026-07-26",
+    "title": "HTTP Credential Diffing & Keychain Mapping",
+    "description": "Added full support for detecting, comparing, mapping, and deploying Make.com HTTP credentials across environments.",
+    "changes": [
+      {
+        "id": "chg_047",
+        "type": "feature",
+        "category": "Deployment",
+        "message": "HTTP Credential Mapping: Detect, auto-map, and safely replace HTTP and Encryptor keychain credentials during cross-environment deployments."
+      },
+      {
+        "id": "chg_046",
+        "type": "improvement",
+        "category": "Engine",
+        "message": "Readable Credential Diffing: Keychain IDs now display as recognizable credential names and authentication types, with a new option to hide credential-related differences."
+      }
+    ]
+  },
+  {
     "version": "0.3.0",
     "date": "2026-06-11",
     "title": "The Schemas Engine: Cross-Team Database & Structure Migration",
