@@ -1,5 +1,37 @@
 [
   {
+    "version": "0.4.0",
+    "date": "2026-09-04",
+    "title": "Tracked Workflows: Production Drift Monitoring & Change Control",
+    "description": "Sceniform now continuously protects Production workflows with persistent Sandbox-to-Production pairing, approved baselines, drift detection, immutable history, and controlled recovery tools designed for long-term Make.com change management.",
+    "changes": [
+      {
+        "id": "chg_051",
+        "type": "feature",
+        "category": "Change Management",
+        "message": "Tracked Workflows & Production Integrity: Pair Sandbox and Production scenarios inside a workspace, establish an approved Production baseline, and let Sceniform continuously monitor live Production for unauthorized drift in the background."
+      },
+      {
+        "id": "chg_050",
+        "type": "feature",
+        "category": "Safety",
+        "message": "Controlled Drift Resolution: Review Production drift against the exact approved baseline, then either accept the live state as the new approved version or safely revert Production back to the previously approved blueprint. Sceniform also guards against stale rollbacks and duplicate deployment requests."
+      },
+      {
+        "id": "chg_049",
+        "type": "feature",
+        "category": "Accountability",
+        "message": "Immutable Workflow History: Every tracked workflow now maintains Production and Sandbox snapshots alongside a dedicated activity timeline for deployments, drift detection, approvals, reversions, and resolution events. Historical entries can be opened to visually inspect exactly what changed using Sceniform's existing semantic diff engine."
+      },
+      {
+        "id": "chg_048",
+        "type": "improvement",
+        "category": "UI/UX",
+        "message": "Workflow-First Scenario Management: The Scenarios experience now cleanly supports both tracked workflows and manual comparisons, resolves live Make.com scenario names instead of raw IDs, consolidates history inside each workflow, improves independent timeline and snapshot navigation, and removes the obsolete global deployment log view."
+      }
+    ]
+  },
+  {
     "version": "0.3.1",
     "date": "2026-07-26",
     "title": "HTTP Credential Diffing & Keychain Mapping",
